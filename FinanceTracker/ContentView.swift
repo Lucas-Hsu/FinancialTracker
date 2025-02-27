@@ -17,6 +17,13 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         TabView {
+            
+            Text("Suggestions")
+                .tabItem {
+                    Label("Suggestions", systemImage: "person.text.rectangle")
+                }
+                .tag(0)
+            
             HStack{
                 CalendarView()
                 History()
@@ -24,14 +31,14 @@ struct ContentView: View {
             .tabItem {
                 Label("Records", systemImage: "list.dash")
             }
-            .tag(0)
+            .tag(1)
             
 
             Statistics()
                 .tabItem {
                     Label("Statistics", systemImage: "chart.bar.fill")
                 }
-                .tag(1)
+                .tag(2)
 
         }
         .accentColor(.blue) // Set the accent color for selected tabs

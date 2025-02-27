@@ -27,7 +27,7 @@ struct AddNew: View {
     @State private var chosenUploadMethod: UIImagePickerController.SourceType = .photoLibrary
     @State private var showAlert = false
 
-    private var priceFormatter: NumberFormatter {
+    var priceFormatter: NumberFormatter {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.minimumFractionDigits = 2
