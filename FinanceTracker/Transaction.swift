@@ -34,7 +34,7 @@ import Foundation
     init() {
         self.id = UUID()
         self.date = Date()
-        self.name = ""
+        self.name = "Transaction"
         self.tag = Tag.other.rawValue
         self.price = 64.00
         self.paid = true
@@ -51,4 +51,9 @@ import Foundation
         }
         return true
     }
+    
+    public func toString() -> String {
+        return "\(self.name), \(self.price), \(self.date)"
+    }
+
 }

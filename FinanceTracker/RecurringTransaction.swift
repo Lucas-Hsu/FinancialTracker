@@ -15,6 +15,60 @@ private enum _TypesOfRecurringTransaction: String, CaseIterable  {
     case Yearly, Monthly, Custom, None
 }
 
+private struct TransactionPattern: Hashable {
+    private var type: _TypesOfRecurringTransaction
+    private var interval: Int
+
+    init(type: _TypesOfRecurringTransaction, interval: Int) {
+        self.type = type
+        self.interval = interval
+    }
+
+    public func isValidInterval(_ interval: Int) -> Bool {
+        switch self.type {
+        case .Yearly:
+            return interval >= 1 && interval <= 10
+        case .Monthly:
+            return interval >= 1 && interval <= 12
+        case .Custom:
+            return interval >= 1
+        default:
+            return false
+        }
+    }
+
+    public func getType() -> TypesOfRecurringTransaction {
+        if self.type == .None {
+            print("Error: Wrong Type")
+            return .Custom
+        }
+        return TypesOfRecurringTransaction(rawValue: self.type.rawValue)!
+    }
+
+    public func get_Type() -> _TypesOfRecurringTransaction {
+        return self.type
+    }
+
+    public func getInterval() -> Int {
+        return self.interval
+    }
+
+    public func toString() -> String {
+        return "\(self.type.rawValue):\(self.interval)"
+    }
+    
+    
+    
+    public func hasPattern() -> Bool {
+        return self.type != .None && (self.type == .Custom && isValidInterval(self.interval) || self.type != .Custom)
+    }
+
+    private func hasSameTypeAndInterval(other: TransactionPattern) -> Bool {
+        return self.type == other.type && self.interval == other.interval
+    }
+}
+
+
 
 // Define the Transaction model as a class
 @Model class RecurringTransaction {
@@ -48,6 +102,19 @@ private enum _TypesOfRecurringTransaction: String, CaseIterable  {
         self.tag = Tag.other.rawValue
         self.price = 64.00
         self.notes = nil
+    }
+    
+    public func toString() -> String {
+        return "\(name), \(intervalType), \(tag)"
+    }
+    
+    public func verboseDescription() -> String {
+        if intervalType == "Custom" {
+            return "\(name); ¥\(price); Started \(date.formatted(.dateTime.year().month(.abbreviated).day(.twoDigits))); Recurs every \(interval) Days"
+        } else {
+            return "\(name); ¥\(price); Started \(date.formatted(.dateTime.year().month(.abbreviated).day(.twoDigits))); Recurs \(intervalType)"
+        }
+        
     }
     
     public func matchesFilter (tags: Set<String>) -> Bool {
@@ -84,20 +151,99 @@ private enum _TypesOfRecurringTransaction: String, CaseIterable  {
     }
     
     public static func HasRelationship(dates: [Date]) -> Bool {
-        var relationships : Set<_TypesOfRecurringTransaction> = []
+        var relationships : Set<TransactionPattern> = []
         for i in 1..<dates.count {
             relationships.insert(RelationshipBetween(date1: dates[i], date2: dates[i-1]))
         }
         if relationships.count > 1{
             return false
         }
-        if relationships.first! == .None {
+        if relationships.first == nil {
             return false
         }
         return true
     }
+    
+    public static func HasRelationship(transactions: [Transaction]) -> Bool {
+        if transactions == [] {
+            return false
+        }
+        var dates: [Date] = []
+        for i in 0..<transactions.count {
+            dates.append(transactions[i].date)
+        }
+            return HasRelationship(dates: dates)
+        }
+    
+    public static func PrintRelationship(dates: [Date]) -> String {
+        var relationships : [TransactionPattern] = []
+        for i in 1..<dates.count {
+            relationships.append(RelationshipBetween(date1: dates[i], date2: dates[i-1]))
+        }
+        for i in 1..<relationships.count {
+            if relationships[i] != relationships[i-1] {
+                return "No Relationship"
+            }
+        }
+        return relationships[0].toString()
+    }
+    
+    public static func PrintRelationship(transactions: [Transaction]) -> String {
+        var dates: [Date] = []
+        for i in 0..<transactions.count {
+            dates.append(transactions[i].date)
+        }
+        return PrintRelationship(dates: dates)
+    }
+    
+    public static func matchesPattern(date: Date, pattern: String, initialDate: Date) -> Bool {
+        if pattern == "" {
+            return false
+        }
+        if "No Relationship" == pattern {
+            return false
+        }
+
+        if !dateOccursOnDate(date: date, initialDate: initialDate, type: toType(str: pattern), interval: toInterval(str: pattern)) {
+            return false
+        }
+        return true
+    }
+    
+    private static func dateOccursOnDate(date: Date, initialDate: Date, type: String, interval: Int) -> Bool {
+        switch type {
+        case TypesOfRecurringTransaction.Yearly.rawValue:
+            if isExactSameDayAndMonth(date1: date, date2: initialDate) {
+                    return true
+                }
+                break
+                
+        case TypesOfRecurringTransaction.Monthly.rawValue:
+                if isExactSameDay(date1: initialDate, date2: date){
+                    return true
+                }
+                if canMapDown(dateInitial: initialDate, dateNow: date) {
+                    return true
+                }
+                break
+                
+        default:
+            if isDaysAfter(dateInitial: initialDate, interval: interval, dateNow: date) {
+                return true
+            }
+            break
+        }
+        return false
+    }
 }
 
+public func toInterval(str: String) -> Int{
+    return Int(str.split(separator: ":").map( {String($0)} )[1]) ?? 0
+}
+
+public func toType(str: String) -> String{
+    return str.split(separator: ":").map( {String($0)} )[0]
+}
 
 private func is31Month(month: Int) -> Bool {
     return month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12
@@ -242,7 +388,7 @@ private func daysAfter(dateInitial: Date, dateNow: Date) -> Int{
 }
 
 
-private func RelationshipBetween(date1: Date, date2: Date) -> _TypesOfRecurringTransaction {
+private func RelationshipBetween(date1: Date, date2: Date) -> TransactionPattern {
     let components1 = Calendar.current.dateComponents([.year, .month, .day], from: date1)
     let components2 = Calendar.current.dateComponents([.year, .month, .day], from: date2)
     let sameYear = components1.year! == components2.year!
@@ -250,12 +396,14 @@ private func RelationshipBetween(date1: Date, date2: Date) -> _TypesOfRecurringT
     let sameDay = components1.day! == components2.day! || canMapDown(dateInitial: date1, dateNow: date2) || canMapDown(dateInitial: date2, dateNow: date1)
     
     if !sameYear && sameMonth && sameDay {
-        return .Yearly
+        return TransactionPattern(type: .Yearly, interval: 0)
     }
     if !sameMonth && (isExactSameDay(date1: date1, date2: date2) || canMapDown(dateInitial: date1, dateNow: date2) || canMapDown(dateInitial: date2, dateNow: date1)) {
-        return .Monthly
+        return TransactionPattern(type: .Monthly, interval: 0)
     }
-    return .Custom
+    let interval = abs(daysSinceEpoch(date: date1) - daysSinceEpoch(date: date2))
+    return TransactionPattern(type: .Custom, interval: interval)
 }
+
 // the performance that is me
 // forever monkeys

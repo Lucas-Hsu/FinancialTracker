@@ -7,8 +7,11 @@
 
 
 import SwiftUI
+import SwiftData
 
 struct CalendarView: View {
+    @Query(sort: \RecurringTransaction.name, order: .forward) var recurringTransactions: [RecurringTransaction]
+    
     @State private var currentDate = Date()
     @State private var selectedDate: Date? = nil
 
@@ -46,6 +49,20 @@ struct CalendarView: View {
             "Lunch with Team at 12:00 PM",
             "Project Discussion at 3:00 PM"
         ]
+    }
+    
+    private func getEvents(date: Date?) -> [String] {
+    var events: [String] = []
+        if date == nil {
+            return []
+        } else {
+            for i in 0..<recurringTransactions.count {
+                if recurringTransactions[i].occursOnDate(date: date!) {
+                    events.append(recurringTransactions[i].verboseDescription())
+                }
+            }
+        }
+        return events
     }
     
     var body: some View {
@@ -120,7 +137,7 @@ struct CalendarView: View {
                         .font(.title2)
                         .padding(.bottom, 5)
                     
-                    ForEach(sampleEvents, id: \.self) { event in
+                    ForEach(getEvents(date: selectedDate), id: \.self) { event in
                         HStack {
                             Image(systemName: "calendar")
                             Text(event)
@@ -207,5 +224,6 @@ extension Array {
 struct CalendarView_Previews: PreviewProvider {
     static var previews: some View {
         CalendarView()
+            .modelContainer(for: [RecurringTransaction.self], inMemory: true)
     }
 }

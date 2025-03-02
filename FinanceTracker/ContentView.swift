@@ -18,7 +18,7 @@ struct ContentView: View {
     var body: some View {
         TabView {
             
-            Text("Suggestions")
+            Suggestions()
                 .tabItem {
                     Label("Suggestions", systemImage: "person.text.rectangle")
                 }
@@ -46,7 +46,8 @@ struct ContentView: View {
     }
 }
 
+
 #Preview {
     ContentView()
-        .modelContainer(for: Transaction.self, inMemory: true)
+        .modelContainer(for: [Transaction.self, RecurringTransaction.self], inMemory: true)
 }

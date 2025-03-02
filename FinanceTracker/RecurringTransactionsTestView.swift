@@ -13,8 +13,34 @@ func daysInYear(year: Int) -> [Date] {
     let calendar = Calendar.current
     
     // Create the start and end dates for the year
-    guard let startDate = calendar.date(from: DateComponents(year: year, month: 1, day: 1)),
-          let endDate = calendar.date(from: DateComponents(year: year, month: 12, day: 31)) else {
+    guard let startDate = calendar.date(from: DateComponents(year: year-1, month: 1, day: 1)),
+          let endDate = calendar.date(from: DateComponents(year: year+1, month: 12, day: 31)) else {
+        return []
+    }
+    
+    var dates: [Date] = []
+    var currentDate = startDate
+    
+    // Loop from the start date until the end date (inclusive)
+    while currentDate <= endDate {
+        dates.append(currentDate)
+        // Advance by one day using the calendar to handle all calendar-specific adjustments
+        guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else {
+            break
+        }
+        currentDate = nextDate
+    }
+    
+    return dates
+}
+
+func more365(date: Date) -> [Date] {
+    let calendar = Calendar.current
+    let components = calendar.dateComponents([.year, .month, .day], from: date)
+    
+    // Create the start and end dates for the year
+    guard let startDate = calendar.date(from: DateComponents(year: components.year, month: components.month, day: components.day)),
+          let endDate = calendar.date(from: DateComponents(year: (components.year ?? 2025)+1, month: components.month, day: components.day)) else {
         return []
     }
     
