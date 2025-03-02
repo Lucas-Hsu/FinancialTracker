@@ -24,7 +24,9 @@ struct Suggestions: View {
                 if transactions.isEmpty {
                     VStack {
                         Text("No transactions logged yet")
-                        AddRecurringTile(date: Date(), name: "A", type: "Custom", interval: 1)
+                        AddRecurringTile(transactions: [Transaction(date: Date()),
+                                                        Transaction(date: Date().advanced(by: 24*3600*7)),
+                                                        Transaction(date: Date().advanced(by: 24*3600*14))])
                     }
                 } else if transactions.count < 3 {
                     Text ("Not enough transactions to suggest categories")
@@ -32,7 +34,7 @@ struct Suggestions: View {
                     Text(categoree.description)
                     ForEach(categoree.keys.sorted(), id: \.self) { key in
                         if RecurringTransaction.HasRelationship(transactions: categoree[key] ?? []) {
-                            ShowRecurringTile(transactions: categoree[key] ?? [])
+                            AddRecurringTile(transactions: categoree[key] ?? [])
                         }
                     }
                 }
@@ -57,7 +59,7 @@ struct Suggestions: View {
         for (groupKey, transactions) in categorizedTransactions {
             print("Group: \(groupKey)")
             for transaction in transactions {
-                print("  - Name: \(transaction.name), Price: \(transaction.price), Tag: \(transaction.tag)")
+                print("  - Name: \(transaction.name), Price: \(transaction.price), Tag: \(transaction.tag), Date: \(transaction.date)")
             }
         }
     }
@@ -107,58 +109,3 @@ private func printDictionary(_ dictionary: [String:[Transaction]]) -> String {
 
 
 
-struct ShowRecurringTile: View {
-    @Environment(\.modelContext) private var modelContext
-
-    @State var transactions: [Transaction] = []
-    @State var date: Date = Date()
-    @State var name: String = "Recurring Transaction"
-    @State var type: String = "Custom"
-    @State var interval: Int = 0
-    @State var tag: String = "Other"
-    @State var price: Double = 0.00
-
-    let patterns: [(type: String, interval: Int)] = [
-    ("Daily", 1),
-    ("Weekly", 7),
-    ("Monthly", 30),
-    ("Yearly", 365)
-    ]
-    var body: some View {
-    HStack {
-        Text(name)
-        .padding()
-        Spacer()
-        Text(transactions.first?.date.formatted(.dateTime.year().month(.abbreviated).day(.twoDigits)) ?? "0000/MMM./00")
-        .padding()
-        Spacer()
-        Text(type)
-        .padding()
-        Spacer()
-        Text(interval.description)
-        .padding()
-        Spacer()
-        Button("Add") {
-            addRecurringTransaction(date: date, name: name, type: type, interval: interval, tag: tag, price: price)
-        }
-        .buttonStyle(.bordered)
-        .padding()
-    }
-    .frame(minWidth: 0, maxWidth: 600, maxHeight: 80)
-    .background(Color.gray.opacity(0.1))
-    .cornerRadius(20)
-    }
-
-    private func addRecurringTransaction(date: Date,name: String, type: String, interval: Int, tag: String, price: Double) {
-    let newTransaction = RecurringTransaction(
-        date: transactions.first?.date ?? Date(),
-        intervalType: getType(transactions: transactions),
-        interval: getInterval(transactions: transactions),
-        name: transactions.first?.name ?? "Recurring Transaction",
-        tag: transactions.first?.tag ?? "Other",
-        price: transactions.first?.price ?? 0.00
-    )
-
-    modelContext.insert(newTransaction)
-    }
-}

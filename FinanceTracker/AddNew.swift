@@ -18,9 +18,9 @@ struct AddNew: View {
     @Environment(\.modelContext) var modelContext
 
     @State private var date: Date = Date()
-    @State private var name: String = ""
-    @State private var selectedTag: Tag = .other
-    @State private var price: Double = 0.0
+    @State public var name: String = ""
+    @State public var selectedTag: Tag = .other
+    @State public var price: Double = 0.0
     @State private var paid: Bool = true
     @State private var notes: [String]? = nil
 

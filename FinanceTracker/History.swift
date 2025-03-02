@@ -8,25 +8,55 @@
 import SwiftUI
 import SwiftData
 
+class SheetController: ObservableObject {
+    @Published var showAddNewSheet = false
+    
+    public var name: String = ""
+    public var tag: Tag = .other
+    public var price: Double = 0.00
+    
+    func toggleSheet() {
+        showAddNewSheet.toggle()
+        print("ShowAddNewSheet")
+    }
+}
+
 struct History: View {
     // Assuming you have a @Query to fetch your transactions from the SwiftData store
     @Query(sort: \Transaction.date, order: .reverse) var transactions: [Transaction]
-    
+
     @State private var selectedTags: Set<String> = Set(Tag.allCases.map { $0.rawValue })
     @State private var isUnpaid: Bool = false;
-    
     @State private var selectedTransaction: Transaction?
-    
-    
-    
+
     var groupedTransactions: [String: [Transaction]] {
         // Group transactions by the same date (year-month-day)
-        Dictionary(grouping: transactions) { transaction in
-            return formattedDate(transaction.date)
+        let grouped = Dictionary(grouping: transactions) { transaction in
+            return formattedDate_(transaction.date)
         }
+
+        // Sort the dictionary by date (most recent first)
+        let sortedGrouped = grouped.sorted {
+            formattedDateToDate($0.key) < formattedDateToDate($1.key)
+        }
+
+        // Return the sorted dictionary
+        return Dictionary(uniqueKeysWithValues: sortedGrouped)
     }
     
-    @State private var showAddNewSheet = false // State to control the sheet presentation
+    func formattedDate_(_ date: Date) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd" // ISO 8601 format, easily sortable
+        return dateFormatter.string(from: date)
+    }
+    
+    func formattedDateToDate(_ dateString: String) -> Date {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        return dateFormatter.date(from: dateString) ?? Date()
+    }
+    
+    @EnvironmentObject var sheetController: SheetController
     
     var body: some View {
         
@@ -59,10 +89,10 @@ struct History: View {
             
             
             Button("Add New") {
-                showAddNewSheet.toggle()
-            }
-            .fullScreenCover(isPresented: $showAddNewSheet) {
-                AddNew()
+                sheetController.name = ""
+                sheetController.tag = .other
+                sheetController.price = 00.00
+                sheetController.toggleSheet()
             }
             .frame(width: 240, height: 50)
             .background(Color.accentColor)
@@ -74,7 +104,7 @@ struct History: View {
                 
                 List {
                     // Iterate over the grouped transactions
-                    ForEach(groupedTransactions.keys.sorted(by: >).reversed(), id: \.self) { key in
+                    ForEach(groupedTransactions.keys.sorted(by: >), id: \.self) { key in
                         // Filter the transactions for this section
                         let filteredTransactions = groupedTransactions[key]!.filter { transaction in
                             // Call matchesFilter on each transaction and only include it if it matches the filter

@@ -42,6 +42,19 @@ import Foundation
         self.image = nil
     }
     
+    init(date: Date) {
+        self.id = UUID()
+        self.date = date
+        self.name = "Transaction"
+        self.tag = Tag.other.rawValue
+        self.price = 64.00
+        self.paid = true
+        self.notes = nil
+        self.image = nil
+    }
+    
+    
+    
     public func matchesFilter (tags: Set<String>, isUnpaid: Bool) -> Bool {
         if (!tags.contains(self.tag)) {
             return false

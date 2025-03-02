@@ -8,6 +8,31 @@
 import SwiftData
 import Foundation
 
+public struct Events: Hashable {
+    var name: String
+    var price: Double
+    var date: Date
+    var tag: Tag
+    var intervalType: String
+    var interval: Int
+    init(name: String, price: Double, date: Date, tag: Tag, intervalType: String, interval: Int) {
+        self.name = name
+        self.price = price
+        self.date = date
+        self.tag = tag
+        self.intervalType = intervalType
+        self.interval = interval
+    }
+    
+    func toString() -> String {
+        if intervalType == "Custom" {
+            return "\(name); ¥\(price); Started \(date.formatted(.dateTime.year().month(.abbreviated).day(.twoDigits))); Recurs every \(interval) Days"
+        } else {
+            return "\(name); ¥\(price); Started \(date.formatted(.dateTime.year().month(.abbreviated).day(.twoDigits))); Recurs \(intervalType)"
+        }
+    }
+}
+
 enum TypesOfRecurringTransaction: String, CaseIterable  {
     case Yearly, Monthly, Custom
 }
@@ -108,13 +133,8 @@ private struct TransactionPattern: Hashable {
         return "\(name), \(intervalType), \(tag)"
     }
     
-    public func verboseDescription() -> String {
-        if intervalType == "Custom" {
-            return "\(name); ¥\(price); Started \(date.formatted(.dateTime.year().month(.abbreviated).day(.twoDigits))); Recurs every \(interval) Days"
-        } else {
-            return "\(name); ¥\(price); Started \(date.formatted(.dateTime.year().month(.abbreviated).day(.twoDigits))); Recurs \(intervalType)"
-        }
-        
+    public func verboseDescriptionEvent() -> Events {
+        return Events(name: name, price: price, date: date, tag:Tag.init(rawValue: tag) ?? Tag.other, intervalType: intervalType, interval: interval)
     }
     
     public func matchesFilter (tags: Set<String>) -> Bool {
@@ -125,6 +145,37 @@ private struct TransactionPattern: Hashable {
     }
     
     public func occursOnDate(date: Date) -> Bool {
+        switch intervalType {
+        case TypesOfRecurringTransaction.Yearly.rawValue:
+                if isExactSameDayAndMonth(date1: date, date2: self.date) {
+                    return true
+                }
+                break
+                
+        case TypesOfRecurringTransaction.Monthly.rawValue:
+                if isExactSameDay(date1: self.date, date2: date){
+                    return true
+                }
+                if canMapDown(dateInitial: self.date, dateNow: date) {
+                    return true
+                }
+                break
+                
+        default:
+            if isDaysAfter(dateInitial: self.date, interval: interval, dateNow: date) {
+                return true
+            }
+            break
+        }
+        return false
+    }
+    
+    public func occursOnDateButAfter(date: Date, initialDate: Date) -> Bool {
+        
+        if daysSinceEpoch(date: initialDate) > daysSinceEpoch(date: date) {
+            return false
+        }
+        
         switch intervalType {
         case TypesOfRecurringTransaction.Yearly.rawValue:
                 if isExactSameDayAndMonth(date1: date, date2: self.date) {
@@ -166,6 +217,7 @@ private struct TransactionPattern: Hashable {
     
     public static func HasRelationship(transactions: [Transaction]) -> Bool {
         if transactions == [] {
+            print("Has Relationship : Empty transaction error")
             return false
         }
         var dates: [Date] = []

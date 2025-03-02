@@ -4,7 +4,6 @@
 //
 //  Created by Lucas Hsu on 1/13/25.
 //
-
 import SwiftUI
 import SwiftData
 
@@ -13,6 +12,7 @@ struct FinanceTrackerApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Transaction.self,
+            RecurringTransaction.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

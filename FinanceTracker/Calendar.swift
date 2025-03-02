@@ -13,7 +13,7 @@ struct CalendarView: View {
     @Query(sort: \RecurringTransaction.name, order: .forward) var recurringTransactions: [RecurringTransaction]
     
     @State private var currentDate = Date()
-    @State private var selectedDate: Date? = nil
+    @State private var selectedDate: Date = Date()
 
     // Use the user's current calendar, which is configured according to locale
     private let calendar = Calendar.current
@@ -51,20 +51,23 @@ struct CalendarView: View {
         ]
     }
     
-    private func getEvents(date: Date?) -> [String] {
-    var events: [String] = []
-        if date == nil {
-            return []
-        } else {
-            for i in 0..<recurringTransactions.count {
-                if recurringTransactions[i].occursOnDate(date: date!) {
-                    events.append(recurringTransactions[i].verboseDescription())
-                }
+    private func getEvents(date: Date) -> [Events] {
+    var events: [Events] = []
+
+    for i in 0..<recurringTransactions.count {
+        if recurringTransactions[i].occursOnDate(date: date) {
+            let newEvent: Events = recurringTransactions[i].verboseDescriptionEvent()
+            if recurringTransactions[i].occursOnDateButAfter(date: date, initialDate: newEvent.date) {
+                events.append(newEvent)
             }
         }
-        return events
     }
     
+    return events
+    }
+    
+    
+    @EnvironmentObject var sheetController: SheetController
     var body: some View {
         VStack {
             // Header with month/year and navigation buttons.
@@ -130,27 +133,28 @@ struct CalendarView: View {
             Divider()
                 .padding(.vertical)
             
-            // Bottom section: Display full date and hardcoded events when a day is selected.
-            if let selected = selectedDate {
+
                 VStack(alignment: .leading, spacing: 10) {
-                    Text(fullDateFormatter.string(from: selected))
+                    Text(fullDateFormatter.string(from: selectedDate))
                         .font(.title2)
                         .padding(.bottom, 5)
                     
                     ForEach(getEvents(date: selectedDate), id: \.self) { event in
                         HStack {
                             Image(systemName: "calendar")
-                            Text(event)
+                            Text(event.toString())
                         }
                         .padding(.vertical, 4)
+                        .onTapGesture {
+                            sheetController.name = event.name
+                            sheetController.tag = event.tag
+                            sheetController.price = event.price
+                            sheetController.toggleSheet()
+                        }
                     }
                 }
                 .padding(.horizontal)
-            } else {
-                Text("Select a date to see events.")
-                    .foregroundColor(.secondary)
-                    .padding()
-            }
+            
             
             Spacer()
         }
@@ -204,7 +208,7 @@ struct CalendarView: View {
     /// Returns the background color for a given day.
     /// Only the selected day is highlighted.
     private func backgroundColor(for day: Date) -> Color {
-        if let selected = selectedDate, calendar.isDate(day, inSameDayAs: selected) {
+        if calendar.isDate(day, inSameDayAs: selectedDate) {
             return Color.green.opacity(0.3)
         } else {
             return Color.clear

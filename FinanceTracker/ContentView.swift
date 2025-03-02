@@ -15,23 +15,35 @@ enum Tabs {
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var sheetController = SheetController()
+    @State private var selectedTab: Int = 0
     var body: some View {
-        TabView {
+        TabView (selection: $selectedTab) {
+            
+            
+            
+            
             
             Suggestions()
                 .tabItem {
                     Label("Suggestions", systemImage: "person.text.rectangle")
                 }
-                .tag(0)
+                .tag(1)
             
             HStack{
                 CalendarView()
                 History()
             }
+            .environmentObject(sheetController)
+            .fullScreenCover(isPresented: $sheetController.showAddNewSheet) {
+                AddNew(name: sheetController.name,
+                       selectedTag: sheetController.tag,
+                       price: sheetController.price)
+            }
             .tabItem {
                 Label("Records", systemImage: "list.dash")
             }
-            .tag(1)
+            .tag(0)
             
 
             Statistics()
