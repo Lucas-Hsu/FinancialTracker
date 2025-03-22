@@ -220,7 +220,7 @@ struct TransactionDetailsView: View {
                 }.padding(20)
             }
             .clearBackground()
-        }.colorfulAccentBackground(colors: [.green, .yellow])
+        }.colorfulAccentBackground(colorLinear: [.accentColor, .white,  .white], colorRadial: [.accentColor, .white])
     }
     
     func saveTransaction(

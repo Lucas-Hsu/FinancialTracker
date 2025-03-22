@@ -64,7 +64,7 @@ extension View {
     
 
 extension View {
-    func plainFill(material: Material = .thinMaterial, opacity: Double = 1, cornerRadius: CGFloat = 10, blurRadius: CGFloat = 4) -> some View {
+    func plainFill(material: Material = .thinMaterial, opacity: Double = 0.9, cornerRadius: CGFloat = 10, blurRadius: CGFloat = 4) -> some View {
         self.background(
             RoundedRectangle(cornerRadius: cornerRadius)
                 .fill(material)
@@ -75,6 +75,18 @@ extension View {
 }
 
 extension View {
+    func colorFill(material: Material = .thinMaterial, opacity: Double = 0.9, cornerRadius: CGFloat = 10, blurRadius: CGFloat = 4) -> some View {
+        self.background {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.clear, lineWidth: 0)
+                .background(.yellow)
+                .blur(radius: 2)
+        }
+    }
+}
+    
+
+extension View {
     func clearBackground() -> some View {
         self.listRowBackground(Color.clear)
             .scrollContentBackground(.hidden)
@@ -82,16 +94,16 @@ extension View {
 }
 
 extension View {
-    func colorfulAccentBackground(colors: [Color]) -> some View {
+    func colorfulAccentBackground(colorLinear: [Color] = [.white, .white], colorRadial: [Color] = [.accentColor, .white]) -> some View {
         self.background {
             ZStack {
                 LinearGradient(
-                    gradient: Gradient(colors: colors),
+                    gradient: Gradient(colors: colorLinear),
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
                 RadialGradient(
-                    gradient: Gradient(colors: [.accentColor, .white, .accentColor, .white]),
+                    gradient: Gradient(colors: colorRadial),
                     center: .bottom,
                     startRadius: 0,
                     endRadius: 1000

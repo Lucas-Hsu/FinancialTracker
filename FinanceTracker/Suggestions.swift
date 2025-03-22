@@ -52,7 +52,7 @@ struct Suggestions: View {
                 update()
             }
         }.frame(maxWidth: .infinity, maxHeight: .infinity)
-            .colorfulAccentBackground(colors: [.blue, .pink])
+            .colorfulAccentBackground(colorLinear: [.accentColor, .white, .white], colorRadial: [.accentColor, .white, .accentColor, .white])
             .edgesIgnoringSafeArea(.all)
     }
     

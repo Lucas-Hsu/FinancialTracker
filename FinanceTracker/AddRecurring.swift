@@ -43,13 +43,13 @@ struct AddRecurringTile: View {
             addRecurringTransaction()
         }) {
             Text("Add").padding(8)
+                .padding(.horizontal, 8)
         }
         .foregroundStyle(Color.accentColor)
-        .plainFill(material: .ultraThickMaterial, opacity: 1, cornerRadius: 4)
+        .plainFill(material: .ultraThickMaterial, opacity: 0.6, cornerRadius: 4)
         .padding()
     }
     .frame(minWidth: 0, maxWidth: 600, maxHeight: 80)
-    .background(Color.gray.opacity(0.1))
     .cornerRadius(20)
     }
 

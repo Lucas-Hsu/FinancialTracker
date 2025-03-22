@@ -209,23 +209,7 @@ struct AddNew: View {
                 }.padding(20)
             }
             .scrollContentBackground(.hidden)
-        }.background {
-            ZStack {
-                LinearGradient(
-                    gradient: Gradient(colors: [.blue, .green]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                RadialGradient(
-                    gradient: Gradient(colors: [.accentColor, .white, .accentColor, .white]),
-                    center: .bottom,
-                    startRadius: 0,
-                    endRadius: 1000
-                ).opacity(0.4)
-            }
-            .edgesIgnoringSafeArea(.all)
-            .blur(radius: 10)
-        }
+        }.colorfulAccentBackground(colorLinear: [.white, .white, .accentColor], colorRadial: [.accentColor, .white])
     }
     
     func saveTransaction(

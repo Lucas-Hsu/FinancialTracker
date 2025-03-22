@@ -47,16 +47,14 @@ struct ContentView: View {
                 Label("Records", systemImage: "list.dash")
             }
             .tag(0)
-            .colorfulAccentBackground(colors: [.white, .white])
+            .colorfulAccentBackground(colorLinear: [.white, .white], colorRadial: [.accentColor, .white, .accentColor, .white])
             
             Statistics()
                 .tabItem {
                     Label("Statistics", systemImage: "chart.bar.fill")
                 }
                 .tag(2)
-
         }
-        .accentColor(.blue) // Set the accent color for selected tabs
         .environment(\.horizontalSizeClass, .compact)
     }
 }

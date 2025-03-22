@@ -53,12 +53,7 @@ struct ImageRecognize: View {
                                 if let candidate = observation.topCandidates(1).first {
                                     Text(candidate.string)
                                         .padding(8)
-                                        .background {
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(Color.clear, lineWidth: 0)
-                                                .background(.yellow)
-                                                .blur(radius: 2)
-                                        }
+                                        .accentButton(opacity: 0.4, blurRadius: 4)
                                         .frame(minWidth: 100, maxWidth: .infinity)
                                         .textSelection(.disabled)
                                         .onTapGesture {
@@ -77,12 +72,7 @@ struct ImageRecognize: View {
                                 Text(candidate.string)
                                     .foregroundColor(.black)
                                     .padding(8)
-                                    .background {
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(Color.clear, lineWidth: 0)
-                                            .background(.yellow)
-                                            .blur(radius: 2)
-                                    }
+                                    .accentButton(opacity: 0.4, blurRadius: 4)
                                     .frame(minWidth: 100, maxWidth: .infinity)
                                     .textSelection(.disabled) // Disable text selection
                                     .onTapGesture {
