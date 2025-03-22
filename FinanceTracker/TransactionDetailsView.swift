@@ -15,10 +15,10 @@ struct TransactionDetailsView: View {
     @Binding var transaction: Transaction // Change to Binding
     @State private var isShowPhotoLibrary = false
     @State private var image = UIImage()
-
+    
     @Environment(\.dismiss) private var dismiss // Access the dismiss function
     @Environment(\.modelContext) var modelContext
-
+    
     @State private var date: Date
     @State private var name: String
     @State private var selectedTag: Tag
@@ -41,7 +41,7 @@ struct TransactionDetailsView: View {
     private func formattedPrice(_ price: Decimal) -> String {
         return priceFormatter.string(from: price as NSDecimalNumber) ?? "$0.00"
     }
-
+    
     // Initialize state variables with the transaction values
     init(transaction: Binding<Transaction>) {
         _transaction = transaction
@@ -56,165 +56,173 @@ struct TransactionDetailsView: View {
         if image != UIImage(){
             return image
         }
-            
+        
         return convertToUIImage(imageData: transaction.image) ?? UIImage(systemName: "photo")!
         // return convertToUIImage(imageData: transaction.image) ?? UIImage(named: "Test Reciept")!
     }
     
-
+    
     var body: some View {
         HStack {
             ZStack{
-                /*
-                Image(uiImage: imagee())
-                    .resizable()
-                    .scaledToFit()
-                    .frame(minWidth: 0, maxWidth: .infinity)
-                    .edgesIgnoringSafeArea(.all)*/
-                
-                    ImageRecognize(
-                        
-                        image: imagee(),
-                        price: $price,
-                        date: $date,
-                        name: $name,
-                        notes: $notes
-                    )
-            }
-
-            VStack {
-                Form {
-                    Section(header: Text("Transaction Record")) {
-                        
-                        TextField("Title", text: $name)
+                ImageRecognize(
+                    
+                    image: imagee(),
+                    price: $price,
+                    date: $date,
+                    name: $name,
+                    notes: $notes
+                )
+                .padding()
+                .plainFill(material: .ultraThinMaterial, opacity: 0.4, cornerRadius: 20)
+            }.padding(.leading, 30)
+            
+            ZStack {
+                VStack {
+                    Form {
+                        Section {
+                            TextField("Title", text: $name)
+                                .padding()
+                            
+                            DatePicker(
+                                "Enter Date",
+                                selection: $date,
+                                displayedComponents: .date
+                            )
                             .padding()
-                        
-                        DatePicker(
-                            "Enter Date",
-                            selection: $date,
-                            displayedComponents: .date
-                        )
-                        .padding()
-                        
-                        Picker("Select Tag", selection: $selectedTag) {
-                            ForEach(Tag.allCases, id: \.self) { tag in
-                                Image(systemName: symbolRepresentation[tag] ?? "questionmark").tag(tag)
-                                //Text(tag.rawValue).tag(tag)
+                            
+                            Picker("Select Tag", selection: $selectedTag) {
+                                ForEach(Tag.allCases, id: \.self) { tag in
+                                    Image(systemName: symbolRepresentation[tag] ?? "questionmark").tag(tag)
+                                    //Text(tag.rawValue).tag(tag)
+                                }
+                            }
+                            .pickerStyle(SegmentedPickerStyle()) // Or you can choose a default style
+                            .padding()
+                            
+                            HStack {
+                                Text("Price  (CN¥)")
+                                Spacer()
+                                TextField("Enter Price", value: $price, formatter: priceFormatter)
+                                    .keyboardType(.decimalPad)
+                            }
+                            .padding()
+                            
+                            Toggle("Paid", isOn: $paid)
+                                .padding()
+                            
+                            // Notes Input Field (multi-line, allows newlines)
+                            TextEditor(text: Binding(
+                                get: {
+                                    notes?.joined(separator: "\n") ?? ""  // Join the array into a single string for display, default to empty string if nil
+                                },
+                                set: { newValue in
+                                    notes = newValue.split(separator: "\n").map { String($0) }  // Split the string into an array by newlines
+                                }
+                            ))
+                            .padding()
+                            .frame(minHeight: 150) // Set height for the text editor
+                            .overlay(
+                                Text("Enter Notes")
+                                    .foregroundColor(.gray)
+                                    .opacity(notes?.isEmpty ?? true ? 0.5 : 0)
+                                    .padding(.top, 25)
+                                    .padding(.leading, 20),
+                                alignment: .topLeading
+                            )
+                            
+                            Button(action: {
+                                showAlert = true
+                            }) {
+                                Text("Select Image")
+                            }
+                            .padding()
+                            .alert("Upload Receipt Image", isPresented: $showAlert) {
+                                Button("Use Camera", action:{
+                                    self.isShowPhotoLibrary = true
+                                    chosenUploadMethod = .camera
+                                })
+                                
+                                Button("Photo Album", action:{
+                                    self.isShowPhotoLibrary = true
+                                    chosenUploadMethod = .photoLibrary
+                                })
+                                
+                                Button("Cancel", action:{})
+                            }
+                            .sheet(isPresented: $isShowPhotoLibrary) {
+                                ImagePicker(selectedImage: self.$image, sourceType: chosenUploadMethod)
                             }
                         }
-                        .pickerStyle(SegmentedPickerStyle()) // Or you can choose a default style
-                        .padding()
-                        
-                        HStack {
-                            Text("Price  (CN¥)")
-                            Spacer()
-                            TextField("Enter Price", value: $price, formatter: priceFormatter)
-                                .keyboardType(.decimalPad)
+                        header: {
+                            Text("Transaction Record")
+                                .padding(2)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 1)
+                                        .fill(.thinMaterial) // Apply thin material background
+                                        .blur(radius: 8)
+                                )
                         }
-                        .padding()
-                        
-                        Toggle("Paid", isOn: $paid)
-                            .padding()
-                        
-                        // Notes Input Field (multi-line, allows newlines)
-                        TextEditor(text: Binding(
-                            get: {
-                                notes?.joined(separator: "\n") ?? ""  // Join the array into a single string for display, default to empty string if nil
-                            },
-                            set: { newValue in
-                                notes = newValue.split(separator: "\n").map { String($0) }  // Split the string into an array by newlines
-                            }
-                        ))
-                        .padding()
-                        .frame(minHeight: 150) // Set height for the text editor
-                        .overlay(
-                            Text("Enter Notes")
-                                .foregroundColor(.gray)
-                                .opacity(notes?.isEmpty ?? true ? 0.5 : 0)
-                                .padding(.top, 25)
-                                .padding(.leading, 20),
-                            alignment: .topLeading
-                        )
-                        
-                        Button(action: {
-                            // Show the alert to choose the upload method
-                            showAlert = true
-                        }) {
-                            Text("Select Image")
-                        }
-                        .padding()
-                        .alert("Upload Receipt Image", isPresented: $showAlert) {
-                            Button("Use Camera", action:{
-                                self.isShowPhotoLibrary = true
-                                chosenUploadMethod = .camera
-                            })
-                            
-                            Button("Photo Album", action:{
-                                self.isShowPhotoLibrary = true
-                                chosenUploadMethod = .photoLibrary
-                            })
-                            
-                            Button("Cancel", action:{})
-                        }
-                        .sheet(isPresented: $isShowPhotoLibrary) {
-                            ImagePicker(selectedImage: self.$image, sourceType: chosenUploadMethod)
-                        }
+                        .clearBackground()
+                        .plainFill()
+                        .foregroundColor(.primary)
                     }
-                    .foregroundColor(.primary)
-                }
-                
-                HStack {
-                    Button(action: {
-                        saveTransaction(
-                            date: date,
-                            name: name,
-                            tag: selectedTag.rawValue,
-                            price: price,
-                            paid: paid,
-                            notes: notes,
-                            image: convertToData(image: imagee())
-                        )
-                        print(
-                            "Form submitted with values: \(name), \(selectedTag.rawValue), \(price), \(paid), \(notes ?? []), \(imageData?.count ?? 0) bytes"
-                        )
-                        dismiss()
-                    }) {
+                    .plainFill(material: .ultraThinMaterial, opacity: 0.4, cornerRadius: 20)
+                    
+                    HStack {
+                        Button(action: {
+                            saveTransaction(
+                                date: date,
+                                name: name,
+                                tag: selectedTag.rawValue,
+                                price: price,
+                                paid: paid,
+                                notes: notes,
+                                image: convertToData(image: imagee())
+                            )
+                            print(
+                                "Form submitted with values: \(name), \(selectedTag.rawValue), \(price), \(paid), \(notes ?? []), \(imageData?.count ?? 0) bytes"
+                            )
+                            dismiss()
+                        }) {
                             Text("Save")
                                 .font(.headline)
+                                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: 50)
+                                .accentButton()
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+                                .padding(.horizontal)
+                        }
+                        
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            Text("Cancel")
+                                .font(.headline)
+                        }
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: 50)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
+                        .plainFill()
+                        .foregroundColor(.accentColor)
                         .cornerRadius(10)
                         .padding(.horizontal)
-                    }
-                    
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        Text("Cancel")
-                            .font(.headline)
-                    }
-                    .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: 50)
-                    .background(Color.gray.opacity(0.2))
-                    .foregroundColor(.accentColor)
-                    .cornerRadius(10)
-                    .padding(.horizontal)
-                    
-                    Button(action: {
-                        deleteTransaction()
-                    }) {
+                        
+                        Button(action: {
+                            deleteTransaction()
+                        }) {
                             Text("Delete")
-                        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: 50)
-                        .background(Color.red.opacity(0.2))
-                        .foregroundColor(.red)
-                        .cornerRadius(10)
-                        .padding(.horizontal)
+                                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: 50)
+                                .accentButton(color: .red)
+                                .foregroundColor(.primary)
+                                .cornerRadius(10)
+                                .padding(.horizontal)
+                        }
                     }
-                }
+                }.padding(20)
             }
-        }
+            .clearBackground()
+        }.colorfulAccentBackground(colors: [.green, .yellow])
     }
-
+    
     func saveTransaction(
         date: Date,
         name: String,
@@ -248,11 +256,11 @@ struct TransactionDetailsView: View {
 }
 
 func convertToUIImage(imageData: Data?) -> UIImage? {
-        guard let data = imageData else {
-            return nil
-        }
-        return UIImage(data: data)
+    guard let data = imageData else {
+        return nil
     }
+    return UIImage(data: data)
+}
 
 
 

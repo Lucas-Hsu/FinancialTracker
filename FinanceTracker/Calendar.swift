@@ -69,6 +69,7 @@ struct CalendarView: View {
     return events
     }
     
+    @State private var scaleEffect: CGFloat = 1.0
     
     @EnvironmentObject var sheetController: SheetController
     var body: some View {
@@ -116,10 +117,15 @@ struct CalendarView: View {
                                     Text("\(calendar.component(.day, from: day))")
                                         .frame(maxWidth: .infinity, minHeight: 40)
                                         .padding(4)
-                                        .background(backgroundColor(for: day))
+                                        .accentButtonToggled(boolean: calendar.isDate(day, inSameDayAs: selectedDate), opacity2: 0)
                                         .cornerRadius(4)
+                                        .scaleEffectToggled(boolean: calendar.isDate(day, inSameDayAs: selectedDate), scaleEffect: scaleEffect)
                                         .onTapGesture {
+                                            scaleEffect = 1.2
                                             selectedDate = day
+                                            withAnimation {
+                                                scaleEffect = 1.0 // Return to normal size
+                                            }
                                         }
                                 } else {
                                     // Empty cell for days outside the current month.
@@ -127,6 +133,7 @@ struct CalendarView: View {
                                         .frame(maxWidth: .infinity, minHeight: 40)
                                 }
                             }
+                            
                         }
                     }
                 }
@@ -174,6 +181,7 @@ struct CalendarView: View {
             Spacer()
         }
         .padding()
+        .plainFill()
     }
     
     /// Advances or rewinds the current date by a number of months.
@@ -227,11 +235,12 @@ struct CalendarView: View {
     /// Only the selected day is highlighted.
     private func backgroundColor(for day: Date) -> Color {
         if calendar.isDate(day, inSameDayAs: selectedDate) {
-            return Color.green.opacity(0.3)
+            return .accentColor.opacity(0.4)
         } else {
             return Color.clear
         }
     }
+    
 }
 
 extension Array {

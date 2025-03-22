@@ -39,10 +39,13 @@ struct AddRecurringTile: View {
         Text(getInterval(transactions: transactions).description)
         .padding()
         Spacer()
-        Button("Add") {
+        Button (action: {
             addRecurringTransaction()
+        }) {
+            Text("Add").padding(8)
         }
-        .buttonStyle(.bordered)
+        .foregroundStyle(Color.accentColor)
+        .plainFill(material: .ultraThickMaterial, opacity: 1, cornerRadius: 4)
         .padding()
     }
     .frame(minWidth: 0, maxWidth: 600, maxHeight: 80)

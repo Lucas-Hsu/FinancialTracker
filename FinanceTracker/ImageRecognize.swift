@@ -25,36 +25,78 @@ struct ImageRecognize: View {
             Image(uiImage: image)
                 .resizable()
                 .scaledToFit()
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.height * 0.6)
                 .onAppear {
                     performOCR()
                 }
                 .onChange(of: image) { oldImage, newImage in
-                                    if oldImage != newImage {
-                                        performOCR()
-                                    }
-                                }
-
-            // Horizontal ScrollView for Recognized Text Fields
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(recognizedText, id: \.self) { observation in
-                        if let candidate = observation.topCandidates(1).first {
-                            Text(candidate.string)
-                                .padding(8)
-                                .background(Color.yellow.opacity(0.5))
-                                .cornerRadius(5)
-                                .frame(minWidth: 100, maxWidth: .infinity)
-                                .textSelection(.disabled) // Disable text selection
-                                .onTapGesture {
-                                    fillTextField(with: candidate.string)
-                                }
-                        }
+                    if oldImage != newImage {
+                        performOCR()
                     }
                 }
-                .padding()
-            }
-            .frame(maxWidth: .infinity)
+                .background(
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .blur(radius: 10)
+                            .edgesIgnoringSafeArea(.all)
+                    )
+                .padding(10)
+
+                // Horizontal ScrollView for 2 rows of recognized text
+                ScrollView(.horizontal, showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        // First row of recognized text
+                        HStack(spacing: 10) {
+                            ForEach(0..<min(4, recognizedText.count), id: \.self) { index in
+                                let observation = recognizedText[index]
+                                if let candidate = observation.topCandidates(1).first {
+                                    Text(candidate.string)
+                                        .padding(8)
+                                        .background {
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(Color.clear, lineWidth: 0)
+                                                .background(.yellow)
+                                                .blur(radius: 2)
+                                        }
+                                        .frame(minWidth: 100, maxWidth: .infinity)
+                                        .textSelection(.disabled)
+                                        .onTapGesture {
+                                            fillTextField(with: candidate.string)
+                                        }
+                                }
+                            }
+                        }.padding(6)
+                            .padding(.top, 6)
+
+                    // Second row of recognized text
+                    HStack(spacing: 10) {
+                        ForEach(min(4, recognizedText.count) ..< recognizedText.count, id: \.self) { index in
+                            let observation = recognizedText[index]
+                            if let candidate = observation.topCandidates(1).first {
+                                Text(candidate.string)
+                                    .foregroundColor(.black)
+                                    .padding(8)
+                                    .background {
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Color.clear, lineWidth: 0)
+                                            .background(.yellow)
+                                            .blur(radius: 2)
+                                    }
+                                    .frame(minWidth: 100, maxWidth: .infinity)
+                                    .textSelection(.disabled) // Disable text selection
+                                    .onTapGesture {
+                                        fillTextField(with: candidate.string)
+                                    }
+                            }
+                        }
+                    }.padding(12)
+                    }
+                    
+                    
+                }.plainFill()
+                .frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.height * 0.1)
+                .padding(10)
         }
     }
 

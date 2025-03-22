@@ -56,6 +56,9 @@ struct History: View {
         return dateFormatter.date(from: dateString) ?? Date()
     }
     
+    @State var scaleEffect: CGFloat = 1
+    @State var AddNewButtonScaleEffect: CGFloat = 1
+    
     @EnvironmentObject var sheetController: SheetController
     
     var body: some View {
@@ -65,11 +68,14 @@ struct History: View {
             HStack {
                 ForEach(Tag.allCases, id: \.self) { tag in
                     Image(systemName: symbolRepresentation[tag] ?? "questionmark")
-                        .padding()
                         .frame(width: 80, height: 50)
-                        .background(self.selectedTags.contains(tag.rawValue) ? Color.accentColor : Color.gray.opacity(0.2))
+                        .accentButtonToggled(boolean:self.selectedTags.contains(tag.rawValue))
+                        
                         .cornerRadius(8)
                         .foregroundColor(self.selectedTags.contains(tag.rawValue) ? .white : .secondary)
+                        .scaleEffect(self.selectedTags.contains(tag.rawValue) ? 1.1 : 1.0) // Scale effect on selection
+                        .animation(.spring(response: 0.4, dampingFraction: 0.4, blendDuration: 0.1), value: selectedTags) // Smooth animation on selection change
+                                    
                         .onTapGesture {
                             // Toggle selection on tap
                             if self.selectedTags.contains(tag.rawValue) {
@@ -77,27 +83,46 @@ struct History: View {
                             } else {
                                 self.selectedTags.insert(tag.rawValue)
                             }
+                            
+                            
                         }
-                }
+                }.padding(.horizontal,4)
             }
             .padding()
-            Toggle("Show Only Payment Pending", isOn: $isUnpaid)
-                .toggleStyle(ButtonToggleStyle())
-                .scaleEffect(isUnpaid ? 1.2 : 1.0)
-                .animation(.easeInOut(duration: 0.2), value: isUnpaid)
+            Button(action: {
+                isUnpaid = !isUnpaid
+                withAnimation(Animation.spring(response: 0.3, dampingFraction: 0.4, blendDuration: 0.1), {
+                    scaleEffect = scaleEffect==1.1 ? 1 : 1.1
+                })
+            }) {
+                Text("Show Only Payment Pending")
+                    .padding(10)
+            }.accentButtonToggled(boolean: isUnpaid)
+                .scaleEffect(scaleEffect)
+                .foregroundStyle(!isUnpaid ? Color.accentColor : Color.white)
             
             
             
-            Button("Add New") {
+            
+            
+            Button(action: {
                 sheetController.name = ""
                 sheetController.tag = .other
                 sheetController.price = 00.00
                 sheetController.toggleSheet()
+                AddNewButtonScaleEffect = 1.2
+                withAnimation(Animation.spring.speed(0.6), {
+                    AddNewButtonScaleEffect = AddNewButtonScaleEffect==1.2 ? 1 : 1.2
+                })
+            }) {
+                Text("Add New")
+                    .padding(.horizontal, 80)
+                    .padding(.vertical, 12)
             }
-            .frame(width: 240, height: 50)
-            .background(Color.accentColor)
+            .accentButton()
             .foregroundStyle(.white)
             .cornerRadius(10)
+            .scaleEffect(AddNewButtonScaleEffect)
             .padding()
             
             VStack{
@@ -122,11 +147,11 @@ struct History: View {
                                 }
                             }
                         }
-                    }
+                    }.clearBackground()
+                    .plainFill()
                 }
-                
-                
-            }
+                .plainFill(material: .ultraThinMaterial, opacity: 0.4)
+            }.clearBackground()
         }
         .fullScreenCover(item: $selectedTransaction) { transaction in
             TransactionDetailsView(transaction: Binding(get: {
@@ -189,31 +214,6 @@ private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM d, yyyy"
         let formattedDate = formatter.string(from: date)
-    /*
-        let day = Calendar.current.component(.day, from: date)
-        let suffix: String
-        
-
-        // Determine the appropriate suffix (st, nd, rd, th)
-        switch day {
-        case 1, 21, 31:
-            suffix = "st"
-        case 2, 22:
-            suffix = "nd"
-        case 3, 23:
-            suffix = "rd"
-        default:
-            suffix = "th"
-        }
-        
-        Format the date string
-        
-        Replace the day part with the formatted day and suffix
-        let dayString = "\(day)\(suffix)"
-        let dateString = formattedDate.replacingOccurrences(of: "\(day)", with: dayString)
-        
-        return dateString
-        */
         return formattedDate
     }
 

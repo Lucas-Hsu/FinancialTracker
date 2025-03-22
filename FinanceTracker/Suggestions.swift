@@ -18,23 +18,32 @@ struct Suggestions: View {
         
         HStack {
             
-            Text(recurringTransactions.description)
+            // Text(recurringTransactions.description)
             
             VStack {
                 if transactions.isEmpty {
                     VStack {
                         Text("No transactions logged yet")
+                            .font(.system(size: 40, weight: .bold))
+                            .fontDesign(.monospaced)
                         AddRecurringTile(transactions: [Transaction(date: Date()),
                                                         Transaction(date: Date().advanced(by: 24*3600*7)),
                                                         Transaction(date: Date().advanced(by: 24*3600*14))])
+                        .plainFill()
                     }
                 } else if transactions.count < 3 {
                     Text ("Not enough transactions to suggest categories")
+                        .font(.system(size: 40, weight: .bold))
+                        .fontDesign(.monospaced)
                 } else {
-                    Text(categoree.description)
+                    // Text(categoree.description)
+                    Text ("Suggested Recurring Transactions:")
+                        .font(.system(size: 40, weight: .bold))
+                        .fontDesign(.monospaced)
                     ForEach(categoree.keys.sorted(), id: \.self) { key in
                         if RecurringTransaction.HasRelationship(transactions: categoree[key] ?? []) {
                             AddRecurringTile(transactions: categoree[key] ?? [])
+                                .plainFill()
                         }
                     }
                 }
@@ -42,7 +51,9 @@ struct Suggestions: View {
             .onChange(of: transactions) {
                 update()
             }
-        }
+        }.frame(maxWidth: .infinity, maxHeight: .infinity)
+            .colorfulAccentBackground(colors: [.blue, .pink])
+            .edgesIgnoringSafeArea(.all)
     }
     
     // Update categoree with the latest categorize result

@@ -29,10 +29,13 @@ struct ContentView: View {
                     Label("Suggestions", systemImage: "person.text.rectangle")
                 }
                 .tag(1)
+                
             
             HStack{
                 CalendarView()
+                    .padding()
                 History()
+                    .padding()
             }
             .environmentObject(sheetController)
             .fullScreenCover(isPresented: $sheetController.showAddNewSheet) {
@@ -44,8 +47,8 @@ struct ContentView: View {
                 Label("Records", systemImage: "list.dash")
             }
             .tag(0)
+            .colorfulAccentBackground(colors: [.white, .white])
             
-
             Statistics()
                 .tabItem {
                     Label("Statistics", systemImage: "chart.bar.fill")
