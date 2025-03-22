@@ -115,3 +115,77 @@ extension View {
     }
 }
     
+
+struct ScaleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Self.Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 1.2 : 1)
+    }
+}
+
+struct GlassmorphismToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+            HStack {
+                configuration.label // The label that is part of the toggle
+                
+                Spacer()
+                
+                ZStack {
+                    // Background circle for toggle button
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(configuration.isOn ? Color.accentColor.opacity(0.2) : Color.primary.opacity(0.2))
+                        .frame(width: 50, height: 30) // Elongated rounded rectangle
+                        .blur(radius: 2)
+                                        
+                    
+                    // Circle that moves with the toggle
+                    Circle()
+
+                        .fill(.white)
+                        .frame(width: 24, height: 24)
+                        .offset(x: configuration.isOn ? 10 : -10)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.5, blendDuration: 0.4), value: configuration.isOn)
+                        .shadow(color: configuration.isOn ? Color.accentColor : Color.secondary, radius: 2)
+                        .blur(radius: 1)
+                }.padding(.trailing, 10)
+                .onTapGesture {
+                    configuration.isOn.toggle()
+                }
+            }
+    }
+}
+
+struct CustomSegmentedEnumControl<EnumType: RawRepresentable & Hashable>: View where EnumType.RawValue == String {
+    let segments: [EnumType] // Array of enum values
+    @Binding var selected: EnumType // Selected segment as enum
+    var highlightColor: Color = .blue
+    var backgroundColor: Color = .gray.opacity(0.2)
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(segments, id: \.self) { segment in
+                Button(action: {
+                    withAnimation {
+                        selected = segment // Update the selected segment directly
+                    }
+                }) {
+                    Text(segment.rawValue) // Display the raw value of the enum
+                        .frame(maxWidth: .infinity, maxHeight: 6)
+                        .padding()
+                        .background(
+                            selected == segment ? highlightColor : backgroundColor
+                        )
+                        .cornerRadius(8)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+        }
+        .padding()
+    }
+}
+
+struct CustomModifier_Previews: PreviewProvider {
+    static var previews: some View {
+        AddNew()
+    }
+}

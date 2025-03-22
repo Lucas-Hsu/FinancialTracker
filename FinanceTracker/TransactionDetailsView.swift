@@ -110,6 +110,7 @@ struct TransactionDetailsView: View {
                             
                             Toggle("Paid", isOn: $paid)
                                 .padding()
+                                .toggleStyle(GlassmorphismToggleStyle())
                             
                             // Notes Input Field (multi-line, allows newlines)
                             TextEditor(text: Binding(
@@ -193,18 +194,21 @@ struct TransactionDetailsView: View {
                                 .cornerRadius(10)
                                 .padding(.horizontal)
                         }
+                        .buttonStyle(ScaleButtonStyle())
                         
                         Button(action: {
                             dismiss()
                         }) {
                             Text("Cancel")
                                 .font(.headline)
+                                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: 50)
+                                .plainFill()
+                                .foregroundColor(.accentColor)
+                                .cornerRadius(10)
+                                .padding(.horizontal)
                         }
-                        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: 50)
-                        .plainFill()
-                        .foregroundColor(.accentColor)
-                        .cornerRadius(10)
-                        .padding(.horizontal)
+                        .buttonStyle(ScaleButtonStyle())
+                        
                         
                         Button(action: {
                             deleteTransaction()
@@ -216,6 +220,7 @@ struct TransactionDetailsView: View {
                                 .cornerRadius(10)
                                 .padding(.horizontal)
                         }
+                        .buttonStyle(ScaleButtonStyle())
                     }
                 }.padding(20)
             }

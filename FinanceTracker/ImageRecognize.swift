@@ -51,36 +51,42 @@ struct ImageRecognize: View {
                             ForEach(0..<min(4, recognizedText.count), id: \.self) { index in
                                 let observation = recognizedText[index]
                                 if let candidate = observation.topCandidates(1).first {
-                                    Text(candidate.string)
-                                        .padding(8)
-                                        .accentButton(opacity: 0.4, blurRadius: 4)
-                                        .frame(minWidth: 100, maxWidth: .infinity)
-                                        .textSelection(.disabled)
-                                        .onTapGesture {
-                                            fillTextField(with: candidate.string)
-                                        }
+                                    Button(action: {
+                                        fillTextField(with: candidate.string)
+                                        
+                                    }) {
+                                        Text(candidate.string)
+                                            .foregroundColor(.white)
+                                            .padding(8)
+                                            .accentButton(opacity: 0.8, blurRadius: 2)
+                                            .frame(minWidth: 100, maxWidth: .infinity)
+                                            .textSelection(.disabled) // Disable text selection
+                                    }.buttonStyle(ScaleButtonStyle())
                                 }
                             }
                         }.padding(6)
                             .padding(.top, 6)
 
-                    // Second row of recognized text
-                    HStack(spacing: 10) {
-                        ForEach(min(4, recognizedText.count) ..< recognizedText.count, id: \.self) { index in
-                            let observation = recognizedText[index]
-                            if let candidate = observation.topCandidates(1).first {
-                                Text(candidate.string)
-                                    .foregroundColor(.black)
-                                    .padding(8)
-                                    .accentButton(opacity: 0.4, blurRadius: 4)
-                                    .frame(minWidth: 100, maxWidth: .infinity)
-                                    .textSelection(.disabled) // Disable text selection
-                                    .onTapGesture {
+                        // Second row of recognized text
+                        HStack(spacing: 10) {
+                            ForEach(min(4, recognizedText.count) ..< recognizedText.count, id: \.self) { index in
+                                let observation = recognizedText[index]
+                                if let candidate = observation.topCandidates(1).first {
+                                    Button(action: {
                                         fillTextField(with: candidate.string)
-                                    }
+                                        
+                                    }) {
+                                        Text(candidate.string)
+                                            .foregroundColor(.white)
+                                            .padding(8)
+                                            .accentButton(opacity: 0.8, blurRadius: 2)
+                                            .frame(minWidth: 100, maxWidth: .infinity)
+                                            .textSelection(.disabled) // Disable text selection
+                                    }.buttonStyle(ScaleButtonStyle())
+                                }
                             }
                         }
-                    }.padding(12)
+                        .padding(12)
                     }
                     
                     

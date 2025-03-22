@@ -10,7 +10,8 @@ import SwiftData
  
 struct AddRecurringTile: View {
     @Environment(\.modelContext) private var modelContext
-
+    @Query var recurringTransactions: [RecurringTransaction]
+    
     @State var transactions: [Transaction] = []
     @State var date: Date = Date()
     @State var name: String = "Recurring Transaction"
@@ -39,15 +40,63 @@ struct AddRecurringTile: View {
         Text(getInterval(transactions: transactions).description)
         .padding()
         Spacer()
-        Button (action: {
-            addRecurringTransaction()
+        
+        Button(action: {
+            if (isInContext(recurringTransaction: constructRecurringTransaction())) {
+                deleteRecurringTransaction()
+            } else {
+                addRecurringTransaction()
+            }
         }) {
-            Text("Add").padding(8)
+            Text(isInContext(recurringTransaction: constructRecurringTransaction()) ? "Delete" : "Add").padding(8)
                 .padding(.horizontal, 8)
+                .frame(width: 100, height: 40)
+                .background{
+                    if (isInContext(recurringTransaction: constructRecurringTransaction())) {
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(.red.opacity(0.4))
+                            .blur(radius: 4)
+                            .opacity(1)
+                    } else {
+                            RoundedRectangle(cornerRadius: 6)
+                            .fill(.ultraThickMaterial)
+                                .blur(radius: 4)
+                                .opacity(1)
+                    }
+                }
         }
-        .foregroundStyle(Color.accentColor)
-        .plainFill(material: .ultraThickMaterial, opacity: 0.6, cornerRadius: 4)
+        .buttonStyle(ScaleButtonStyle())
+        .foregroundStyle(isInContext(recurringTransaction: constructRecurringTransaction()) ? Color.red : Color.accentColor)
         .padding()
+        
+
+        
+        /*
+        if (isInContext(recurringTransaction: constructRecurringTransaction())) {
+            Button (action: {
+                deleteRecurringTransaction()
+            }) {
+                Text("Delete").padding(8)
+                    .padding(.horizontal, 8)
+            }
+            .foregroundStyle(Color.accentColor)
+            .plainFill(material: .ultraThickMaterial, opacity: 1, cornerRadius: 4)
+            .padding()
+            .buttonStyle(ScaleButtonStyle())
+        } else {
+            Button (action: {
+                addRecurringTransaction()
+            }) {
+                Text("Add").padding(8)
+                    .padding(.horizontal, 8)
+            }
+            .foregroundStyle(Color.accentColor)
+            .plainFill(material: .ultraThickMaterial, opacity: 1, cornerRadius: 4)
+            .padding()
+            .buttonStyle(ScaleButtonStyle())
+        }
+         */
+        
     }
     .frame(minWidth: 0, maxWidth: 600, maxHeight: 80)
     .cornerRadius(20)
@@ -63,10 +112,37 @@ struct AddRecurringTile: View {
         tag: transactions.first?.tag ?? "Other",
         price: transactions.first?.price ?? 0.00
     )
-
     modelContext.insert(newTransaction)
     }
+    
+    private func deleteRecurringTransaction() {
+        let newRecurringTransaction = constructRecurringTransaction()
+        print("Deleting Recurring Transaction")
+        if let existingTransaction = self.recurringTransactions.first(where: { $0 == newRecurringTransaction }) {
+            modelContext.delete(existingTransaction)
+            print("Deleted existing transaction")
+        }
+    }
+    
+    private func constructRecurringTransaction() -> RecurringTransaction {
+        return RecurringTransaction(
+            date: transactions.first?.date ?? Date(),
+            intervalType: getType(transactions: transactions),
+            interval: getInterval(transactions: transactions),
+            name: transactions.first?.name ?? "Recurring Transaction",
+            tag: transactions.first?.tag ?? "Other",
+            price: transactions.first?.price ?? 0.00
+        )
+    }
+    
+    private func isInContext(recurringTransaction: RecurringTransaction) -> Bool {
+        if (recurringTransactions.contains(recurringTransaction)) {
+            return true
+        }
+        return false
+    }
 }
+
 
 
 private func getType(transactions: [Transaction]) -> String {

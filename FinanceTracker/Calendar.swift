@@ -45,15 +45,6 @@ struct CalendarView: View {
         return Array(symbols[firstWeekdayIndex...]) + Array(symbols[..<firstWeekdayIndex])
     }
     
-    // Hardcoded events for demonstration.
-    private var sampleEvents: [String] {
-        [
-            "Morning Meeting at 9:00 AM",
-            "Lunch with Team at 12:00 PM",
-            "Project Discussion at 3:00 PM"
-        ]
-    }
-    
     private func getEvents(date: Date) -> [Events] {
     var events: [Events] = []
 
@@ -117,7 +108,7 @@ struct CalendarView: View {
                                     Text("\(calendar.component(.day, from: day))")
                                         .frame(maxWidth: .infinity, minHeight: 40)
                                         .padding(4)
-                                        .accentButtonToggled(boolean: calendar.isDate(day, inSameDayAs: selectedDate), opacity2: 0)
+                                        .accentButtonToggled(boolean: calendar.isDate(day, inSameDayAs: selectedDate), opacity2: 0.001)
                                         .cornerRadius(4)
                                         .scaleEffectToggled(boolean: calendar.isDate(day, inSameDayAs: selectedDate), scaleEffect: scaleEffect)
                                         .onTapGesture {

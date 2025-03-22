@@ -80,10 +80,10 @@ struct AddNew: View {
                             )
                             .padding()
                             
+                            
                             Picker("Select Tag", selection: $selectedTag) {
                                 ForEach(Tag.allCases, id: \.self) { tag in
                                     Image(systemName: symbolRepresentation[tag] ?? "questionmark").tag(tag)
-                                    //Text(tag.rawValue).tag(tag)
                                 }
                             }
                             .pickerStyle(SegmentedPickerStyle())
@@ -99,6 +99,8 @@ struct AddNew: View {
                             
                             Toggle("Paid", isOn: $paid)
                                 .padding()
+                                .toggleStyle(GlassmorphismToggleStyle())
+                                        
                             
                             TextEditor(text: Binding(
                                 get: {
@@ -187,6 +189,7 @@ struct AddNew: View {
                             .cornerRadius(10)
                             .padding(.horizontal)
                         }.layoutPriority(2)
+                            .buttonStyle(ScaleButtonStyle())
                         
                         Button(action: {
                             dismiss()
@@ -205,6 +208,7 @@ struct AddNew: View {
                             .cornerRadius(10)
                             .padding(.horizontal)
                         }.layoutPriority(2)
+                        .buttonStyle(ScaleButtonStyle())
                     }
                 }.padding(20)
             }

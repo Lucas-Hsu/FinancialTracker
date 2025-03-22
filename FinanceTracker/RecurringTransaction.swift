@@ -98,7 +98,7 @@ private struct TransactionPattern: Hashable {
 
 
 // Define the Transaction model as a class
-@Model class RecurringTransaction {
+@Model class RecurringTransaction: Equatable  {
     @Attribute(.unique) var id: UUID   // Unique identifier
     var date: Date
     var intervalType: String
@@ -326,6 +326,11 @@ private struct TransactionPattern: Hashable {
             break
         }
         return false
+    }
+    
+    // Conformance to Equatable
+    static func == (lhs: RecurringTransaction, rhs: RecurringTransaction) -> Bool {
+        return lhs.date == rhs.date && lhs.name == rhs.name && lhs.price == rhs.price && lhs.tag == rhs.tag && lhs.interval == rhs.interval && lhs.intervalType == rhs.intervalType
     }
 }
 
