@@ -9,9 +9,12 @@
 import SwiftUI
 import SwiftData
 
+// 好不容易可以熬夜休息
+
 struct CalendarView: View {
     @Query(sort: \RecurringTransaction.name, order: .forward) var recurringTransactions: [RecurringTransaction]
-    
+    @Query(sort: \Transaction.date, order: .forward) var transactions: [Transaction] // Query for Transactions
+        
     @State private var currentDate = Date()
     @State private var selectedDate: Date = Date()
 
@@ -140,9 +143,21 @@ struct CalendarView: View {
                         .padding(.bottom, 5)
                     
                     ForEach(getEvents(date: selectedDate), id: \.self) { event in
+                        // Check for transactions that match the event
+                        let relatedTransactions = transactions.filter { transaction in
+                            recurringTransactions[0].isPartOfEvent(transaction: transaction, event: event) && calendar.isDate(transaction.date, inSameDayAs: selectedDate)
+                        }
+                        
+                        // Find the first matching transaction, if any
+                        let transaction = relatedTransactions.first
+                        
+                        // Apply the text color based on isPaid status
+                        let textColor: Color = transaction?.paid == true ? .black : .red
+                        
                         HStack {
                             Image(systemName: "calendar")
                             Text(event.toString())
+                                .foregroundColor(textColor)//Look here!
                         }
                         .padding(.vertical, 4)
                         .onTapGesture {
@@ -181,6 +196,7 @@ struct CalendarView: View {
             return days
         }
         
+        
         // Determine the weekday index for the first day.
         let firstWeekdayOfMonth = calendar.component(.weekday, from: firstOfMonth)
         // Calculate the number of empty cells needed before the first day.
@@ -205,6 +221,8 @@ struct CalendarView: View {
         return days
     }
     
+    
+    
     /// Returns the background color for a given day.
     /// Only the selected day is highlighted.
     private func backgroundColor(for day: Date) -> Color {
@@ -228,6 +246,6 @@ extension Array {
 struct CalendarView_Previews: PreviewProvider {
     static var previews: some View {
         CalendarView()
-            .modelContainer(for: [RecurringTransaction.self], inMemory: true)
+            .modelContainer(for: [RecurringTransaction.self, Transaction.self], inMemory: true)
     }
 }

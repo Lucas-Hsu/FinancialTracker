@@ -84,7 +84,8 @@ struct AddNew: View {
 
                         Picker("Select Tag", selection: $selectedTag) {
                             ForEach(Tag.allCases, id: \.self) { tag in
-                                Text(tag.rawValue).tag(tag)
+                                Image(systemName: symbolRepresentation[tag] ?? "questionmark").tag(tag)
+                                //Text(tag.rawValue).tag(tag)
                             }
                         }
                         .pickerStyle(SegmentedPickerStyle())

@@ -33,6 +33,8 @@ public struct Events: Hashable {
     }
 }
 
+
+
 enum TypesOfRecurringTransaction: String, CaseIterable  {
     case Yearly, Monthly, Custom
 }
@@ -142,6 +144,44 @@ private struct TransactionPattern: Hashable {
             return false
         }
         return true
+    }
+    
+    public func isPartOfEvent(transaction: Transaction, event: Events) -> Bool {
+        // First, check if the basic transaction details match the event.
+        if !(transaction.name == event.name &&
+             transaction.price == event.price &&
+             transaction.tag == event.tag.rawValue) {
+            return false
+        }
+        
+        if transaction.date < event.date {
+            return false
+        }
+        
+        // Now, check if the transaction date fits within the recurring pattern.
+        switch event.intervalType {
+        case TypesOfRecurringTransaction.Yearly.rawValue:
+            // For yearly events, check if day and month match.
+            if isExactSameDayAndMonth(date1: transaction.date, date2: event.date) {
+                return true
+            }
+            
+        case TypesOfRecurringTransaction.Monthly.rawValue:
+            // For monthly events, the day must either exactly match or
+            // map down (for example, handling end-of-month variations).
+            if isExactSameDay(date1: transaction.date, date2: event.date) ||
+               canMapDown(dateInitial: event.date, dateNow: transaction.date) {
+                return true
+            }
+            
+        default: // Assume "Custom"
+            // For custom intervals, the transaction date should be an exact multiple of the interval (in days)
+            // after the event's start date.
+            if isDaysAfter(dateInitial: event.date, interval: event.interval, dateNow: transaction.date) {
+                return true
+            }
+        }
+        return false
     }
     
     public func occursOnDate(date: Date) -> Bool {
@@ -310,6 +350,7 @@ private func is31Month(date: Date) -> Bool {
 private func is30Month(month: Int) -> Bool {
     return month == 4 || month == 6 || month == 9 || month == 11
 }
+
 
 
 private func canMapDown(dateInitial: Date, dateNow: Date) -> Bool {
