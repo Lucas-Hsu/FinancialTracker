@@ -6,6 +6,15 @@
 //
 
 
+// Calendar recurring should pass date
+// sign for recurring on calendar even before u cllick it.
+// - sign should also register
+// month should also recognize
+// clear button for notes
+// notes disappearing
+// calendar jump to today
+
+
 import SwiftUI
 import SwiftData
 
