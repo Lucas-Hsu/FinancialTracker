@@ -5,15 +5,14 @@
 //  Created by Lucas Hsu on 2/1/25.
 //
 
-
-// Calendar recurring should pass date
-// sign for recurring on calendar even before u cllick it.
+// recurring transaction should pass date to addnew V
+// sign for recurring on calendar even before u cllick it. V
 // - sign should also register
 // month should also recognize
 // clear button for notes
 // notes disappearing
-// calendar jump to today
-
+// calendar jump to today V
+// export as file type transactions
 
 import SwiftUI
 import SwiftData
@@ -85,6 +84,10 @@ struct CalendarView: View {
                 
                 Text(monthYearFormatter.string(from: currentDate))
                     .font(.headline)
+                    .onTapGesture {
+                        selectedDate = Date()
+                        currentDate = Date()
+                    }
                 
                 Spacer()
                 
@@ -120,6 +123,7 @@ struct CalendarView: View {
                                         .accentButtonToggled(boolean: calendar.isDate(day, inSameDayAs: selectedDate), opacity2: 0.001)
                                         .cornerRadius(4)
                                         .scaleEffectToggled(boolean: calendar.isDate(day, inSameDayAs: selectedDate), scaleEffect: scaleEffect)
+                                        .underline(hasRecurringTransaction(for: day), color: Color.accentColor) // Underline if transaction exists
                                         .onTapGesture {
                                             scaleEffect = 1.2
                                             selectedDate = day
@@ -164,13 +168,14 @@ struct CalendarView: View {
                         HStack {
                             Image(systemName: "calendar")
                             Text(event.toString())
-                                .foregroundColor(textColor)//Look here!
+                                .foregroundColor(textColor) //Look here!
                         }
                         .padding(.vertical, 4)
                         .onTapGesture {
                             sheetController.name = event.name
                             sheetController.tag = event.tag
                             sheetController.price = event.price
+                            sheetController.date = selectedDate
                             sheetController.toggleSheet()
                         }
                     }
@@ -229,7 +234,12 @@ struct CalendarView: View {
         return days
     }
     
-    
+    /// Returns whether there is a recurring transaction for the given day.
+    private func hasRecurringTransaction(for day: Date) -> Bool {
+        return recurringTransactions.contains { recurringTransaction in
+            recurringTransaction.occursOnDate(date: day)
+        }
+    }
     
     /// Returns the background color for a given day.
     /// Only the selected day is highlighted.

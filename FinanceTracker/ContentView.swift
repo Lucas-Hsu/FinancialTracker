@@ -40,7 +40,8 @@ struct ContentView: View {
             }
             .environmentObject(sheetController)
             .fullScreenCover(isPresented: $sheetController.showAddNewSheet) {
-                AddNew(name: sheetController.name,
+                AddNew(date: sheetController.date,
+                       name: sheetController.name,
                        selectedTag: sheetController.tag,
                        price: sheetController.price)
             }

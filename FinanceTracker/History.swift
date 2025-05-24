@@ -14,6 +14,7 @@ class SheetController: ObservableObject {
     public var name: String = ""
     public var tag: Tag = .other
     public var price: Double = 0.00
+    public var date: Date = Date()
     
     func toggleSheet() {
         showAddNewSheet.toggle()

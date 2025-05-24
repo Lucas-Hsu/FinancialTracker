@@ -17,7 +17,7 @@ struct AddNew: View {
     @Environment(\.dismiss) private var dismiss // Access the dismiss function
     @Environment(\.modelContext) var modelContext
     
-    @State private var date: Date = Date()
+    @State public var date: Date = Date()
     @State public var name: String = ""
     @State public var selectedTag: Tag = .other
     @State public var price: Double = 0.0
