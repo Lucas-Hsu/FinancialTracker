@@ -208,7 +208,7 @@ struct ImageRecognize: View {
     }
 
     func extractPrice(from text: String) -> Double? {
-        let pricePattern = #"^(\$|€|£)?\s?\d{1,3}(,\d{3})*(\.\d{2})?$"#
+        let pricePattern = #"^-?(\$|€|£|¥)?\s?\d{1,3}(,\d{3})*(\.\d{2})?$"#
         if let range = text.range(of: pricePattern, options: .regularExpression) {
             let priceString = text[range]
             let cleanedString = priceString.replacingOccurrences(of: "[^0-9.]", with: "", options: .regularExpression)
