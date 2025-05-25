@@ -8,6 +8,7 @@
 
 import SwiftUI
 import Vision
+import Foundation
 
 struct ImageRecognize: View {
     let image: UIImage
@@ -109,9 +110,10 @@ struct ImageRecognize: View {
 
         request.recognitionLevel = .accurate
         request.usesLanguageCorrection = true
-
+        request.recognitionLanguages = ["zh-Hans", "en"]
+        
         let handler = VNImageRequestHandler(cgImage: image.cgImage!, options: [:])
-
+        
         do {
             try handler.perform([request])
         } catch {
@@ -120,7 +122,7 @@ struct ImageRecognize: View {
     }
 
     func fillTextField(with text: String) {
-        if let dateValue = parseDate(from: text) {
+        if let dateValue = isDate(str: text) {
             selectedDate = dateValue
             date = dateValue
         } else if let priceValue = extractPrice(from: text) {
@@ -136,16 +138,72 @@ struct ImageRecognize: View {
             }
         }
     }
-
-    func parseDate(from text: String) -> Date? {
+    
+    private func isDate(str: String) -> Date? {
         let dateFormatter = DateFormatter()
-        let dateFormats = ["MM/dd/yyyy", "MM-dd-yyyy", "yyyy-MM-dd", "dd/MM/yyyy"]
+        
+        // List of all formats
+        let dateFormats = [
+            "dd/MM/yyyy", "yyyy/MM/dd", "dd MM yyyy", "yyyy MM dd", "dd.MM.yyyy", "yyyy.MM.dd",
+            "yyyy年MM月dd日", "yyyy年MM月dd号", "MM月dd日, yyyy年", "MM月dd号, yyyy年", "MM月dd日,yyyy年", "MM月dd号,yyyy年",
+            "MMM. dd, yyyy", "yyyy MMM. dd", "MMMM dd, yyyy", "yyyy MMMM dd"]
+        
+        // Try all formats
         for format in dateFormats {
             dateFormatter.dateFormat = format
-            if let date = dateFormatter.date(from: text) {
+            if let date = dateFormatter.date(from: str) {
                 return date
             }
         }
+        
+        // Special logic for month without year (past year)
+        if let date = parseMonthWithoutYear(str) {
+            print(date)
+            return date
+        }
+        
+        return nil
+    }
+    
+    // Logic to handle months without year (determine if it should be last year or current year)
+    private func parseMonthWithoutYear(_ str: String) -> Date? {
+        let today = Date()
+        let dateFormatter = DateFormatter()
+        let dateFormats = ["MMMM dd", "MMM. dd", "dd MMMM", "dd MMM."]
+        for format in dateFormats {
+            dateFormatter.dateFormat = format
+            
+            if let date = dateFormatter.date(from: str) {
+                // Determine if the date should be from last year or current year
+                let calendar = Calendar.current
+                let currentYear = calendar.component(.year, from: today)
+                print(currentYear)
+                // Check if the parsed date has already occurred this year
+                
+                // Extract the components of the date (year, month, day)
+                var str_components = calendar.dateComponents([.year, .month, .day], from: date)
+                
+                // Set the year to 2025
+                str_components.year = 2025
+                
+                // Reconstruct the date with the new year
+                let currentYearDate: Date = calendar.date(from: str_components) ?? Date()
+                    
+                
+                // If this year's date has passed, use the current year, else use the previous year
+                print(currentYearDate)
+                print(today)
+                print(currentYearDate > today)
+                let finalYear = (currentYearDate > today) ? currentYear - 1 : currentYear
+                
+                // Replace the year with the correct year
+                var components = calendar.dateComponents([.year, .month, .day], from: date)
+                components.year = finalYear
+                
+                return calendar.date(from: components)
+            }
+        }
+        
         return nil
     }
 
