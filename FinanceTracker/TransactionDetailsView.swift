@@ -50,6 +50,7 @@ struct TransactionDetailsView: View {
         _selectedTag = State(initialValue: Tag(rawValue: transaction.wrappedValue.tag) ?? .other)
         _price = State(initialValue: transaction.wrappedValue.price)
         _paid = State(initialValue: transaction.wrappedValue.paid)
+        _notes = State(initialValue: transaction.wrappedValue.notes)
     }
     
     func imagee() -> UIImage{

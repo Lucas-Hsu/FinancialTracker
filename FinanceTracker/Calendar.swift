@@ -7,10 +7,10 @@
 
 // recurring transaction should pass date to addnew V
 // sign for recurring on calendar even before u cllick it. V
-// - sign should also register
+// - sign should also register V
 // month should also recognize V
-// clear button for notes
-// notes disappearing
+// clear button for notes I think not necessary
+// notes disappearing V
 // calendar jump to today V
 // export as file type transactions
 
