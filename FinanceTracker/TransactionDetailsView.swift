@@ -277,4 +277,3 @@ struct TransactionDetailsView_Previews: PreviewProvider {
     }
 }
 
-
