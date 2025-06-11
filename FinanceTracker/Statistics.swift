@@ -49,35 +49,35 @@ struct Statistics: View {
             
             Text("Bar")
             
-            HStack {
-                ForEach(Tag.allCases, id: \.self) { tag in
-                    Image(systemName: symbolRepresentation[tag] ?? "questionmark")
-                        .padding()
-                        .frame(width: 80, height: 50)
-                        .background(selectedTags.contains(tag.rawValue) ? Color.accentColor : Color.gray.opacity(0.2))
-                        .cornerRadius(8)
-                        .foregroundColor(selectedTags.contains(tag.rawValue) ? .white : .secondary)
-                        .onTapGesture {
-                            if selectedTags.contains(tag.rawValue) {
-                                selectedTags.remove(tag.rawValue)
-                            } else {
-                                selectedTags.insert(tag.rawValue)
-                            }
-                        }
-                }
-            }
-            .padding(.horizontal)
-            
-            Toggle("Show Only Payment Pending", isOn: $isUnpaid)
-                .toggleStyle(ButtonToggleStyle())
-                .scaleEffect(isUnpaid ? 1.2 : 1.0)
-                .animation(.easeInOut(duration: 0.2), value: isUnpaid)
-
             Form {
+                HStack {
+                    ForEach(Tag.allCases, id: \.self) { tag in
+                        Image(systemName: symbolRepresentation[tag] ?? "questionmark")
+                            .padding()
+                            .frame(width: 80, height: 50)
+                            .background(selectedTags.contains(tag.rawValue) ? Color.accentColor : Color.gray.opacity(0.2))
+                            .cornerRadius(8)
+                            .foregroundColor(selectedTags.contains(tag.rawValue) ? .white : .secondary)
+                            .onTapGesture {
+                                if selectedTags.contains(tag.rawValue) {
+                                    selectedTags.remove(tag.rawValue)
+                                } else {
+                                    selectedTags.insert(tag.rawValue)
+                                }
+                            }
+                    }
+                }
+                .padding(.horizontal)
+                
+                Toggle("Show Only Payment Pending", isOn: $isUnpaid)
+                    .toggleStyle(ButtonToggleStyle())
+                    .scaleEffect(isUnpaid ? 1.2 : 1.0)
+                    .animation(.easeInOut(duration: 0.2), value: isUnpaid)
+
                 DatePicker("Start Date", selection: $dateStart, displayedComponents: .date)
                 DatePicker("End Date", selection: $dateEnd, displayedComponents: .date)
             }
-            .frame(maxHeight: 150)
+            .frame(maxHeight: 300)
 
             Button(action: {
                 computePieChartData()
