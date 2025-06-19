@@ -82,6 +82,19 @@ struct Statistics: View {
             $0.matchesFilter(tags: Set([selectedBarTag.rawValue]), isUnpaid: isUnpaid)
         }
     }
+    
+    private var past12MonthsTransactions: [Transaction] {
+        transactions.filter {
+            let pastYear = Calendar.current.date(byAdding: .year, value: -1, to: Date())
+            let startYear = Calendar.current.component(.year, from: pastYear!)
+            let startMonth = Calendar.current.component(.month, from: pastYear!)
+
+            let tYear = Calendar.current.component(.year, from: $0.date)
+            let tMonth = Calendar.current.component(.month, from: $0.date)
+
+            return ( (tYear == startYear && tMonth >= startMonth) || (tYear > startYear) )
+        }
+    }
 
     private func computePieChartData() {
         let groups = Dictionary(grouping: pieFilteredTransactions, by: { $0.tag })
@@ -97,6 +110,74 @@ struct Statistics: View {
     
     @State private var frozenGroupedByMonth: [MonthlyTotal] = []
     @State private var frozenAverage: Double = 0.0
+    
+    struct MonthKey: Hashable {
+        let year: Int
+        let month: Int
+    }
+
+    func calculateAverageMonthlyExpenditures(groups: [String: [Transaction]]) -> [String: Double] {
+        var avg: [String: Double] = [:]
+        
+        // Iterate through all tags
+        for tag in Tag.allCases {
+            guard let transactions = groups[tag.rawValue] else { continue }
+            
+            // Group transactions by (year, month)
+            let groupedByMonth: [MonthKey: [Transaction]] = Dictionary(
+                grouping: transactions,
+                by: { transaction in
+                    let components = Calendar.current.dateComponents([.year, .month], from: transaction.date)
+                    return MonthKey(year: components.year!, month: components.month!)
+                }
+            )
+            
+            // Store the sums of the total transaction prices per month
+            var sums: [Double] = []
+            
+            for (_, monthTransactions) in groupedByMonth {
+                let totalPrice = monthTransactions.reduce(0.0) { $0 + $1.price }
+                sums.append(totalPrice)
+            }
+            
+            // Step 1: Calculate Q1, Q3, and IQR
+            let sortedSums = sums.sorted()
+            let q1 = quantile(sortedSums, p: 0.25)
+            let q3 = quantile(sortedSums, p: 0.75)
+            let iqr = q3 - q1
+            
+            // Step 2: Remove outliers
+            let nonOutlierSums = sums.filter { $0 >= q1 - 1.5 * iqr && $0 <= q3 + 1.5 * iqr }
+            
+            // Step 3: Calculate the average (divide by the number of non-outlier months)
+            if !nonOutlierSums.isEmpty {
+                let total = nonOutlierSums.reduce(0.0, +)
+                avg[tag.rawValue] = total / Double(nonOutlierSums.count)  // Average based on non-outlier months
+            }
+        }
+        
+        return avg
+    }
+
+    func quantile(_ values: [Double], p: Double) -> Double {
+        guard !values.isEmpty else { return 0.0 }
+        let sorted = values.sorted()
+        let pos = Double(sorted.count - 1) * p
+        let index = Int(pos)
+        let fraction = pos - Double(index)
+
+        if index + 1 < sorted.count {
+            return sorted[index] + fraction * (sorted[index + 1] - sorted[index])
+        } else {
+            return sorted[index]
+        }
+    }
+
+    
+    private func pastDataSummary() -> [String:Double]{
+        let groups = Dictionary(grouping: past12MonthsTransactions, by: { $0.tag })
+        return calculateAverageMonthlyExpenditures(groups: groups)
+    }
     
     private func computeBarChartData() {
         let groups = Dictionary(grouping: barFilteredTransactions, by: { Calendar.current.component(.year, from: $0.date) * 100 + Calendar.current.component(.month, from: $0.date) })
@@ -121,7 +202,7 @@ struct Statistics: View {
         case pie = "Pie"
         var id: String { self.rawValue }
     }
-    @State private var selectedChart: ChartType = .mtsum
+    @State private var selectedChart: ChartType = .mtsum 
     
     @State private var selectedBarTag: Tag = .other
     @State private var showBarDates: Bool = false
@@ -261,44 +342,39 @@ struct Statistics: View {
                 }
                 
             case .mtsum:
-                VStack{
-                    HStack{
-                        Text("Clothing")
-                        Text("current month expenditure")
-                        Text("/")
-                        Text("past 12 months average (excluding outliers)")
-                    }
-                    HStack{
-                        Text("Commute")
-                        Text("current month expenditure")
-                        Text("/")
-                        Text("past 12 months average (excluding outliers)")
-                    }
-                    HStack{
-                        Text("Education")
-                        Text("current month expenditure")
-                        Text("/")
-                        Text("past 12 months average (excluding outliers)")
-                    }
-                    HStack{
-                        Text("Entertainment")
-                        Text("current month expenditure")
-                        Text("/")
-                        Text("past 12 months average (excluding outliers)")
-                    }
-                    HStack{
-                        Text("Food")
-                        Text("current month expenditure")
-                        Text("/")
-                        Text("past 12 months average (excluding outliers)")
-                    }
-                    HStack{
-                        Text("Other")
-                        Text("current month expenditure")
-                        Text("/")
-                        Text("past 12 months average (excluding outliers)")
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(Tag.allCases, id: \.self) { tag in
+                        HStack {
+                            
+                            let calendar = Calendar.current
+                            let currentMonth = calendar.component(.month, from: Date())
+                            let currentYear = calendar.component(.year, from: Date())
+
+                            let currentMonthTotals: [String: Double] = Dictionary(
+                                grouping: barFilteredTransactions.filter {
+                                    let comp = calendar.dateComponents([.month, .year], from: $0.date)
+                                    return comp.month == currentMonth && comp.year == currentYear
+                                },
+                                by: { $0.tag }
+                            ).mapValues { txns in
+                                txns.reduce(0.0) { $0 + $1.price }
+                            }
+
+                            let past12MonthsAvg = pastDataSummary()
+                            
+                            Text(tag.rawValue.capitalized)
+                                .frame(width: 120, alignment: .leading)
+                            Spacer()
+                            Text("$\(String(format: "%.2f", currentMonthTotals[tag.rawValue] ?? 0))")
+                                .foregroundColor(.blue)
+                            Text("/")
+                            Text("$\(String(format: "%.2f", past12MonthsAvg[tag.rawValue] ?? 0))")
+                                .foregroundColor(.gray)
+                        }
                     }
                 }
+                .frame(width: 300)
+                .padding()
             }
         }
     }
