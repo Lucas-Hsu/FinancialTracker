@@ -207,7 +207,7 @@ struct Statistics: View {
     @State private var selectedBarTag: Tag = .other
     @State private var showBarDates: Bool = false
     
-    @State private var barStart: Date = Date()
+    @State private var barStart: Date = Calendar.current.date(byAdding: .year, value: -1, to: Date()) ?? Date()
     @State private var barEnd: Date = Date()
     
     @State private var scaleEffect: CGFloat = 1.0
@@ -376,6 +376,9 @@ struct Statistics: View {
                 .frame(width: 300)
                 .padding()
             }
+        }.onAppear {
+            computePieChartData()
+            computeBarChartData()
         }
     }
 }
