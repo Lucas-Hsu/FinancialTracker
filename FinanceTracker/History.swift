@@ -11,6 +11,7 @@ import SwiftData
 class SheetController: ObservableObject {
     @Published var showAddNewSheet = false
     
+    
     public var name: String = ""
     public var tag: Tag = .other
     public var price: Double = 0.00
@@ -25,7 +26,8 @@ class SheetController: ObservableObject {
 struct History: View {
     // Assuming you have a @Query to fetch your transactions from the SwiftData store
     @Query(sort: \Transaction.date, order: .reverse) var transactions: [Transaction]
-
+    @Environment(\.modelContext) private var modelContext // Access SwiftData context
+    
     @State private var selectedTags: Set<String> = Set(Tag.allCases.map { $0.rawValue })
     @State private var isUnpaid: Bool = false;
     @State private var selectedTransaction: Transaction?
@@ -105,26 +107,37 @@ struct History: View {
             
             
             
-            
-            Button(action: {
-                sheetController.name = ""
-                sheetController.tag = .other
-                sheetController.price = 00.00
-                sheetController.toggleSheet()
-                AddNewButtonScaleEffect = 1.2
-                withAnimation(Animation.spring.speed(0.6), {
-                    AddNewButtonScaleEffect = AddNewButtonScaleEffect==1.2 ? 1 : 1.2
-                })
-            }) {
-                Text("Add New")
-                    .padding(.horizontal, 80)
-                    .padding(.vertical, 12)
+            HStack {
+
+                Button(role: .destructive) {
+                    clearAllTransactions()
+                } label: {
+                    Text("Clear All Transactions")
+                        .font(.headline)
+                        .foregroundColor(.red)
+                }
+                .padding()
+
+                Button(action: {
+                    sheetController.name = ""
+                    sheetController.tag = .other
+                    sheetController.price = 00.00
+                    sheetController.toggleSheet()
+                    AddNewButtonScaleEffect = 1.2
+                    withAnimation(Animation.spring.speed(0.6), {
+                        AddNewButtonScaleEffect = AddNewButtonScaleEffect==1.2 ? 1 : 1.2
+                    })
+                }) {
+                    Text("Add New")
+                        .padding(.horizontal, 80)
+                        .padding(.vertical, 12)
+                }
+                .accentButton()
+                .foregroundStyle(.white)
+                .cornerRadius(10)
+                .scaleEffect(AddNewButtonScaleEffect)
+                .padding()
             }
-            .accentButton()
-            .foregroundStyle(.white)
-            .cornerRadius(10)
-            .scaleEffect(AddNewButtonScaleEffect)
-            .padding()
             
             VStack{
                 
@@ -164,6 +177,18 @@ struct History: View {
         }
         
     }
+    
+    func clearAllTransactions() {
+            for transaction in transactions {
+                modelContext.delete(transaction)
+            }
+            do {
+                try modelContext.save()
+                print("Cleared all transactions")
+            } catch {
+                print("Failed to clear transactions: \(error.localizedDescription)")
+            }
+        }
 }
 
 private let dateFormatter: DateFormatter = {

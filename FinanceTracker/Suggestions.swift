@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 struct Suggestions: View {
     
+    @Environment(\.modelContext) private var modelContext // Access SwiftData context
     @Query(sort: \Transaction.name, order: .forward) var transactions: [Transaction]
     @Query(sort: \RecurringTransaction.name, order: .forward) var recurringTransactions: [RecurringTransaction]
     @State var categoree: [String:[Transaction]] = [:]
@@ -21,8 +22,19 @@ struct Suggestions: View {
             // Text(recurringTransactions.description)
             
             VStack {
+                if !recurringTransactions.isEmpty {
+                    Button(role: .destructive) {
+                        clearAllRecurringTransactions()
+                    } label: {
+                        Text("Clear All Recurring Transactions")
+                            .font(.headline)
+                            .foregroundColor(.red)
+                    }
+                    .padding()
+                }
                 if transactions.isEmpty {
                     VStack {
+                        
                         Text("No transactions logged yet")
                             .font(.system(size: 40, weight: .bold))
                             .fontDesign(.monospaced)
@@ -81,6 +93,17 @@ struct Suggestions: View {
         }
     }
     
+    func clearAllRecurringTransactions() {
+            for recurringTransaction in recurringTransactions {
+                modelContext.delete(recurringTransaction)
+            }
+            do {
+                try modelContext.save()
+                print("Cleared all recurring transactions")
+            } catch {
+                print("Failed to clear recurring transactions: \(error.localizedDescription)")
+            }
+        }
     
 }
 
@@ -113,6 +136,8 @@ private func printDictionary(_ dictionary: [String:[Transaction]]) -> String {
     }
     return output
 }
+
+
 
 #Preview {
     Suggestions().modelContainer(for: RecurringTransaction.self, inMemory: true)
