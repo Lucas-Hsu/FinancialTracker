@@ -117,6 +117,7 @@ struct Statistics: View {
     
     enum ChartType: String, CaseIterable, Identifiable {
         case bar = "Bar"
+        case mtsum = "Monthly Summary"
         case pie = "Pie"
         var id: String { self.rawValue }
     }
@@ -141,69 +142,68 @@ struct Statistics: View {
                     Text(type.rawValue).tag(type)
                 }
             }.pickerStyle(SegmentedPickerStyle())
-                .frame(width: 100)
+                .frame(width: 500)
             
             switch (selectedChart) {
-                
-                case .pie:
-                    VStack(spacing: 16) {
-                        VStack {
-                            HStack {
-                                ForEach(Tag.allCases, id: \.self) { tag in
-                                    Image(systemName: symbolRepresentation[tag] ?? "questionmark")
-                                        .padding()
-                                        .frame(width: 80, height: 50)
-                                        .background(selectedTags.contains(tag.rawValue) ? Color.accentColor : Color.gray.opacity(0.2))
-                                        .cornerRadius(8)
-                                        .foregroundColor(selectedTags.contains(tag.rawValue) ? .white : .secondary)
-                                        .onTapGesture {
-                                            if selectedTags.contains(tag.rawValue) {
-                                                selectedTags.remove(tag.rawValue)
-                                            } else {
-                                                selectedTags.insert(tag.rawValue)
-                                            }
+            case .pie:
+                VStack(spacing: 16) {
+                    VStack {
+                        HStack {
+                            ForEach(Tag.allCases, id: \.self) { tag in
+                                Image(systemName: symbolRepresentation[tag] ?? "questionmark")
+                                    .padding()
+                                    .frame(width: 80, height: 50)
+                                    .background(selectedTags.contains(tag.rawValue) ? Color.accentColor : Color.gray.opacity(0.2))
+                                    .cornerRadius(8)
+                                    .foregroundColor(selectedTags.contains(tag.rawValue) ? .white : .secondary)
+                                    .onTapGesture {
+                                        if selectedTags.contains(tag.rawValue) {
+                                            selectedTags.remove(tag.rawValue)
+                                        } else {
+                                            selectedTags.insert(tag.rawValue)
                                         }
-                                }
+                                    }
                             }
-                            .padding(.horizontal)
-                            
-                            Toggle("Show Only Payment Pending", isOn: $isUnpaid)
-                                .toggleStyle(ButtonToggleStyle())
-                                .scaleEffect(isUnpaid ? 1.2 : 1.0)
-                                .animation(.easeInOut(duration: 0.2), value: isUnpaid)
-                            
-                            VStack{
-                                DatePicker("Start Date", selection: $dateStart, displayedComponents: .date)
-                                DatePicker("End Date", selection: $dateEnd, displayedComponents: .date)
-                            }
-                            .frame(width: 500)
                         }
-                        .padding()
+                        .padding(.horizontal)
                         
+                        Toggle("Show Only Payment Pending", isOn: $isUnpaid)
+                            .toggleStyle(ButtonToggleStyle())
+                            .scaleEffect(isUnpaid ? 1.2 : 1.0)
+                            .animation(.easeInOut(duration: 0.2), value: isUnpaid)
                         
-                        Button(action: {
-                            computePieChartData()
-                            showPieChart = true
-                        }) {
-                            Text("Generate Pie Chart")
-                                .font(.headline)
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 24)
-                                .background(Color.accentColor)
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
+                        VStack{
+                            DatePicker("Start Date", selection: $dateStart, displayedComponents: .date)
+                            DatePicker("End Date", selection: $dateEnd, displayedComponents: .date)
                         }
-                        .fullScreenCover(isPresented: $showPieChart) {
-                            ZStack {
-                                Color.clear
-                                    .background(.ultraThinMaterial)
-                                    .ignoresSafeArea()
-                                PieChartView(data: frozenGroupedByTag, total: frozenTotalSum)
-                            }
+                        .frame(width: 500)
+                    }
+                    .padding()
+                    
+                    
+                    Button(action: {
+                        computePieChartData()
+                        showPieChart = true
+                    }) {
+                        Text("Generate Pie Chart")
+                            .font(.headline)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 24)
+                            .background(Color.accentColor)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    }
+                    .fullScreenCover(isPresented: $showPieChart) {
+                        ZStack {
+                            Color.clear
+                                .background(.ultraThinMaterial)
+                                .ignoresSafeArea()
+                            PieChartView(data: frozenGroupedByTag, total: frozenTotalSum)
                         }
                     }
+                }
                 
-                case .bar:
+            case .bar:
                 VStack(spacing: 16) {
                     Picker("Tag", selection: $selectedBarTag) {
                         ForEach(Tag.allCases) { tag in
@@ -258,6 +258,46 @@ struct Statistics: View {
                         }
                     }
                     
+                }
+                
+            case .mtsum:
+                VStack{
+                    HStack{
+                        Text("Clothing")
+                        Text("current month expenditure")
+                        Text("/")
+                        Text("past 12 months average (excluding outliers)")
+                    }
+                    HStack{
+                        Text("Commute")
+                        Text("current month expenditure")
+                        Text("/")
+                        Text("past 12 months average (excluding outliers)")
+                    }
+                    HStack{
+                        Text("Education")
+                        Text("current month expenditure")
+                        Text("/")
+                        Text("past 12 months average (excluding outliers)")
+                    }
+                    HStack{
+                        Text("Entertainment")
+                        Text("current month expenditure")
+                        Text("/")
+                        Text("past 12 months average (excluding outliers)")
+                    }
+                    HStack{
+                        Text("Food")
+                        Text("current month expenditure")
+                        Text("/")
+                        Text("past 12 months average (excluding outliers)")
+                    }
+                    HStack{
+                        Text("Other")
+                        Text("current month expenditure")
+                        Text("/")
+                        Text("past 12 months average (excluding outliers)")
+                    }
                 }
             }
         }
