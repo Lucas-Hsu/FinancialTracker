@@ -121,7 +121,7 @@ struct Statistics: View {
         case pie = "Pie"
         var id: String { self.rawValue }
     }
-    @State private var selectedChart: ChartType = .bar
+    @State private var selectedChart: ChartType = .mtsum
     
     @State private var selectedBarTag: Tag = .other
     @State private var showBarDates: Bool = false
