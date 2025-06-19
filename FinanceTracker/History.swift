@@ -28,6 +28,8 @@ struct History: View {
     @Query(sort: \Transaction.date, order: .reverse) var transactions: [Transaction]
     @Environment(\.modelContext) private var modelContext // Access SwiftData context
     
+    @State private var customsCenter = CustomsCenter()
+    
     @State private var selectedTags: Set<String> = Set(Tag.allCases.map { $0.rawValue })
     @State private var isUnpaid: Bool = false;
     @State private var selectedTransaction: Transaction?
@@ -137,6 +139,21 @@ struct History: View {
                 .cornerRadius(10)
                 .scaleEffect(AddNewButtonScaleEffect)
                 .padding()
+                
+                VStack{
+                    Button("Export") {
+                        customsCenter.presentExport(for: transactions)
+                    }
+                    Button("Import") {
+                        customsCenter.presentImport { imported in
+                            for tx in imported {
+                                modelContext.insert(tx)
+                            }
+                        }
+                    }
+                }
+                
+                
             }
             
             VStack{
@@ -174,6 +191,24 @@ struct History: View {
                 // Handle any changes in the transaction
                 self.selectedTransaction = updatedTransaction
             }))
+        }
+        // File Exporter
+        .fileExporter(
+            isPresented: $customsCenter.isExporting,
+            document: customsCenter.exportFile(),
+            contentType: .json,
+            defaultFilename: "Transactions"
+        ) { result in
+            if case .failure(let error) = result {
+                print("Export error: \(error.localizedDescription)")
+            }
+        }
+        // File Importer
+        .fileImporter(
+            isPresented: $customsCenter.isImporting,
+            allowedContentTypes: [.json]
+        ) { result in
+            customsCenter.handleImport(result: result)
         }
         
     }

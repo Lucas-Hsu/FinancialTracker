@@ -9,7 +9,7 @@ import SwiftData
 import Foundation
 
 // Define the Transaction model as a class
-@Model class Transaction {
+@Model class Transaction{
     @Attribute(.unique) var id: UUID   // Unique identifier
     var date: Date
     var name: String
