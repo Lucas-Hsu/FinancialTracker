@@ -351,7 +351,7 @@ struct Statistics: View {
                             let currentYear = calendar.component(.year, from: Date())
 
                             let currentMonthTotals: [String: Double] = Dictionary(
-                                grouping: barFilteredTransactions.filter {
+                                grouping: transactions.filter {
                                     let comp = calendar.dateComponents([.month, .year], from: $0.date)
                                     return comp.month == currentMonth && comp.year == currentYear
                                 },
