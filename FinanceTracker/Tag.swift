@@ -6,8 +6,9 @@
 //
 
 // Define the Enum for the Tag
-enum Tag: String, CaseIterable {
+enum Tag: String, CaseIterable, Identifiable {
     case food, clothing, entertainment, commute, education, other
+    var id: String { self.rawValue }
 }
 
 let symbolRepresentation = [Tag.clothing: "tshirt.fill",
