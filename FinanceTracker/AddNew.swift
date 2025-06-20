@@ -4,10 +4,8 @@
 //
 //  Created by Lucas Hsu on 1/31/25.
 //
-import Foundation
-import SwiftData
+
 import SwiftUI
-import UIKit
 
 struct AddNew: View {
     @State var transaction: Transaction = Transaction()

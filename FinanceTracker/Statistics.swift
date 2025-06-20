@@ -63,7 +63,7 @@ struct Statistics: View {
         transactions.filter {
             $0.date >= dateStart &&
             $0.date <= dateEnd &&
-            $0.matchesFilter(tags: selectedTags, isUnpaid: isUnpaid)
+            $0.matchesFilter(onlyUnpaid: isUnpaid, tags: selectedTags)
         }
     }
     
@@ -79,7 +79,7 @@ struct Statistics: View {
             let tMonth = Calendar.current.component(.month, from: $0.date)
 
             return ( (tYear == startYear && tMonth >= startMonth) || (tYear > startYear) ) && ( (tYear == endYear && tMonth <= endMonth) || (tYear < endYear) ) &&
-            $0.matchesFilter(tags: Set([selectedBarTag.rawValue]), isUnpaid: isUnpaid)
+            $0.matchesFilter(onlyUnpaid: isUnpaid, tags: Set([selectedBarTag.rawValue]))
         }
     }
     
@@ -213,7 +213,8 @@ struct Statistics: View {
     @State private var scaleEffect: CGFloat = 1.0
     
     var body: some View {
-        VStack {
+        VStack (alignment: .leading, spacing: 8)
+        {
             
             Text("Statistics Page")
                 .font(.largeTitle)
@@ -227,41 +228,39 @@ struct Statistics: View {
             
             switch (selectedChart) {
             case .pie:
-                VStack(spacing: 16) {
-                    VStack {
-                        HStack {
-                            ForEach(Tag.allCases, id: \.self) { tag in
-                                Image(systemName: symbolRepresentation[tag] ?? "questionmark")
-                                    .padding()
-                                    .frame(width: 80, height: 50)
-                                    .background(selectedTags.contains(tag.rawValue) ? Color.accentColor : Color.gray.opacity(0.2))
-                                    .cornerRadius(8)
-                                    .foregroundColor(selectedTags.contains(tag.rawValue) ? .white : .secondary)
-                                    .onTapGesture {
-                                        if selectedTags.contains(tag.rawValue) {
-                                            selectedTags.remove(tag.rawValue)
-                                        } else {
-                                            selectedTags.insert(tag.rawValue)
-                                        }
+                VStack(spacing: 16)
+                {
+
+                    HStack {
+                        ForEach(Tag.allCases, id: \.self) { tag in
+                            Image(systemName: symbolRepresentation[tag] ?? "questionmark")
+                                .padding()
+                                .frame(width: 80, height: 50)
+                                .background(selectedTags.contains(tag.rawValue) ? Color.accentColor : Color.gray.opacity(0.2))
+                                .cornerRadius(8)
+                                .foregroundColor(selectedTags.contains(tag.rawValue) ? .white : .secondary)
+                                .onTapGesture {
+                                    if selectedTags.contains(tag.rawValue) {
+                                        selectedTags.remove(tag.rawValue)
+                                    } else {
+                                        selectedTags.insert(tag.rawValue)
                                     }
-                            }
+                                }
                         }
-                        .padding(.horizontal)
-                        
-                        Toggle("Show Only Payment Pending", isOn: $isUnpaid)
-                            .toggleStyle(ButtonToggleStyle())
-                            .scaleEffect(isUnpaid ? 1.2 : 1.0)
-                            .animation(.easeInOut(duration: 0.2), value: isUnpaid)
-                        
-                        VStack{
-                            DatePicker("Start Date", selection: $dateStart, displayedComponents: .date)
-                            DatePicker("End Date", selection: $dateEnd, displayedComponents: .date)
-                        }
-                        .frame(width: 500)
                     }
-                    .padding()
+                    .padding(.horizontal)
                     
+                    Toggle("Show Only Payment Pending", isOn: $isUnpaid)
+                        .toggleStyle(ButtonToggleStyle())
+                        .scaleEffect(isUnpaid ? 1.2 : 1.0)
+                        .animation(.easeInOut(duration: 0.2), value: isUnpaid)
                     
+                    VStack{
+                        DatePicker("Start Date", selection: $dateStart, displayedComponents: .date)
+                        DatePicker("End Date", selection: $dateEnd, displayedComponents: .date)
+                    }
+                    .frame(width: 500)
+                
                     Button(action: {
                         computePieChartData()
                         showPieChart = true
@@ -342,7 +341,7 @@ struct Statistics: View {
                 }
                 
             case .mtsum:
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(spacing: 12) {
                     ForEach(Tag.allCases, id: \.self) { tag in
                         HStack {
                             
@@ -376,7 +375,9 @@ struct Statistics: View {
                 .frame(width: 300)
                 .padding()
             }
-        }.onAppear {
+        }
+        .frame(maxHeight: .infinity, alignment: .top)
+        .onAppear {
             computePieChartData()
             computeBarChartData()
         }

@@ -164,7 +164,7 @@ struct History: View {
                         // Filter the transactions for this section
                         let filteredTransactions = groupedTransactions[key]!.filter { transaction in
                             // Call matchesFilter on each transaction and only include it if it matches the filter
-                            transaction.matchesFilter(tags: selectedTags, isUnpaid: isUnpaid)
+                            transaction.matchesFilter(onlyUnpaid: isUnpaid, tags: selectedTags)
                         }
                         
                         // Only display the section if there are any matching transactions

@@ -22,4 +22,4 @@ let symbolRepresentation = [Tag.clothing: "tshirt.fill",
                             Tag.entertainment: "popcorn.fill",
                             Tag.food: "fork.knife",
                             Tag.other: "ellipsis"
-                           ]
+]
