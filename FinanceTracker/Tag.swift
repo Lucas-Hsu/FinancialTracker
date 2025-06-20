@@ -5,10 +5,15 @@
 //  Created by Lucas Hsu on 2/1/25.
 //
 
-// Define the Enum for the Tag
-enum Tag: String, CaseIterable, Identifiable {
-    case food, clothing, entertainment, commute, education, other
+enum Tag: String, CaseIterable, Identifiable
+{
     var id: String { self.rawValue }
+    case clothing,
+         commute,
+         education,
+         entertainment,
+         food,
+         other
 }
 
 let symbolRepresentation = [Tag.clothing: "tshirt.fill",

@@ -63,9 +63,8 @@ struct Suggestions: View {
             .onChange(of: transactions) {
                 update()
             }
-        }.frame(maxWidth: .infinity, maxHeight: .infinity)
-            .colorfulAccentBackground(colorLinear: [.accentColor, .white, .white], colorRadial: [.accentColor, .white, .accentColor, .white])
-            .edgesIgnoringSafeArea(.all)
+        }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     // Update categoree with the latest categorize result

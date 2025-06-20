@@ -8,63 +8,67 @@
 import SwiftUI
 import SwiftData
 
-enum Tabs {
-    case graphs, plus, me
+enum Tab: Int, CaseIterable {
+  case records,
+       suggestions,
+       statistics
 }
 
-import SwiftUI
-
-struct ContentView: View {
-    @StateObject private var sheetController = SheetController()
-    @State private var selectedTab: Int = 0
+struct ContentView: View
+{
+    @StateObject private var addNewSheetController = SheetController() // For persist/transfer data across AddNew pages, e.g. From click on Calendar event
+    @State private var selectedTab: Tab = Tab.records
     
-    var body: some View {
-        TabView (selection: $selectedTab) {
-
-            
-            
-            
-            
-            
-            
+    var body: some View
+    {
+        TabView (selection: $selectedTab)
+        {
             Suggestions()
-                .tabItem {
+                .tabItem
+                {
                     Label("Suggestions", systemImage: "person.text.rectangle")
                 }
-                .tag(1)
+                .tag(Tab.suggestions)
+                .colorfulAccentBackground(colorLinear: [.accentColor, .white, .white], colorRadial: [.accentColor, .white, .accentColor, .white])
+                .edgesIgnoringSafeArea(.all)
                 
-            
-            HStack{
+            HStack
+            {
                 CalendarView()
                     .padding()
                 History()
                     .padding()
             }
-            .environmentObject(sheetController)
-            .fullScreenCover(isPresented: $sheetController.showAddNewSheet) {
-                AddNew(date: sheetController.date,
-                       name: sheetController.name,
-                       selectedTag: sheetController.tag,
-                       price: sheetController.price)
-            }
-            .tabItem {
-                Label("Records", systemImage: "list.dash")
-            }
-            .tag(0)
-            .colorfulAccentBackground(colorLinear: [.white, .white], colorRadial: [.accentColor, .white, .accentColor, .white])
-            
+                .colorfulAccentBackground(colorLinear: [.white, .white], colorRadial: [.accentColor, .white, .accentColor, .white])
+                .edgesIgnoringSafeArea(.all)
+                .environmentObject(addNewSheetController)
+                .fullScreenCover(isPresented: $addNewSheetController.showAddNewSheet)
+                {
+                    AddNew(date: addNewSheetController.date,
+                           name: addNewSheetController.name,
+                           selectedTag: addNewSheetController.tag,
+                           price: addNewSheetController.price)
+                }
+                .tabItem
+                {
+                    Label("Records", systemImage: "list.dash")
+                }
+                .tag(Tab.records)
+             
             Statistics()
-                .tabItem {
+                .tabItem
+                {
                     Label("Statistics", systemImage: "chart.bar.fill")
                 }
-                .tag(2)
+                .tag(Tab.statistics)
         }
         .environment(\.horizontalSizeClass, .compact)
     }
 }
 
-
-#Preview {
+#Preview
+{
     ContentView()
-        .modelContainer(for: [Transaction.self, RecurringTransaction.self], inMemory: true)
+        .modelContainer(for: [Transaction.self, RecurringTransaction.self],
+                        inMemory: true)
 }
