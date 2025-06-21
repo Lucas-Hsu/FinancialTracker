@@ -14,10 +14,24 @@ enum Tab: Int, CaseIterable {
        statistics
 }
 
+func saveModelContext(_ modelContext: ModelContext)
+{
+    do
+    {
+        try modelContext.save()
+    } catch
+    {
+        print("Failed to save context: \(error)")
+    }
+}
+
 struct ContentView: View
 {
     @StateObject private var addNewSheetController = SheetController() // For persist/transfer data across AddNew pages, e.g. From click on Calendar event
     @State private var selectedTab: Tab = Tab.records
+    
+    
+    
     
     var body: some View
     {
@@ -44,10 +58,10 @@ struct ContentView: View
                 .environmentObject(addNewSheetController)
                 .fullScreenCover(isPresented: $addNewSheetController.showAddNewSheet)
                 {
-                    AddNew(date: addNewSheetController.date,
-                           name: addNewSheetController.name,
-                           selectedTag: addNewSheetController.tag,
-                           price: addNewSheetController.price)
+                    AddNew(name: addNewSheetController.name,
+                           date: addNewSheetController.date,
+                           price: addNewSheetController.price,
+                           tag: addNewSheetController.tag)
                 }
                 .tabItem
                 {

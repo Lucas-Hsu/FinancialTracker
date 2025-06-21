@@ -16,7 +16,7 @@ enum Tag: String, CaseIterable, Identifiable
          other
 }
 
-let symbolRepresentation = [Tag.clothing: "tshirt.fill",
+let tagSymbol = [Tag.clothing: "tshirt.fill",
                             Tag.commute: "car.fill",
                             Tag.education: "books.vertical.fill",
                             Tag.entertainment: "popcorn.fill",

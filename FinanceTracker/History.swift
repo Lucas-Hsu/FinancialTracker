@@ -72,7 +72,7 @@ struct History: View {
             
             HStack {
                 ForEach(Tag.allCases, id: \.self) { tag in
-                    Image(systemName: symbolRepresentation[tag] ?? "questionmark")
+                    Image(systemName: tagSymbol[tag] ?? "questionmark")
                         .frame(width: 80, height: 50)
                         .accentButtonToggled(boolean:self.selectedTags.contains(tag.rawValue))
                         

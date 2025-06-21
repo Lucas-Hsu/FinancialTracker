@@ -58,7 +58,7 @@ struct TransactionDetailsView: View {
             return image
         }
         
-        return convertToUIImage(imageData: transaction.image) ?? UIImage(systemName: "photo")!
+        return toUIImage(from: transaction.image) ?? UIImage(systemName: "photo")!
         // return convertToUIImage(imageData: transaction.image) ?? UIImage(named: "Test Reciept")!
     }
     
@@ -94,7 +94,7 @@ struct TransactionDetailsView: View {
                             
                             Picker("Select Tag", selection: $selectedTag) {
                                 ForEach(Tag.allCases, id: \.self) { tag in
-                                    Image(systemName: symbolRepresentation[tag] ?? "questionmark").tag(tag)
+                                    Image(systemName: tagSymbol[tag] ?? "questionmark").tag(tag)
                                     //Text(tag.rawValue).tag(tag)
                                 }
                             }
@@ -180,7 +180,7 @@ struct TransactionDetailsView: View {
                                 price: price,
                                 paid: paid,
                                 notes: notes,
-                                image: convertToData(image: imagee())
+                                image: toData(from: imagee())
                             )
                             print(
                                 "Form submitted with values: \(name), \(selectedTag.rawValue), \(price), \(paid), \(notes ?? []), \(imageData?.count ?? 0) bytes"
@@ -261,14 +261,17 @@ struct TransactionDetailsView: View {
     }
 }
 
-func convertToUIImage(imageData: Data?) -> UIImage? {
-    guard let data = imageData else {
-        return nil
-    }
+func toUIImage(from data: Data?) -> UIImage?
+{
+    guard let data = data else { return nil }
     return UIImage(data: data)
 }
 
-
+func toData(from image: UIImage?) -> Data?
+{
+    if let uiImage = image { return uiImage.jpegData(compressionQuality: 1.0) }
+    return nil
+}
 
 struct TransactionDetailsView_Previews: PreviewProvider {
     static var previews: some View {

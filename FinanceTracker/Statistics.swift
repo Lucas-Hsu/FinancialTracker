@@ -233,7 +233,7 @@ struct Statistics: View {
 
                     HStack {
                         ForEach(Tag.allCases, id: \.self) { tag in
-                            Image(systemName: symbolRepresentation[tag] ?? "questionmark")
+                            Image(systemName: tagSymbol[tag] ?? "questionmark")
                                 .padding()
                                 .frame(width: 80, height: 50)
                                 .background(selectedTags.contains(tag.rawValue) ? Color.accentColor : Color.gray.opacity(0.2))
@@ -287,7 +287,7 @@ struct Statistics: View {
                 VStack(spacing: 16) {
                     Picker("Tag", selection: $selectedBarTag) {
                         ForEach(Tag.allCases) { tag in
-                            Image(systemName: symbolRepresentation[tag] ?? "questionmark")
+                            Image(systemName: tagSymbol[tag] ?? "questionmark")
                                 .tag(tag)
                         }
                     }
