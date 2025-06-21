@@ -8,7 +8,8 @@
 import SwiftData
 import Foundation
 
-@Model class Transaction{
+@Model class Transaction
+{
     @Attribute(.unique) private(set) var id: UUID
     var date: Date
     var name: String
@@ -18,24 +19,23 @@ import Foundation
     var notes: [String]?
     var image: Data?
     
-    init(
-            date: Date = Date(),
-            name: String = "Transaction",
-            tag: String = Tag.other.rawValue,
-            price: Double = 19.99,
-            paid: Bool = true,
-            notes: [String]? = nil,
-            image: Data? = nil
-        ) {
-            self.id = UUID()
-            self.date = date
-            self.name = name
-            self.tag = tag
-            self.price = price
-            self.paid = paid
-            self.notes = notes
-            self.image = image
-        }
+    init(date: Date = Date(),
+         name: String = "Transaction",
+         tag: String = Tag.other.rawValue,
+         price: Double = 19.99,
+         paid: Bool = true,
+         notes: [String]? = nil,
+         image: Data? = nil)
+    {
+        self.id = UUID()
+        self.date = date
+        self.name = name
+        self.tag = tag
+        self.price = price
+        self.paid = paid
+        self.notes = notes
+        self.image = image
+    }
     
     /// Checks if the this Transaction matches provided filter criteria.
     /// - Parameters:
@@ -43,15 +43,12 @@ import Foundation
     ///  - tags:        if provided,    filter for self.tag is contained in tags
     ///  - minDate:     if provided,    filter for self.date newer or equals to minDate
     ///  - maxDate:     if provided,    filter for self.date older or equals to maxDate
-    public func matchesFilter
-    (
-        onlyUnpaid: Bool = false,
-        tags: Set<String>? = nil,
-        minDate: Date? = nil,
-        maxDate: Date? = nil
-    ) -> Bool
+    public func matchesFilter(onlyUnpaid: Bool = false,
+                              tags: Set<String>? = nil,
+                              minDate: Date? = nil,
+                              maxDate: Date? = nil) -> Bool
     {
-        if (onlyUnpaid && self.paid)                      { return false }
+        if (onlyUnpaid && self.paid)                    { return false }
         if let tags = tags, !tags.contains(self.tag)    { return false }
         if let minDate = minDate, minDate > self.date   { return false }
         if let maxDate = maxDate, maxDate < self.date   { return false }

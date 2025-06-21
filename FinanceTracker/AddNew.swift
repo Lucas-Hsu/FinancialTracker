@@ -13,11 +13,6 @@ struct AddNew: View
     @Environment(\.dismiss) private var dismiss
     
     @State private var transaction: Transaction = Transaction()
-    
-    @State private var showUploadMethodAlert = false
-    @State private var chosenUploadMethod: UIImagePickerController.SourceType = .photoLibrary
-    @State private var showChosenMethod = false
-    
     @State private var name: String
     @State private var paid: Bool
     @State private var date: Date
@@ -26,7 +21,11 @@ struct AddNew: View
     @State private var notes: [String]?
     @State private var image: UIImage
     
-    var priceFormatter: NumberFormatter
+    @State private var showUploadMethodAlert = false
+    @State private var showChosenMethod = false
+    @State private var chosenUploadMethod: UIImagePickerController.SourceType = .photoLibrary
+    
+    private var priceFormatter: NumberFormatter
     {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -35,11 +34,31 @@ struct AddNew: View
         return formatter
     }
     
-    func imageConverted() -> UIImage
+    /// Returns a valid image, either the already existing UIImage image, the Data transaction.image, or a default one
+    private func imageConverted() -> UIImage
     {
         if image != UIImage() { return image }
         if let img = toUIImage(from: transaction.image) { return img }
         return UIImage(named: "Test Reciept")! // UIImage(systemName: "photo")!
+    }
+    
+    private func saveTransaction(date: Date,
+                         name: String,
+                         tag: String,
+                         price: Double,
+                         paid: Bool,
+                         notes: [String]? = nil,
+                         image: Data? = nil)
+    {
+        transaction = Transaction(date: date,
+                                  name: name.isEmpty ? "Untitled at \(Date())" : name,
+                                  tag: tag,
+                                  price: price,
+                                  paid: paid,
+                                  notes: notes,
+                                  image: image)
+        modelContext.insert(transaction)
+        saveModelContext(modelContext)
     }
     
     init(name: String = "",
@@ -236,25 +255,6 @@ struct AddNew: View
                 .scrollContentBackground(.hidden)
         }
             .colorfulAccentBackground(colorLinear: [.white, .white, .accentColor], colorRadial: [.accentColor, .white])
-    }
-    
-    func saveTransaction(date: Date,
-                         name: String,
-                         tag: String,
-                         price: Double,
-                         paid: Bool,
-                         notes: [String]? = nil,
-                         image: Data? = nil)
-    {
-        transaction = Transaction(date: date,
-                                  name: name.isEmpty ? "Untitled at \(Date())" : name,
-                                  tag: tag,
-                                  price: price,
-                                  paid: paid,
-                                  notes: notes,
-                                  image: image)
-        modelContext.insert(transaction)
-        saveModelContext(modelContext)
     }
 }
 
