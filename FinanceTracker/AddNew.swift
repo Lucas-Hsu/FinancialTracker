@@ -25,15 +25,6 @@ struct AddNew: View
     @State private var showChosenMethod = false
     @State private var chosenUploadMethod: UIImagePickerController.SourceType = .photoLibrary
     
-    private var priceFormatter: NumberFormatter
-    {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 2
-        formatter.maximumFractionDigits = 2
-        return formatter
-    }
-    
     /// Returns a valid image, either the already existing UIImage image, the Data transaction.image, or a default one
     private func imageConverted() -> UIImage
     {
@@ -133,7 +124,7 @@ struct AddNew: View
                                 
                                 TextField("Enter Price",
                                           value: $price,
-                                          formatter: priceFormatter)
+                                          formatter: Transaction().priceFormatter)
                                     .keyboardType(.decimalPad)
                             }
                                 .padding()

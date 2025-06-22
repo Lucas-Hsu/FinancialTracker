@@ -19,6 +19,15 @@ import Foundation
     var notes: [String]?
     var image: Data?
     
+    var priceFormatter: NumberFormatter
+    {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        return formatter
+    }
+    
     init(date: Date = Date(),
          name: String = "Transaction",
          tag: String = Tag.other.rawValue,
@@ -52,6 +61,38 @@ import Foundation
         if let tags = tags, !tags.contains(self.tag)    { return false }
         if let minDate = minDate, minDate > self.date   { return false }
         if let maxDate = maxDate, maxDate < self.date   { return false }
+        return true
+    }
+    
+    public func isPartOf(event: Events) -> Bool
+    {
+        if (self.name != event.name ||
+            self.price != event.price ||
+            self.tag != event.tag.rawValue)
+        { return false }
+        
+        if self.date < event.date
+        { return false }
+        
+        switch event.intervalType
+        {
+        case TypesOfRecurringTransaction.Yearly.rawValue: // Yearly: Exact same month and day
+            if !isExactSameDayAndMonth(date1: self.date, date2: event.date)
+            { return false }
+            
+        case TypesOfRecurringTransaction.Monthly.rawValue: // Monthly: Either exactly match, or each last day of month
+            if !isExactSameDay(date1: self.date,
+                              date2: event.date) &&
+               !canMapDown(dateInitial: event.date,
+                          dateNow: self.date)
+            { return false }
+            
+        default: // Custom: Exact multiple of the interval days
+            if !isDaysAfter(dateInitial: event.date,
+                           interval: event.interval,
+                           dateNow: self.date)
+            { return false }
+        }
         return true
     }
     

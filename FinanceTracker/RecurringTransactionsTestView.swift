@@ -71,6 +71,7 @@ struct RecurringTransactionsTestView: View {
     @State var name: String = "Rent"
     @State var tag: String = Tag.other.rawValue
     @State var price: Double = 10.00
+    
     var body: some View {
         HStack {
             
@@ -126,7 +127,7 @@ struct RecurringTransactionsTestView: View {
                         HStack {
                             Text("Price  (CN¥)")
                             Spacer()
-                            TextField("Enter Price", value: $price, formatter: AddNew().priceFormatter)
+                            TextField("Enter Price", value: $price, formatter: Transaction().priceFormatter)
                                 .keyboardType(.decimalPad)
                         }
                         .padding()

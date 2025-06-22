@@ -146,44 +146,6 @@ private struct TransactionPattern: Hashable {
         return true
     }
     
-    public func isPartOfEvent(transaction: Transaction, event: Events) -> Bool {
-        // First, check if the basic transaction details match the event.
-        if !(transaction.name == event.name &&
-             transaction.price == event.price &&
-             transaction.tag == event.tag.rawValue) {
-            return false
-        }
-        
-        if transaction.date < event.date {
-            return false
-        }
-        
-        // Now, check if the transaction date fits within the recurring pattern.
-        switch event.intervalType {
-        case TypesOfRecurringTransaction.Yearly.rawValue:
-            // For yearly events, check if day and month match.
-            if isExactSameDayAndMonth(date1: transaction.date, date2: event.date) {
-                return true
-            }
-            
-        case TypesOfRecurringTransaction.Monthly.rawValue:
-            // For monthly events, the day must either exactly match or
-            // map down (for example, handling end-of-month variations).
-            if isExactSameDay(date1: transaction.date, date2: event.date) ||
-               canMapDown(dateInitial: event.date, dateNow: transaction.date) {
-                return true
-            }
-            
-        default: // Assume "Custom"
-            // For custom intervals, the transaction date should be an exact multiple of the interval (in days)
-            // after the event's start date.
-            if isDaysAfter(dateInitial: event.date, interval: event.interval, dateNow: transaction.date) {
-                return true
-            }
-        }
-        return false
-    }
-    
     public func occursOnDate(date: Date) -> Bool {
         switch intervalType {
         case TypesOfRecurringTransaction.Yearly.rawValue:
@@ -358,7 +320,7 @@ private func is30Month(month: Int) -> Bool {
 
 
 
-private func canMapDown(dateInitial: Date, dateNow: Date) -> Bool {
+public func canMapDown(dateInitial: Date, dateNow: Date) -> Bool {
     let componentsInitial = Calendar.current.dateComponents([.year, .month, .day], from: dateInitial)
     let componentsNow = Calendar.current.dateComponents([.year, .month, .day], from: dateNow)
     if componentsInitial.day! < componentsNow.day! {
@@ -423,7 +385,7 @@ private func isFinalDay(date: Date) -> Bool{
     return isFinalDay(year:components.year!, month:components.month!, day:components.day!)
 }
 
-private func isExactSameDayAndMonth(date1: Date, date2: Date) -> Bool {
+public func isExactSameDayAndMonth(date1: Date, date2: Date) -> Bool {
     let date1Components = Calendar.current.dateComponents([.month, .day], from: date1)
     let date2Components = Calendar.current.dateComponents([.year, .month, .day], from: date2)
     if date1Components.day! == date2Components.day! && date1Components.month! == date2Components.month! {
@@ -432,7 +394,7 @@ private func isExactSameDayAndMonth(date1: Date, date2: Date) -> Bool {
     return false
 }
 
-private func isExactSameDay(date1: Date, date2: Date) -> Bool {
+public func isExactSameDay(date1: Date, date2: Date) -> Bool {
     let date1Components = Calendar.current.dateComponents([.day], from: date1)
     let date2Components = Calendar.current.dateComponents([.day], from: date2)
     if date1Components.day! == date2Components.day!{
@@ -469,7 +431,7 @@ private func fitsIntoFebruary(dateNow: Date, dateInitial: Date) -> Bool {
     return true
 }
  
-private func isDaysAfter(dateInitial: Date, interval: Int, dateNow: Date) -> Bool{
+public func isDaysAfter(dateInitial: Date, interval: Int, dateNow: Date) -> Bool{
     let ref = daysSinceEpoch(date: dateInitial)
     let dur = interval
     let tar = daysSinceEpoch(date: dateNow)

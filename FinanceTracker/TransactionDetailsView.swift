@@ -29,17 +29,9 @@ struct TransactionDetailsView: View {
     
     @State private var chosenUploadMethod: UIImagePickerController.SourceType = .photoLibrary
     @State private var showAlert = false
-    
-    private var priceFormatter: NumberFormatter {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 2
-        formatter.maximumFractionDigits = 2
-        return formatter
-    }
-    
+
     private func formattedPrice(_ price: Decimal) -> String {
-        return priceFormatter.string(from: price as NSDecimalNumber) ?? "$0.00"
+        return Transaction().priceFormatter.string(from: price as NSDecimalNumber) ?? "$0.00"
     }
     
     // Initialize state variables with the transaction values
@@ -104,7 +96,7 @@ struct TransactionDetailsView: View {
                             HStack {
                                 Text("Price  (CN¥)")
                                 Spacer()
-                                TextField("Enter Price", value: $price, formatter: priceFormatter)
+                                TextField("Enter Price", value: $price, formatter: Transaction().priceFormatter)
                                     .keyboardType(.decimalPad)
                             }
                             .padding()
