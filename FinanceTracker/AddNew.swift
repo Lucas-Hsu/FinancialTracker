@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+/// A class that handles adding new transactions.
+/// This is very similar to TransactionDetailsView.
 struct AddNew: View
 {
     @Environment(\.modelContext) private var modelContext
