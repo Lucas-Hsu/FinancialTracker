@@ -8,7 +8,7 @@
 import SwiftData
 import Foundation
 
-@Model class Transaction
+@Model class Transaction: Equatable
 {
     @Attribute(.unique) private(set) var id: UUID
     var date: Date
@@ -29,7 +29,7 @@ import Foundation
     }
     
     init(date: Date = Date(),
-         name: String = "Transaction",
+         name: String = "",
          tag: String = Tag.other.rawValue,
          price: Double = 19.99,
          paid: Bool = true,
@@ -114,6 +114,17 @@ import Foundation
             Notes Count: \(self.notes?.count ?? 0) lines
             Image Size: \(self.image?.count ?? 0) bytes
             """
+    }
+    
+    static func ==(lhs: Transaction, rhs: Transaction) -> Bool
+    {
+        abs(lhs.date.timeIntervalSince(rhs.date)) < 0.1 &&
+        lhs.name == rhs.name &&
+        lhs.tag == rhs.tag &&
+        lhs.price == rhs.price &&
+        lhs.paid == rhs.paid &&
+        lhs.notes == rhs.notes &&
+        lhs.image == rhs.image
     }
 
 }

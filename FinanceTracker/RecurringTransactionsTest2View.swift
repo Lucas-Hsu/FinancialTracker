@@ -94,7 +94,7 @@ struct RecurringTransactionsTest2View: View {
                 date: date,
                 intervalType: intervalType,
                 interval: interval,
-                name: name.isEmpty ? "Untitled at \(Date())" : name,
+                name: name.isEmpty ? "Unnamed RecurringTransaction" : name,
                 tag: tag,
                 price: price,
                 notes: notes

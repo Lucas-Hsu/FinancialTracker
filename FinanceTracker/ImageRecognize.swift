@@ -127,7 +127,7 @@ struct ImageRecognize: View {
             date = dateValue
         } else if let priceValue = extractPrice(from: text) {
             price = priceValue
-        } else if name.isEmpty || name.hasPrefix("Untitled") {
+        } else if (name.isEmpty || name.hasPrefix("Transaction")) {
             name = text
         } else {
             // Append to notes

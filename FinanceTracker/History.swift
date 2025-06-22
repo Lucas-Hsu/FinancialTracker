@@ -185,7 +185,7 @@ struct History: View {
             }.clearBackground()
         }
         .fullScreenCover(item: $selectedTransaction) { transaction in
-            TransactionDetailsView(transaction: Binding(get: {
+            ModifyOld(transaction: Binding(get: {
                 transaction
             }, set: { updatedTransaction in
                 // Handle any changes in the transaction

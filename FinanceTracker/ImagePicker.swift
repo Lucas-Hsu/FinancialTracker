@@ -13,10 +13,10 @@ import SwiftUI
 struct ImagePicker: UIViewControllerRepresentable
 {
     @Environment(\.presentationMode) private var presentationMode
-    @Binding private var selectedImage: UIImage
+    @Binding private var selectedImage: Data?
     private var sourceType: UIImagePickerController.SourceType
     
-    init(selectedImage: Binding<UIImage>,
+    init(selectedImage: Binding<Data?>,
          sourceType: UIImagePickerController.SourceType = .photoLibrary)
     {
         _selectedImage = selectedImage
@@ -27,6 +27,18 @@ struct ImagePicker: UIViewControllerRepresentable
     {
         var parent: ImagePicker
 
+        private func toData(from image: UIImage?) -> Data?
+        {
+            if let uiImage = image { return uiImage.jpegData(compressionQuality: 1.0) }
+            return nil
+        }
+        private func convertedImageData(from img: UIImage?) -> Data
+        {
+            if let dat = toData(from: img)
+            { return dat }
+            return Data()
+        }
+        
         init(_ parent: ImagePicker)
         { self.parent = parent }
 
@@ -34,7 +46,7 @@ struct ImagePicker: UIViewControllerRepresentable
                                    didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any])
         {
             if let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage
-            { parent.selectedImage = image }
+            { parent.selectedImage = convertedImageData(from: image) }
             parent.presentationMode.wrappedValue.dismiss()
         }
     }
