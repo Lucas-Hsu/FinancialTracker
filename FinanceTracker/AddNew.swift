@@ -30,7 +30,7 @@ struct AddNew: View
     }
     
     var body: some View
-    { TransactionDetailsView(transaction: $transaction) }
+    { TransactionDetailsView(transaction: $transaction, type: .add) }
 }
 
 #Preview

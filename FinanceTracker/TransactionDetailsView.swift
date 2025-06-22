@@ -7,6 +7,10 @@
 
 import SwiftUI
 
+enum detailsViewType: String {
+    case add, modify
+}
+
 struct TransactionDetailsView: View
 {
     @Environment(\.modelContext) private var modelContext
@@ -16,6 +20,7 @@ struct TransactionDetailsView: View
     @State private var showUploadMethodAlert = false
     @State private var showChosenMethod = false
     @State private var chosenUploadMethod: UIImagePickerController.SourceType = .photoLibrary
+    @State private var detailsType: detailsViewType
     
     private func toUIImage(from data: Data?) -> UIImage?
     {
@@ -28,6 +33,11 @@ struct TransactionDetailsView: View
         if let img = toUIImage(from: image)
         { return img }
         return UIImage(named: "Test Reciept")!
+    }
+    
+    init(transaction: Binding<Transaction>, type: detailsViewType) {
+        _transaction = transaction
+        self.detailsType = type
     }
     
     var body: some View
@@ -153,7 +163,7 @@ struct TransactionDetailsView: View
                         {
                             HStack
                             {
-                                Text("Submit")
+                                Text(detailsType == .modify ? "Save" : "Submit")
                                     .font(.headline)
                             }
                                 .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: 50)
@@ -188,7 +198,7 @@ struct TransactionDetailsView: View
                             .layoutPriority(2)
                             .buttonStyle(ScaleButtonStyle())
 
-                        if (transaction != Transaction()) {
+                        if (detailsType == .modify) {
                             Button(action: { deleteTransaction() })
                             {
                                 HStack

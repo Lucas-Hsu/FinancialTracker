@@ -39,7 +39,6 @@ extension Date
 
 struct ContentView: View
 {
-    /// For persist/transfer data across `AddNew()` pages, for example from clicking on `Calendar` `Event`s.
     @StateObject private var addNewSheetController = SheetController()
     @State private var selectedTab: Tab = Tab.records
     

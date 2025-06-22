@@ -8,12 +8,13 @@ import SwiftUI
 import SwiftData
 
 @main
-struct FinanceTrackerApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Transaction.self,
-            RecurringTransaction.self
-        ])
+struct FinanceTrackerApp: App
+{
+    var sharedModelContainer: ModelContainer =
+    {
+        let schema = Schema([Transaction.self,
+                             RecurringTransaction.self
+                            ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
@@ -23,10 +24,9 @@ struct FinanceTrackerApp: App {
         }
     }()
 
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
-        .modelContainer(sharedModelContainer)
+    var body: some Scene
+    {
+        WindowGroup { ContentView() }
+            .modelContainer(sharedModelContainer)
     }
 }

@@ -5,9 +5,11 @@
 //  Created by Lucas Hsu on 2/1/25.
 //
 
-import SwiftData
 import Foundation
+import SwiftData
+import SwiftUI
 
+/// A transaction record
 @Model class Transaction: Equatable
 {
     @Attribute(.unique) private(set) var id: UUID
@@ -126,5 +128,33 @@ import Foundation
         lhs.notes == rhs.notes &&
         lhs.image == rhs.image
     }
+}
 
+/// Simple view for `Transaction`s
+struct TransactionView: View {
+    var transaction: Transaction
+
+    var body: some View
+    {
+        HStack
+        {
+            VStack(alignment: .leading)
+            {
+                Text(transaction.name)
+                    .font(.body)
+                
+                Text(transaction.tag)
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+            }
+            
+            Spacer()
+            
+            Text(formatPrice(transaction.price))
+                .font(.body)
+                .bold()
+                .foregroundColor(transaction.paid ? .black : .red)
+        }
+            .padding()
+    }
 }

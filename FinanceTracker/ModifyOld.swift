@@ -16,7 +16,7 @@ struct ModifyOld: View
     { _transaction = transaction }
     
     var body: some View
-    { TransactionDetailsView(transaction: $transaction) }
+    { TransactionDetailsView(transaction: $transaction, type: .modify) }
 }
 
 #Preview
