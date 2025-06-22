@@ -10,10 +10,9 @@ import Charts
 
 public struct MonthlyTotal: Identifiable {
     public let id = UUID()
-    let tag: Int   // e.g., 202506 for June 2025
+    let date: Int   // e.g., 202506 for June 2025
     let total: Double
 }
-
 
 struct BarChartView: View {
     let grouped: [MonthlyTotal]
@@ -47,7 +46,7 @@ struct BarChartView: View {
                 Chart {
                     ForEach(grouped) { entry in
                         BarMark(
-                            x: .value("Month", formattedDate(from: entry.tag)),
+                            x: .value("Month", formattedDate(from: entry.date)),
                             y: .value("Total", entry.total)
                         )
                         .foregroundStyle(.blue)
@@ -84,8 +83,10 @@ struct BarChartView: View {
                 .padding(.top, 20)
                 
                 Button(action: {
-                    saveImageToAlbum(BarChartView(grouped: grouped, average: average)
-                        .asUIImage(displayScale: displayScale).makeOpaque())
+                    BarChartView(grouped: grouped, average: average)
+                        .asUIImage(displayScale: displayScale)
+                        .makeOpaque()
+                        .saveToAlbum()
                     print("Saved image to album!")
                     dismiss()
                 }) {

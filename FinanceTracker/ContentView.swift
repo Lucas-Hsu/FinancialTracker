@@ -25,18 +25,6 @@ func saveModelContext(_ modelContext: ModelContext)
     }
 }
 
-extension Date
-{
-    var time: String
-    {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = .none
-        dateFormatter.timeStyle = .short // Is either 12-hour AM/PM or 24-hour based on device
-        dateFormatter.locale = Locale.current
-        return dateFormatter.string(from: self)
-    }
-}
-
 struct ContentView: View
 {
     @StateObject private var addNewSheetController = SheetController()

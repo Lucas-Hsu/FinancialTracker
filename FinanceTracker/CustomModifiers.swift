@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+// MARK: Custom Styled Views components
 struct BlurredBackground: ViewModifier {
     var color: Color
     var opacity: Double
@@ -22,99 +23,6 @@ struct BlurredBackground: ViewModifier {
         }
     }
 }
-
-extension View {
-    func accentButton(color: Color = .accentColor, opacity: Double = 0.6, blurRadius: CGFloat = 10) -> some View {
-        self.background(
-            color
-                .opacity(opacity)
-                .blur(radius: blurRadius)
-        )
-    }
-}
-
-extension View {
-    func accentButtonToggled(boolean: Bool = true, color: Color = .accentColor, opacity1: Double = 0.6, blurRadius: CGFloat = 10, material: Material = .thinMaterial, cornerRadius: CGFloat = 10, opacity2: Double = 1) -> some View {
-        self.background(
-            Group {
-                if boolean {
-                    color
-                        .opacity(opacity1)
-                        .blur(radius: blurRadius)
-                } else {
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .fill(material)
-                        .blur(radius: blurRadius)
-                        .opacity(opacity2)
-                }
-            }
-        )
-    }
-}
-
-extension View {
-    func scaleEffectToggled(boolean: Bool = true, scaleEffect: CGFloat = 1.2) -> some View {
-        if boolean {
-            self.scaleEffect(scaleEffect)
-        } else {
-            self.scaleEffect(1)
-        }
-    }
-}
-    
-
-extension View {
-    func plainFill(material: Material = .thinMaterial, opacity: Double = 0.9, cornerRadius: CGFloat = 10, blurRadius: CGFloat = 4) -> some View {
-        self.background(
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(material)
-                .blur(radius: blurRadius)
-                .opacity(opacity)
-        )
-    }
-}
-
-extension View {
-    func colorFill(material: Material = .thinMaterial, opacity: Double = 0.9, cornerRadius: CGFloat = 10, blurRadius: CGFloat = 4) -> some View {
-        self.background {
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.clear, lineWidth: 0)
-                .background(.yellow)
-                .blur(radius: 2)
-        }
-    }
-}
-    
-
-extension View {
-    func clearBackground() -> some View {
-        self.listRowBackground(Color.clear)
-            .scrollContentBackground(.hidden)
-    }
-}
-
-extension View {
-    func colorfulAccentBackground(colorLinear: [Color] = [.white, .white], colorRadial: [Color] = [.accentColor, .white]) -> some View {
-        self.background {
-            ZStack {
-                LinearGradient(
-                    gradient: Gradient(colors: colorLinear),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                RadialGradient(
-                    gradient: Gradient(colors: colorRadial),
-                    center: .bottom,
-                    startRadius: 0,
-                    endRadius: 1000
-                ).opacity(0.4)
-            }
-            .edgesIgnoringSafeArea(.all)
-            .blur(radius: 10)
-        }
-    }
-}
-    
 
 struct ScaleButtonStyle: ButtonStyle {
     func makeBody(configuration: Self.Configuration) -> some View {
@@ -181,6 +89,137 @@ struct CustomSegmentedEnumControl<EnumType: RawRepresentable & Hashable>: View w
             }
         }
         .padding()
+    }
+}
+
+// MARK: View Styling
+extension View {
+    func accentButton(color: Color = .accentColor, opacity: Double = 0.6, blurRadius: CGFloat = 10) -> some View {
+        self.background(
+            color
+                .opacity(opacity)
+                .blur(radius: blurRadius)
+        )
+    }
+
+    func accentButtonToggled(boolean: Bool = true, color: Color = .accentColor, opacity1: Double = 0.6, blurRadius: CGFloat = 10, material: Material = .thinMaterial, cornerRadius: CGFloat = 10, opacity2: Double = 1) -> some View {
+        self.background(
+            Group {
+                if boolean {
+                    color
+                        .opacity(opacity1)
+                        .blur(radius: blurRadius)
+                } else {
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .fill(material)
+                        .blur(radius: blurRadius)
+                        .opacity(opacity2)
+                }
+            }
+        )
+    }
+
+    func scaleEffectToggled(boolean: Bool = true, scaleEffect: CGFloat = 1.2) -> some View {
+        if boolean {
+            self.scaleEffect(scaleEffect)
+        } else {
+            self.scaleEffect(1)
+        }
+    }
+
+    func plainFill(material: Material = .thinMaterial, opacity: Double = 0.9, cornerRadius: CGFloat = 10, blurRadius: CGFloat = 4) -> some View {
+        self.background(
+            RoundedRectangle(cornerRadius: cornerRadius)
+                .fill(material)
+                .blur(radius: blurRadius)
+                .opacity(opacity)
+        )
+    }
+
+    func colorFill(material: Material = .thinMaterial, opacity: Double = 0.9, cornerRadius: CGFloat = 10, blurRadius: CGFloat = 4) -> some View {
+        self.background {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.clear, lineWidth: 0)
+                .background(.yellow)
+                .blur(radius: 2)
+        }
+    }
+
+    func clearBackground() -> some View {
+        self.listRowBackground(Color.clear)
+            .scrollContentBackground(.hidden)
+    }
+
+    func colorfulAccentBackground(colorLinear: [Color] = [.white, .white], colorRadial: [Color] = [.accentColor, .white]) -> some View {
+        self.background {
+            ZStack {
+                LinearGradient(
+                    gradient: Gradient(colors: colorLinear),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                RadialGradient(
+                    gradient: Gradient(colors: colorRadial),
+                    center: .bottom,
+                    startRadius: 0,
+                    endRadius: 1000
+                ).opacity(0.4)
+            }
+            .edgesIgnoringSafeArea(.all)
+            .blur(radius: 10)
+        }
+    }
+}
+    
+// MARK: Converters
+extension View {
+    func asUIImage(displayScale: CGFloat) -> UIImage {
+        let renderer = ImageRenderer(content: self
+                                                .background(.white)
+                                                .frame(width: 800, height: 600)
+                                    )
+        renderer.scale = displayScale*2
+        if let uiImage = renderer.uiImage {
+            return uiImage
+        }
+        return ImageRenderer(content: Text("Empty")).uiImage!
+    }
+}
+
+extension String {
+    func toDate() -> Date {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        return dateFormatter.date(from: self) ?? Date()
+    }
+}
+
+extension Date {
+    var time: String
+    {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .none
+        dateFormatter.timeStyle = .short // Is either 12-hour AM/PM or 24-hour based on device
+        dateFormatter.locale = Locale.current
+        return dateFormatter.string(from: self)
+    }
+    var shortDate: String
+    {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd" // "2025-01-12"
+        return dateFormatter.string(from: self)
+    }
+}
+
+extension Double {
+    func toPriceString() -> String
+    {
+        let formatter = NumberFormatter()
+        formatter.locale=Locale(identifier: "cn_CN")
+        formatter.numberStyle = .currency
+        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 2
+        return formatter.string(from: NSNumber(value: self)) ?? "0.00"
     }
 }
 

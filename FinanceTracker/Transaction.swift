@@ -150,7 +150,7 @@ struct TransactionView: View {
             
             Spacer()
             
-            Text(formatPrice(transaction.price))
+            Text(transaction.price.toPriceString())
                 .font(.body)
                 .bold()
                 .foregroundColor(transaction.paid ? .black : .red)

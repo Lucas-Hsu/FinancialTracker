@@ -73,8 +73,10 @@ struct PieChartView: View {
                 .padding(.top, 20)
                 
                 Button(action: {
-                    saveImageToAlbum(PieChartView(data: data, total: total)
-                        .asUIImage(displayScale: displayScale).makeOpaque())
+                    PieChartView(data: data, total: total)
+                        .asUIImage(displayScale: displayScale)
+                        .makeOpaque()
+                        .saveToAlbum()
                     print("Saved image to album!")
                     dismiss()
                 }) {

@@ -8,26 +8,6 @@
 import SwiftUI
 import SwiftData
 
-import UIKit
-
-func saveImageToAlbum(_ image: UIImage) {
-    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
-}
-
-extension View {
-    func asUIImage(displayScale: CGFloat) -> UIImage {
-        let renderer = ImageRenderer(content: self
-                                                .background(.white)
-                                                .frame(width: 800, height: 600)
-                                    )
-        renderer.scale = displayScale*2
-        if let uiImage = renderer.uiImage {
-            return uiImage
-        }
-        return ImageRenderer(content: Text("Empty")).uiImage!
-    }
-}
-
 extension UIImage {
     func makeOpaque() -> UIImage {
         let format = UIGraphicsImageRendererFormat()
@@ -41,8 +21,11 @@ extension UIImage {
             self.draw(in: CGRect(origin: .zero, size: self.size))
         }
     }
+    
+    func saveToAlbum() {
+        UIImageWriteToSavedPhotosAlbum(self, nil, nil, nil)
+    }
 }
-
 
 struct Statistics: View {
     @Environment(\.modelContext) var modelContext
@@ -182,7 +165,7 @@ struct Statistics: View {
     private func computeBarChartData() {
         let groups = Dictionary(grouping: barFilteredTransactions, by: { Calendar.current.component(.year, from: $0.date) * 100 + Calendar.current.component(.month, from: $0.date) })
         let grouped = groups.map { (key, txns) in
-            (tag: key, total: txns.reduce(0.0) { $0 + $1.price })
+            (date: key, total: txns.reduce(0.0) { $0 + $1.price })
         }
         frozenGroupedByMonth = convertToMonthlyTotal(grouped)
         frozenAverage = barFilteredTransactions.isEmpty ? 0 : barFilteredTransactions.reduce(0.0, { $0 + $1.price }) / Double(barFilteredTransactions.count)
@@ -192,8 +175,8 @@ struct Statistics: View {
         print(frozenAverage)
         print()
     }
-    private func convertToMonthlyTotal(_ input: [(tag: Int, total: Double)]) -> [MonthlyTotal] {
-        input.map { MonthlyTotal(tag: $0.tag, total: $0.total) }
+    private func convertToMonthlyTotal(_ input: [(date: Int, total: Double)]) -> [MonthlyTotal] {
+        input.map { MonthlyTotal(date: $0.date, total: $0.total) }
     }
     
     enum ChartType: String, CaseIterable, Identifiable {

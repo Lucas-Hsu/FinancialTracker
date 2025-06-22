@@ -45,12 +45,12 @@ struct History: View
         // Group transactions by date
         let grouped = Dictionary(grouping: transactions)
         { transaction in
-            return formatDateShort(transaction.date)
+            return transaction.date.shortDate
         }
 
         // Sort each key by date
         let sortedGrouped = grouped.sorted {
-            toDate(from: $0.key) < toDate(from: $1.key)
+            $0.key.toDate() < $1.key.toDate()
         }
         
         // Sort each values of each key by time
