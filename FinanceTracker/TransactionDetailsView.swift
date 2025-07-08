@@ -232,7 +232,7 @@ struct TransactionDetailsView: View
     
     private func saveTransaction(date: Date,
                                  name: String,
-                                 tag: String,
+                                 tag: Tag,
                                  price: Double,
                                  paid: Bool,
                                  notes: [String]? = nil,

@@ -34,12 +34,12 @@ struct Statistics: View {
     
     @Query(sort: \Transaction.date, order: .reverse) var transactions: [Transaction]
     
-    @State private var selectedTags: Set<String> = Set(Tag.allCases.map { $0.rawValue })
+    @State private var selectedTags: Set<Tag> = Set(Tag.allCases)
     @State private var isUnpaid: Bool = false
     
     @State private var showPieChart: Bool = false
     @State private var showBarChart: Bool = false
-    @State private var frozenGroupedByTag: [(tag: String, total: Double)] = []
+    @State private var frozenGroupedByTag: [(tag: Tag, total: Double)] = []
     @State private var frozenTotalSum: Double = 0.0
 
     private var pieFilteredTransactions: [Transaction] {
@@ -62,7 +62,7 @@ struct Statistics: View {
             let tMonth = Calendar.current.component(.month, from: $0.date)
 
             return ( (tYear == startYear && tMonth >= startMonth) || (tYear > startYear) ) && ( (tYear == endYear && tMonth <= endMonth) || (tYear < endYear) ) &&
-            $0.matchesFilter(onlyUnpaid: isUnpaid, tags: Set([selectedBarTag.rawValue]))
+            $0.matchesFilter(onlyUnpaid: isUnpaid, tags: Set([selectedBarTag]))
         }
     }
     
@@ -99,12 +99,12 @@ struct Statistics: View {
         let month: Int
     }
 
-    func calculateAverageMonthlyExpenditures(groups: [String: [Transaction]]) -> [String: Double] {
-        var avg: [String: Double] = [:]
+    func calculateAverageMonthlyExpenditures(groups: [Tag: [Transaction]]) -> [Tag: Double] {
+        var avg: [Tag: Double] = [:]
         
         // Iterate through all tags
         for tag in Tag.allCases {
-            guard let transactions = groups[tag.rawValue] else { continue }
+            guard let transactions = groups[tag] else { continue }
             
             // Group transactions by (year, month)
             let groupedByMonth: [MonthKey: [Transaction]] = Dictionary(
@@ -135,7 +135,7 @@ struct Statistics: View {
             // Step 3: Calculate the average (divide by the number of non-outlier months)
             if !nonOutlierSums.isEmpty {
                 let total = nonOutlierSums.reduce(0.0, +)
-                avg[tag.rawValue] = total / Double(nonOutlierSums.count)  // Average based on non-outlier months
+                avg[tag] = total / Double(nonOutlierSums.count)  // Average based on non-outlier months
             }
         }
         
@@ -157,7 +157,7 @@ struct Statistics: View {
     }
 
     
-    private func pastDataSummary() -> [String:Double]{
+    private func pastDataSummary() -> [Tag:Double]{
         let groups = Dictionary(grouping: past12MonthsTransactions, by: { $0.tag })
         return calculateAverageMonthlyExpenditures(groups: groups)
     }
@@ -219,14 +219,14 @@ struct Statistics: View {
                             Image(systemName: tagSymbol[tag] ?? "questionmark")
                                 .padding()
                                 .frame(width: 80, height: 50)
-                                .background(selectedTags.contains(tag.rawValue) ? Color.accentColor : Color.gray.opacity(0.2))
+                                .background(selectedTags.contains(tag) ? Color.accentColor : Color.gray.opacity(0.2))
                                 .cornerRadius(8)
-                                .foregroundColor(selectedTags.contains(tag.rawValue) ? .white : .secondary)
+                                .foregroundColor(selectedTags.contains(tag) ? .white : .secondary)
                                 .onTapGesture {
-                                    if selectedTags.contains(tag.rawValue) {
-                                        selectedTags.remove(tag.rawValue)
+                                    if selectedTags.contains(tag) {
+                                        selectedTags.remove(tag)
                                     } else {
-                                        selectedTags.insert(tag.rawValue)
+                                        selectedTags.insert(tag)
                                     }
                                 }
                         }
@@ -332,7 +332,7 @@ struct Statistics: View {
                             let currentMonth = calendar.component(.month, from: Date())
                             let currentYear = calendar.component(.year, from: Date())
 
-                            let currentMonthTotals: [String: Double] = Dictionary(
+                            let currentMonthTotals: [Tag: Double] = Dictionary(
                                 grouping: transactions.filter {
                                     let comp = calendar.dateComponents([.month, .year], from: $0.date)
                                     return comp.month == currentMonth && comp.year == currentYear
@@ -347,10 +347,10 @@ struct Statistics: View {
                             Text(tag.rawValue.capitalized)
                                 .frame(width: 120, alignment: .leading)
                             Spacer()
-                            Text("$\(String(format: "%.2f", currentMonthTotals[tag.rawValue] ?? 0))")
+                            Text("$\(String(format: "%.2f", currentMonthTotals[tag] ?? 0))")
                                 .foregroundColor(.blue)
                             Text("/")
-                            Text("$\(String(format: "%.2f", past12MonthsAvg[tag.rawValue] ?? 0))")
+                            Text("$\(String(format: "%.2f", past12MonthsAvg[tag] ?? 0))")
                                 .foregroundColor(.gray)
                         }
                     }

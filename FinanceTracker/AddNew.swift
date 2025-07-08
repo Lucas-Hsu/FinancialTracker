@@ -14,7 +14,7 @@ struct AddNew: View
 
     init(date: Date = Date(),
          name: String = "",
-         tag: String = Tag.other.rawValue,
+         tag: Tag = Tag.other,
          price: Double = 19.99,
          paid: Bool = true,
          notes: [String]? = nil,

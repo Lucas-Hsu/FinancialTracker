@@ -54,7 +54,7 @@ struct ContentView: View
                 {
                     AddNew(date: addNewSheetController.date,
                            name: addNewSheetController.name,
-                           tag: addNewSheetController.tag.rawValue,
+                           tag: addNewSheetController.tag,
                            price: addNewSheetController.price)
                 }
                 .tabItem { Label("Records",

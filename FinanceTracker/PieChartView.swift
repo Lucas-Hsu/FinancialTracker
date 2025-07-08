@@ -8,7 +8,7 @@ import SwiftUI
 import Charts
 
 struct PieChartView: View {
-    let data: [(tag: String, total: Double)]
+    let data: [(tag: Tag, total: Double)]
     let total: Double
     
     @Environment(\.dismiss) private var dismiss
@@ -31,7 +31,7 @@ struct PieChartView: View {
                                 angle: .value("Amount", entry.total),
                                 innerRadius: .ratio(0.4)
                             )
-                            .foregroundStyle(by: .value("Tag", entry.tag + ": $\(String(format: "%.2f", entry.total))"))
+                            .foregroundStyle(by: .value("Tag", entry.tag.rawValue + ": $\(String(format: "%.2f", entry.total))"))
                             .annotation(position: .overlay) {
                                 Text(String(format: "%.0f%%", percentage * 100))
                                     .font(.title3)

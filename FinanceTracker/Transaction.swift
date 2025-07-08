@@ -9,18 +9,44 @@ import Foundation
 import SwiftData
 import SwiftUI
 
+struct TransactionSignature: Codable, Equatable, Hashable
+{
+    var name: String
+    var price: Double
+    var tag: String
+    
+    init(name: String,
+         price: Double,
+         tag: String)
+    {
+        self.name = name
+        self.price = price
+        self.tag = tag
+    }
+    
+    init(name: String,
+         price: Double,
+         tag: Tag)
+    {
+        self.name = name
+        self.price = price
+        self.tag = tag.rawValue
+    }
+}
+
+
 /// A transaction record
 @Model class Transaction: Equatable
 {
     @Attribute(.unique) private(set) var id: UUID
     var date: Date
     var name: String
-    var tag: String // Store enum Tag as String
+    var tag: Tag
     var price: Double
     var paid: Bool
     var notes: [String]?
     var image: Data?
-    
+    var signature: TransactionSignature { TransactionSignature(name: self.name, price: self.price, tag: self.tag) }
     var priceFormatter: NumberFormatter
     {
         let formatter = NumberFormatter()
@@ -32,7 +58,7 @@ import SwiftUI
     
     init(date: Date = Date(),
          name: String = "",
-         tag: String = Tag.other.rawValue,
+         tag: Tag = Tag.other,
          price: Double = 19.99,
          paid: Bool = true,
          notes: [String]? = nil,
@@ -55,7 +81,7 @@ import SwiftUI
     ///  - minDate:     if provided,    filter for self.date newer or equals to minDate
     ///  - maxDate:     if provided,    filter for self.date older or equals to maxDate
     public func matchesFilter(onlyUnpaid: Bool = false,
-                              tags: Set<String>? = nil,
+                              tags: Set<Tag>? = nil,
                               minDate: Date? = nil,
                               maxDate: Date? = nil) -> Bool
     {
@@ -66,37 +92,19 @@ import SwiftUI
         return true
     }
     
-    public func isPartOf(event: Events) -> Bool
+    public func isPartOf(recurringTransaction: RecurringTransaction) -> Bool
     {
-        if (self.name != event.name ||
-            self.price != event.price ||
-            self.tag != event.tag.rawValue)
+        if (self.name != recurringTransaction.name ||
+            self.price != recurringTransaction.price ||
+            self.tag != recurringTransaction.tag)
         { return false }
         
-        if self.date < event.date
-        { return false }
-        
-        switch event.intervalType
-        {
-        case TypesOfRecurringTransaction.Yearly.rawValue: // Yearly: Exact same month and day
-            if !isExactSameDayAndMonth(date1: self.date, date2: event.date)
-            { return false }
-            
-        case TypesOfRecurringTransaction.Monthly.rawValue: // Monthly: Either exactly match, or each last day of month
-            if !isExactSameDay(date1: self.date,
-                              date2: event.date) &&
-               !canMapDown(dateInitial: event.date,
-                          dateNow: self.date)
-            { return false }
-            
-        default: // Custom: Exact multiple of the interval days
-            if !isDaysAfter(dateInitial: event.date,
-                           interval: event.interval,
-                           dateNow: self.date)
-            { return false }
-        }
-        return true
+        return recurringTransaction.occursOn(date: self.date)
     }
+    
+    public func sameDayAs(_ other: Transaction) -> Bool
+    { return Calendar.current.startOfDay(for: other.date) == Calendar.current.startOfDay(for: self.date) }
+    
     
     public func setId(id: UUID)
     {
@@ -143,7 +151,7 @@ struct TransactionView: View {
                 Text(transaction.name)
                     .font(.body)
                 
-                Text(transaction.tag)
+                Text(transaction.tag.rawValue)
                     .font(.subheadline)
                     .foregroundColor(.gray)
             }

@@ -12,7 +12,7 @@ struct CodableTransaction: Codable, Identifiable
     var id: UUID
     var date: Date
     var name: String
-    var tag: String
+    var tag: Tag
     var price: Double
     var paid: Bool
     var notes: [String]?

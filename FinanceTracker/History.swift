@@ -32,7 +32,7 @@ struct History: View
     @EnvironmentObject var modifySheetController: SheetController
     
     @State private var customsCenter = CustomsCenter()
-    @State private var selectedTags: Set<String> = Set(Tag.allCases.map { $0.rawValue })
+    @State private var selectedTags: Set<Tag> = Set(Tag.allCases)
     @State private var onlyUnpaid: Bool = false;
     @State private var selectedTransaction: Transaction?
 
@@ -86,18 +86,18 @@ struct History: View
                     Image(systemName: tagSymbol[tag] ?? "questionmark")
                         .frame(width: 80, height: 50)
                         .cornerRadius(8)
-                        .foregroundColor(self.selectedTags.contains(tag.rawValue) ? .white : .secondary)
-                        .scaleEffect(self.selectedTags.contains(tag.rawValue) ? 1.1 : 1.0)
+                        .foregroundColor(self.selectedTags.contains(tag) ? .white : .secondary)
+                        .scaleEffect(self.selectedTags.contains(tag) ? 1.1 : 1.0)
                         .animation(.spring(response: 0.4, dampingFraction: 0.4, blendDuration: 0.1), value: selectedTags)
                         
-                        .accentButtonToggled(boolean:self.selectedTags.contains(tag.rawValue))
+                        .accentButtonToggled(boolean:self.selectedTags.contains(tag))
                         .onTapGesture
                         {
-                            if self.selectedTags.contains(tag.rawValue)
+                            if self.selectedTags.contains(tag)
                             {
-                                self.selectedTags.remove(tag.rawValue)
+                                self.selectedTags.remove(tag)
                             } else {
-                                self.selectedTags.insert(tag.rawValue)
+                                self.selectedTags.insert(tag)
                             }
                         }
                 }

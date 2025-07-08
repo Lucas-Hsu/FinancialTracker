@@ -51,21 +51,15 @@ struct CalendarView: View
     }
     
     /// Return Events that recur on this day
-    private func getEvents(date: Date) -> [Events]
+    private func getEvents(date: Date) -> [RecurringTransaction]
     {
-        var events: [Events] = []
-        for i in 0..<recurringTransactions.count
+        var occurringTransactions: [RecurringTransaction] = []
+        for i in 0..<self.recurringTransactions.count
         {
-            if recurringTransactions[i].occursOnDate(date: date)
-            {
-                let newEvent: Events = recurringTransactions[i].verboseDescriptionEvent()
-                if recurringTransactions[i].occursOnDateButAfter(date: date, initialDate: newEvent.date)
-                {
-                    events.append(newEvent)
-                }
-            }
+            if self.recurringTransactions[i].occursOn(date: selectedDate)
+            { occurringTransactions.append(self.recurringTransactions[i]) }
         }
-        return events
+        return occurringTransactions
     }
     
     var body: some View
@@ -161,22 +155,16 @@ struct CalendarView: View
                     .padding(.bottom, 5)
                 
                 ForEach(getEvents(date: selectedDate), id: \.self)
-                { event in
-                    let relatedTransaction = transactions.filter
-                    { transaction in
-                        transaction.isPartOf(event: event) &&
-                        calendar.isDate(transaction.date,
-                                        inSameDayAs: selectedDate)
-                    }
+                { event in 
                     
                     // nil == false returns false
-                    let textColor: Color = relatedTransaction.first?.paid == false ? .red : .accentColor
+                    let textColor: Color = event.transactionOn(date: selectedDate)?.paid == false ? .red : .accentColor
 
                     HStack
                     {
                         Image(systemName: "calendar")
                         
-                        Text(event.toString())
+                        Text(event.eventDescription())
                             .foregroundColor(textColor)
                     }
                         .padding(.vertical, 4)
@@ -230,7 +218,7 @@ struct CalendarView: View
     {
         return recurringTransactions.contains
         { recurringTransaction in
-            recurringTransaction.occursOnDate(date: day)
+            recurringTransaction.occursOn(date: day)
         }
     }
 }

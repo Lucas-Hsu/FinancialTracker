@@ -88,7 +88,7 @@ struct RecurringTransactionsTestView: View {
                 let allDays: [Date] = daysInYear(year: currentYear)
                 List(allDays, id: \.self) { date in
                     if let recurringTransactionLast = recurringTransactions.last {
-                        if recurringTransactionLast.occursOnDate(date: date) {
+                        if recurringTransactionLast.occursOn(date: date) {
                             Text("\(date)")
                         }
                     }
@@ -172,11 +172,11 @@ struct RecurringTransactionsTestView: View {
     ) {
         modelContext.insert(
             RecurringTransaction(
-                date: date,
-                intervalType: intervalType,
+                beginDate: date,
+                intervalType: TypesOfRecurringTransaction(rawValue: intervalType)!,
                 interval: interval,
                 name: name.isEmpty ? "Unnamed RecurringTransaction" : name,
-                tag: tag,
+                tag: Tag(rawValue: tag)!,
                 price: price,
                 notes: notes
             )

@@ -22,5 +22,5 @@ struct ModifyOld: View
 #Preview
 { ModifyOld(transaction: .constant(Transaction(date: Date(),
                                                name: "Test",
-                                               tag: Tag.food.rawValue,
+                                               tag: Tag.food,
                                                price: 1.00, paid: true))) }
