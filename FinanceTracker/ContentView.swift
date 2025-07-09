@@ -28,13 +28,14 @@ func saveModelContext(_ modelContext: ModelContext)
 struct ContentView: View
 {
     @StateObject private var addNewSheetController = SheetController()
+    @State private var selectedRecurringTransactions: [RecurringTransaction] = []
     @State private var selectedTab: Tab = Tab.records
     
     var body: some View
     {
         TabView (selection: $selectedTab)
         {
-            Suggestions()
+            Suggestions(selectedRecurringTransactions: $selectedRecurringTransactions)
                 .tabItem { Label("Suggestions",
                                  systemImage: "person.text.rectangle") }
                 .tag(Tab.suggestions)
@@ -44,7 +45,7 @@ struct ContentView: View
                 
             HStack
             {
-                CalendarView()
+                CalendarView(selectedRecurringTransactions: $selectedRecurringTransactions)
                     .padding()
                 History()
                     .padding()

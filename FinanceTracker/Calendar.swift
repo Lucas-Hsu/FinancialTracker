@@ -19,9 +19,9 @@ extension Array {
 
 struct CalendarView: View
 {
+    
     @EnvironmentObject var addNewSheetController: SheetController
-    @Query(sort: \Transaction.date, order: .forward) var transactions: [Transaction]
-    @Query(sort: \RecurringTransaction.name, order: .forward) var recurringTransactions: [RecurringTransaction]
+    @Binding var selectedRecurringTransactions : [RecurringTransaction]
         
     @State private var scaleEffect: CGFloat = 1.0
     @State private var selectedDate: Date = Date()
@@ -54,10 +54,10 @@ struct CalendarView: View
     private func getEvents(date: Date) -> [RecurringTransaction]
     {
         var occurringTransactions: [RecurringTransaction] = []
-        for i in 0..<self.recurringTransactions.count
+        for i in 0..<self.selectedRecurringTransactions.count
         {
-            if self.recurringTransactions[i].occursOn(date: selectedDate)
-            { occurringTransactions.append(self.recurringTransactions[i]) }
+            if self.selectedRecurringTransactions[i].occursOn(date: selectedDate)
+            { occurringTransactions.append(self.selectedRecurringTransactions[i]) }
         }
         return occurringTransactions
     }
@@ -126,7 +126,7 @@ struct CalendarView: View
                                                                 !calendar.isDate(day, inSameDayAs: selectedDate),
                                                              opacity1: 0.3,
                                                              opacity2: 0.001) // Highlight today
-                                        .underline(hasRecurringTransaction(for: day),
+                                        .underline(ifEventsOccur(on: day),
                                                    color: Color.accentColor)  // Only underline if has Event
                                         .onTapGesture { selectedDate = day
                                                         scaleEffect = 1.2
@@ -157,8 +157,8 @@ struct CalendarView: View
                 ForEach(getEvents(date: selectedDate), id: \.self)
                 { event in 
                     
-                    // nil == false returns false
-                    let textColor: Color = event.transactionOn(date: selectedDate)?.paid == false ? .red : .accentColor
+                    let textColor: Color = (event.transactionOn(date: selectedDate) == nil ||
+                                            event.transactionOn(date: selectedDate)?.paid == false) ? .red : .accentColor
 
                     HStack
                     {
@@ -172,7 +172,7 @@ struct CalendarView: View
                                         addNewSheetController.tag = event.tag
                                         addNewSheetController.price = event.price
                                         addNewSheetController.date = selectedDate
-                                        addNewSheetController.toggleSheet()}
+                                        addNewSheetController.showSheet() }
                 }
             }
                 .padding(.horizontal)
@@ -207,23 +207,24 @@ struct CalendarView: View
             for dayCount in days
             {
                 if let day = calendar.date(byAdding: .day, value: dayCount - 1, to: firstDayOfMonth)
-                { paddedDays.append(day) }
+                { paddedDays.append(day.endOfDay) }
             }
             paddedDays.append(contentsOf: Array(repeating: nil, count: (7 - paddedDays.count % 7) % 7))
         }
         return paddedDays
     }
     
-    private func hasRecurringTransaction(for day: Date) -> Bool
+    private func ifEventsOccur(on day: Date) -> Bool
     {
-        return recurringTransactions.contains
-        { recurringTransaction in
-            recurringTransaction.occursOn(date: day)
+        for event in selectedRecurringTransactions
+        {
+            if event.occursOn(date: day) { return true }
         }
+        return false
     }
 }
 
 #Preview {
-    CalendarView()
+    CalendarView(selectedRecurringTransactions: .constant([]))
         .modelContainer(for: [RecurringTransaction.self, Transaction.self], inMemory: true)
 }

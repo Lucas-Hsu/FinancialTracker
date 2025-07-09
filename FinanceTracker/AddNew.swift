@@ -10,7 +10,7 @@ import SwiftUI
 /// A class that handles adding new transactions.
 struct AddNew: View
 {
-    @State private var transaction: Transaction = Transaction()
+    @State private var transaction: Transaction
 
     init(date: Date = Date(),
          name: String = "",
@@ -20,6 +20,8 @@ struct AddNew: View
          notes: [String]? = nil,
          image: Data? = Data())
     {
+        print("*")
+        print(name)
         transaction = Transaction(date: date,
                                   name: name,
                                   tag: tag,
@@ -27,6 +29,8 @@ struct AddNew: View
                                   paid: paid,
                                   notes: notes,
                                   image: image)
+        print (transaction.name)
+        print("*")
     }
     
     var body: some View

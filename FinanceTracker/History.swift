@@ -17,9 +17,9 @@ class SheetController: ObservableObject
     public var price: Double = 0.00
     public var date: Date = Date()
     
-    func toggleSheet()
+    func showSheet()
     {
-        showAddNewSheet.toggle()
+        showAddNewSheet = true
         print("ShowAddNewSheet")
     }
 }
@@ -136,7 +136,7 @@ struct History: View
                     modifySheetController.name = ""
                     modifySheetController.tag = .other
                     modifySheetController.price = 00.00
-                    modifySheetController.toggleSheet()
+                    modifySheetController.showSheet()
                     addNewButtonScaleEffect = 1.2
                     withAnimation(Animation.spring.speed(0.6),
                         {
@@ -203,11 +203,7 @@ struct History: View
         }
             .fullScreenCover(item: $selectedTransaction)
             { transaction in
-                ModifyOld(transaction: Binding(get: { transaction },
-                                               set: { updatedTransaction in
-                                                        self.selectedTransaction = updatedTransaction
-                                                    }
-                                              ))
+                ModifyOld(transaction: transaction)
             }
             .fileExporter(isPresented: $customsCenter.isExporting,
                           document: customsCenter.exportFile(),

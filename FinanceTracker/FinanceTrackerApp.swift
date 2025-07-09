@@ -13,7 +13,7 @@ struct FinanceTrackerApp: App
     var sharedModelContainer: ModelContainer =
     {
         let schema = Schema([Transaction.self,
-                             RecurringTransaction.self
+                             RecurringTransaction.self,
                             ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

@@ -228,3 +228,46 @@ struct CustomModifier_Previews: PreviewProvider {
         AddNew()
     }
 }
+
+// MARK: Functions
+
+extension Date
+{
+    func sameDayAs(_ date: Date) -> Bool
+    { return Calendar.current.startOfDay(for: self) == Calendar.current.startOfDay(for: date) }
+    
+    func amountOfDays(from date: Date) -> Int
+    {
+        let direction = Calendar.current.startOfDay(for: self) <= Calendar.current.startOfDay(for: date) ? 1 : -1
+        let dates : [Date] = [self, date].sorted { $0 < $1 }
+        var i : Int = 0
+        var dateRunner : Date = Calendar.current.date(byAdding: DateComponents(day: i), to: dates[0])!
+        while !dateRunner.sameDayAs(dates[1])
+        {
+            i = i + 1
+            dateRunner = Calendar.current.date(byAdding: DateComponents(day: i), to: dates[0])!
+        }
+        return i * direction
+    }
+    
+    var endOfDay: Date
+    {
+        var calendar = Calendar.current
+        calendar.timeZone = TimeZone.current
+        var components = calendar.dateComponents([.year, .month, .day], from: self)
+        components.hour = 23
+        components.minute = 59
+        components.second = 59
+        return calendar.date(from: components) ?? self
+    }
+    
+    var localDescription: String
+    {
+        let formatter = DateFormatter()
+        formatter.timeZone = .current
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .medium
+        return formatter.string(from: self)
+    }
+}
+

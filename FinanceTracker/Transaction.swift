@@ -64,6 +64,9 @@ struct TransactionSignature: Codable, Equatable, Hashable
          notes: [String]? = nil,
          image: Data? = nil)
     {
+        print("___")
+        print(name)
+        print("___")
         self.id = UUID()
         self.date = date
         self.name = name
@@ -105,6 +108,8 @@ struct TransactionSignature: Codable, Equatable, Hashable
     public func sameDayAs(_ other: Transaction) -> Bool
     { return Calendar.current.startOfDay(for: other.date) == Calendar.current.startOfDay(for: self.date) }
     
+    public func sameDayAs(date: Date) -> Bool
+    { return Calendar.current.startOfDay(for: date) == Calendar.current.startOfDay(for: self.date) }
     
     public func setId(id: UUID)
     {

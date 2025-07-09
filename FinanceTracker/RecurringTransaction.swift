@@ -9,6 +9,45 @@ import SwiftUI
 import SwiftData
 import Foundation
 
+struct RecurringTransactionSignature: Codable, Equatable, Hashable
+{
+    var beginDate: Date
+    var intervalType: TypesOfRecurringTransaction
+    var interval: Int
+    var name: String
+    var price: Double
+    var tag: Tag
+    var notes: [String]?
+    
+    
+    init(name: String,
+         price: Double,
+         tag: Tag,
+         notes: [String]? = nil,
+         beginDate: Date = Date(),
+         intervalType: TypesOfRecurringTransaction = .Custom,
+         interval: Int = 1)
+    {
+        self.name = name
+        self.price = price
+        self.tag = tag
+        self.notes = notes
+        self.beginDate = beginDate
+        self.intervalType = intervalType
+        self.interval = interval
+    }
+    
+    init (recurringTransaction: RecurringTransaction) {
+        self.name = recurringTransaction.name
+        self.price = recurringTransaction.price
+        self.tag = recurringTransaction.tag
+        self.notes = recurringTransaction.notes
+        self.beginDate = recurringTransaction.beginDate
+        self.intervalType = recurringTransaction.intervalType
+        self.interval = recurringTransaction.interval
+    }
+}
+
 @Model class RecurringTransaction: Equatable
 {
     @Attribute(.unique) var id: UUID
@@ -20,6 +59,8 @@ import Foundation
     var price: Double
     var notes: [String]?
     var transactions: [Transaction]
+    var signature : RecurringTransactionSignature
+    { RecurringTransactionSignature(recurringTransaction: self) }
     
     init(beginDate: Date = Date(),
          intervalType: TypesOfRecurringTransaction = TypesOfRecurringTransaction.Yearly,
@@ -72,28 +113,88 @@ import Foundation
     
     public func occursOn(date: Date) -> Bool
     {
-        return RelationshipBetween(date1: self.beginDate, date2: date) == getTransactionPattern()
+        if Calendar.current.startOfDay(for: self.beginDate) > Calendar.current.startOfDay(for: date)
+        { return false }
+        let pattern : TransactionPattern = getTransactionPattern()
+        switch (pattern.getType())
+        {
+        case .Yearly:
+            var i : Int = 0
+            var dateRunner : Date = self.beginDate
+            while dateRunner <= date.addingTimeInterval(365*24*3600)
+            {
+                if dateRunner.sameDayAs(date)
+                {
+                    return i % pattern.getInterval() == 0
+                }
+                i += 1
+                dateRunner = Calendar.current.date(byAdding: .year, value: i, to: dateRunner)!
+            }
+        case .Monthly:
+            var i : Int = 0
+            var dateRunner : Date = self.beginDate
+            while dateRunner <= date.addingTimeInterval(30*24*3600)
+            {
+                if dateRunner.sameDayAs(date)
+                {
+                    return i % pattern.getInterval() == 0
+                }
+                i += 1
+                dateRunner = Calendar.current.date(byAdding: .month, value: i, to: dateRunner)!
+            }
+        case .Weekly:
+            let interval : Int = self.beginDate.amountOfDays(from: date)
+            return interval % 7 == 0
+                    && interval/7 % pattern.getInterval() == 0
+        case .Custom:
+            let interval : Int = self.beginDate.amountOfDays(from: date)
+            return interval % pattern.getInterval() == 0
+        }
+        return false
     }
     
     public func reccursOn(date: Date) -> Bool
     {
-        return RelationshipBetween(date1: self.beginDate, date2: date) == getTransactionPattern() && date != self.beginDate
+        return !date.sameDayAs(self.beginDate) && occursOn(date: date)
     }
     
     public func transactionOn(date: Date) -> Transaction?
     {
         for transaction in self.transactions
         {
-            if Calendar.current.startOfDay(for: transaction.date) == Calendar.current.startOfDay(for: date)
+            if transaction.sameDayAs(date: date)
             { return transaction }
         }
         return nil
     }
     
+    public func isIn(array: [RecurringTransaction]) -> Bool
+    {
+        for recurringTransaction in array
+        {
+            if recurringTransaction.id == self.id
+            { return true }
+        }
+        return false
+    }
     
     public func eventDescription() -> String
     {
-        return "EVENT"
+        let words : [TypesOfRecurringTransaction : [String]] = [.Yearly : ["yearly", "years"],
+                                                                .Monthly : ["monthly", "months"],
+                                                                .Weekly : ["weekly", "weeks"],
+                                                                .Custom : ["daily", "days"]]
+        let formatter = DateFormatter()
+        formatter.timeZone = .current
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .medium
+        let description : String = "\(self.name), \(self.price); Started on \(self.beginDate.localDescription), recurs "
+        if self.interval != 1
+        {
+            return description + "every \(self.interval) \(words[self.intervalType]?[1] ?? "[ERROR]")."
+        } else {
+            return description + "\(words[self.intervalType]?[0] ?? "[ERROR]")."
+        }
     }
     
     // Conformance to Equatable
@@ -105,125 +206,66 @@ import Foundation
 
 struct RecurringTransactionTile: View {
    @Environment(\.modelContext) private var modelContext
-   @Query var recurringTransactions: [RecurringTransaction]
-   
-   @State var transactions: [Transaction] = []
-   @State var date: Date = Date()
-   @State var name: String = "Recurring Transaction"
-   @State var type: String = "Custom"
-   @State var interval: Int = 0
-   @State var tag: String = "Other"
-   @State var price: Double = 0.00
-
-   let patterns: [(type: String, interval: Int)] = [
-   ("Daily", 1),
-   ("Weekly", 7),
-   ("Monthly", 30),
-   ("Yearly", 365)
-   ]
+   @State var recurringTransaction: RecurringTransaction
+    @Binding var selectedRecurringTransactions: [RecurringTransaction]
+    
    var body: some View {
    HStack {
-       Text(transactions.first?.name ?? "Recurring Transaction")
+       Text(recurringTransaction.name)
        .padding()
        Spacer()
-       Text(transactions.first?.date.formatted(.dateTime.year().month(.abbreviated).day(.twoDigits)) ?? "0000/MMM./00")
+       Text(recurringTransaction.beginDate.description)
        .padding()
        Spacer()
        
-       Text("\(getPattern().getType())")
+       Text(recurringTransaction.intervalType.rawValue)
        .padding()
        
        Spacer()
-       Text("\(getPattern().getInterval())")
+       Text(recurringTransaction.interval.description)
        .padding()
        Spacer()
        
        Button(action: {
-           if (isInContext(recurringTransaction: constructRecurringTransaction())) {
-               deleteRecurringTransaction()
+           if (recurringTransaction.isIn(array: selectedRecurringTransactions))
+           {
+               let index : Int = selectedRecurringTransactions.firstIndex(where: { $0.id == recurringTransaction.id })!
+               selectedRecurringTransactions.remove(at: index)
            } else {
-               addRecurringTransaction()
+               selectedRecurringTransactions.append(recurringTransaction)
            }
-       }) {
-           Text(isInContext(recurringTransaction: constructRecurringTransaction()) ? "Delete" : "Add").padding(8)
+       })
+       {
+           Text(recurringTransaction.isIn(array: selectedRecurringTransactions) ? "Remove" : "Activate")
+               .padding(8)
                .padding(.horizontal, 8)
                .frame(width: 100, height: 40)
-               .background{
-                   if (isInContext(recurringTransaction: constructRecurringTransaction())) {
+               .background
+                {
+                   if (recurringTransaction.isIn(array: selectedRecurringTransactions))
+                    {
                        RoundedRectangle(cornerRadius: 6)
                            .fill(.red.opacity(0.4))
                            .blur(radius: 4)
                            .opacity(1)
-                   } else {
-                           RoundedRectangle(cornerRadius: 6)
-                           .fill(.ultraThickMaterial)
-                               .blur(radius: 4)
-                               .opacity(1)
-                   }
-               }
+                    } else {
+                       RoundedRectangle(cornerRadius: 6)
+                            .fill(.ultraThickMaterial)
+                            .blur(radius: 4)
+                            .opacity(1)
+                    }
+                }
        }
        .buttonStyle(ScaleButtonStyle())
-       .foregroundStyle(isInContext(recurringTransaction: constructRecurringTransaction()) ? Color.red : Color.accentColor)
+       .foregroundStyle(recurringTransaction.isIn(array: selectedRecurringTransactions) ? Color.red : Color.accentColor)
        .padding()
-       
    }
    .frame(minWidth: 0, maxWidth: 600, maxHeight: 80)
    .cornerRadius(20)
-   }
-
-   private func addRecurringTransaction() {
-       print("Adding Recurring Transaction")
-   let newTransaction = RecurringTransaction(beginDate: transactions.first?.date ?? Date(),
-                                             intervalType: getPattern().getType(),
-                                             interval: getPattern().getInterval(),
-                                             name: transactions.first?.name ?? "Recurring Transaction",
-                                             tag: transactions.first?.tag ?? .other,
-                                             price: transactions.first?.price ?? 0.00
-   )
-   modelContext.insert(newTransaction)
-   }
-   
-   private func deleteRecurringTransaction() {
-       let newRecurringTransaction = constructRecurringTransaction()
-       print("Deleting Recurring Transaction")
-       if let existingTransaction = self.recurringTransactions.first(where: { $0 == newRecurringTransaction }) {
-           modelContext.delete(existingTransaction)
-           print("Deleted existing transaction")
-       }
-   }
-   
-   private func constructRecurringTransaction() -> RecurringTransaction
-   {
-       return RecurringTransaction(beginDate: transactions.first?.date ?? Date(),
-                                   intervalType: getPattern().getType(),
-                                   interval: getPattern().getInterval(),
-                                   name: transactions.first?.name ?? "Recurring Transaction",
-                                   tag: transactions.first?.tag ?? .other,
-                                   price: transactions.first?.price ?? 0.00
-                                   )
-   }
-   
-   private func isInContext(recurringTransaction: RecurringTransaction) -> Bool
-   {
-       if (recurringTransactions.contains(recurringTransaction))
-       { return true }
-       return false
-   }
-   
-   private func getPattern() -> TransactionPattern
-   {
-       var transactions : [Transaction] = transactions.sorted { $0.date < $1.date }
-       // Ignore repeated transactions
-       transactions = transactions.reduce(into: [Transaction]())
-       { result, transaction in
-           if !result.contains(where: { $0.sameDayAs(transaction) })
-           { result.append(transaction) }
-       }
-       return RelationshipBetween(date1: transactions[0].date, date2: transactions[1].date)
    }
 }
 
 
 #Preview {
-    Suggestions().modelContainer(for: RecurringTransaction.self, inMemory: true)
+    RecurringTransactionTile(recurringTransaction: RecurringTransaction(), selectedRecurringTransactions: .constant([])).modelContainer(for: RecurringTransaction.self, inMemory: true)
 }

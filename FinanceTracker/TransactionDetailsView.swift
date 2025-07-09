@@ -158,8 +158,7 @@ struct TransactionDetailsView: View
                                                         price: transaction.price,
                                                         paid: transaction.paid,
                                                         notes: transaction.notes,
-                                                        image: transaction.image)
-                                        dismiss() })
+                                                        image: transaction.image) })
                         {
                             HStack
                             {
@@ -245,8 +244,11 @@ struct TransactionDetailsView: View
                                   paid: paid,
                                   notes: notes,
                                   image: image)
-        modelContext.insert(transaction)
+        if detailsType == .add {
+            modelContext.insert(transaction)
+        }
         saveModelContext(modelContext)
+        dismiss()
     }
     
     private func deleteTransaction()
