@@ -124,7 +124,7 @@ struct RecurringTransactionSignature: Codable, Equatable, Hashable
                     return i % pattern.getInterval() == 0
                 }
                 i += 1
-                dateRunner = Calendar.current.date(byAdding: .year, value: i, to: dateRunner)!
+                dateRunner = Calendar.current.date(byAdding: .year, value: i, to: beginDate)!
             }
         case .Monthly:
             var i : Int = 0
@@ -136,7 +136,7 @@ struct RecurringTransactionSignature: Codable, Equatable, Hashable
                     return i % pattern.getInterval() == 0
                 }
                 i += 1
-                dateRunner = Calendar.current.date(byAdding: .month, value: i, to: dateRunner)!
+                dateRunner = Calendar.current.date(byAdding: .month, value: i, to: beginDate)!
             }
         case .Weekly:
             let interval : Int = self.beginDate.amountOfDays(from: date)

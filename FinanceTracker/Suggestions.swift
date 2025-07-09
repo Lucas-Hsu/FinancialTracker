@@ -98,14 +98,58 @@ struct Suggestions: View {
                                           date2: sortedTransactions[1].date)
         if pattern.getTypeInternal() == .None
         { return TransactionPattern(type: .None) }
-        for i in 1..<(sortedTransactions.count - 1)
+        for i in 2..<sortedTransactions.count
         {
-            let otherPattern = RelationshipBetween(date1: sortedTransactions[i].date,
-                                                  date2: sortedTransactions[i + 1].date)
-            if otherPattern.getType() != pattern.getType() || otherPattern.getInterval() != pattern.getInterval()
+            let otherPattern = RelationshipBetween(date1: sortedTransactions[0].date,
+                                                  date2: sortedTransactions[i].date)
+            if otherPattern.getType() != pattern.getType()
+            { return TransactionPattern(type: .None) }
+            if !patternOccursOn(date: sortedTransactions[i].date, pattern: pattern)
             { return TransactionPattern(type: .None) }
         }
         return pattern
+    }
+    
+    private func patternOccursOn(date: Date, pattern: TransactionPattern) -> Bool
+    {
+        let beginDate = pattern.getBeginDate()
+        if Calendar.current.startOfDay(for: pattern.getBeginDate()) > Calendar.current.startOfDay(for: date)
+        { return false }
+        switch (pattern.getType())
+        {
+        case .Yearly:
+            var i : Int = 0
+            var dateRunner : Date = beginDate
+            while dateRunner <= date.addingTimeInterval(365*24*3600)
+            {
+                if dateRunner.sameDayAs(date)
+                {
+                    return i % pattern.getInterval() == 0
+                }
+                i += 1
+                dateRunner = Calendar.current.date(byAdding: .year, value: i, to: beginDate)!
+            }
+        case .Monthly:
+            var i : Int = 0
+            var dateRunner : Date = beginDate
+            while dateRunner <= date.addingTimeInterval(30*24*3600)
+            {
+                if dateRunner.sameDayAs(date)
+                {
+                    return i % pattern.getInterval() == 0
+                }
+                i += 1
+                dateRunner = Calendar.current.date(byAdding: .month, value: i, to: beginDate)!
+            }
+        case .Weekly:
+            let interval : Int = beginDate.amountOfDays(from: date)
+            return interval % 7 == 0
+                    && interval/7 % pattern.getInterval() == 0
+        case .Custom:
+            let interval : Int = beginDate.amountOfDays(from: date)
+            return interval % pattern.getInterval() == 0
+        }
+        return false
     }
     
     private func createRecurringTransactions(from patternGroups: [TransactionPattern: Transaction]) -> [RecurringTransaction]
@@ -128,7 +172,7 @@ struct Suggestions: View {
         }
         return recurringTransactions
     }
-
+    
     private func clearRecurringTransactions()
     {
         if self.recurringTransactions.count == 0 { return }

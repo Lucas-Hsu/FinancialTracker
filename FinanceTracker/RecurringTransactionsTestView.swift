@@ -62,130 +62,108 @@ func more365(date: Date) -> [Date] {
 
 struct RecurringTransactionsTestView: View {
     
-    @Query(sort: \RecurringTransaction.price, order: .reverse) var recurringTransactions: [RecurringTransaction]
-    @Environment(\.modelContext) var modelContext
-    
-    @State var date: Date = Date()
-    @State var intervalType: TypesOfRecurringTransaction = .Custom
-    @State var interval: Int = 1
-    @State var name: String = "Rent"
-    @State var tag: String = Tag.other.rawValue
-    @State var price: Double = 10.00
+    @State var date1 : Date = Date()
+    @State var date2 : Date = Date()
+    @State var date3 : Date = Date()
     
     var body: some View {
         HStack {
-            
-            VStack {
-                VStack{
-                    List {
-                        // Iterate over the grouped transactions
-                        ForEach(recurringTransactions) { recurringTransaction in
-                            Text(recurringTransaction.price.description)
-                        }
-                    }
+            Form{
+                DatePicker(selection: $date1)
+                {
+                    Text("H")
                 }
-                let currentYear = Calendar.current.component(.year, from: Date())
-                let allDays: [Date] = daysInYear(year: currentYear)
-                List(allDays, id: \.self) { date in
-                    if let recurringTransactionLast = recurringTransactions.last {
-                        if recurringTransactionLast.occursOn(date: date) {
-                            Text("\(date)")
-                        }
-                    }
+                
+                DatePicker(selection: $date2)
+                {
+                    Text("B")
+                }
+                
+                DatePicker(selection: $date3)
+                {
+                    Text("C")
                 }
             }
-            
-            VStack {
-                Form {
-                    Section(header: Text("Transaction Record")) {
-                        TextField("Title", text: $name)
-                            .padding()
-                        
-                        DatePicker(
-                            "Enter Date",
-                            selection: $date,
-                            displayedComponents: .date
-                        )
-                        .padding()
-                        
-                        Picker("Type", selection: $intervalType) {
-                            ForEach(TypesOfRecurringTransaction.allCases, id: \.self) { tag in
-                                Text(tag.rawValue).tag(tag)
-                            }
-                        }
-                        .pickerStyle(SegmentedPickerStyle())
-                        .padding()
-                        
-                        HStack {
-                            Text("Interval")
-                            Spacer()
-                            TextField("Enter Price", value: $interval, formatter: NumberFormatter())
-                                .keyboardType(.decimalPad)
-                        }
-                        .padding()
-                        
-                        HStack {
-                            Text("Price  (CN¥)")
-                            Spacer()
-                            TextField("Enter Price", value: $price, formatter: Transaction().priceFormatter)
-                                .keyboardType(.decimalPad)
-                        }
-                        .padding()
-                    }
-                }
-                Button(action: {
-                    saveRecurringTransaction(
-                        date: date,
-                        intervalType: intervalType.rawValue,
-                        interval: interval,
-                        name: name,
-                        tag: tag,
-                        price: price
-                    )
-                    
-                    
-                }) {
-                    HStack {
-                        Text("Submit")
-                            .font(.headline)
-                    }
-                    .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: 50)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .padding()
-                }
-            }
-            
+            Text(determinePattern(from: [Transaction(date:date1), Transaction(date:date2), Transaction(date:date3)]))
             
         }
     }
     
-    func saveRecurringTransaction(
-        date: Date,
-        intervalType: String,
-        interval: Int,
-        name: String,
-        tag: String,
-        price: Double,
-        notes: [String]? = nil
-    ) {
-        modelContext.insert(
-            RecurringTransaction(
-                beginDate: date,
-                intervalType: TypesOfRecurringTransaction(rawValue: intervalType)!,
-                interval: interval,
-                name: name.isEmpty ? "Unnamed RecurringTransaction" : name,
-                tag: Tag(rawValue: tag)!,
-                price: price,
-                notes: notes
-            )
-        )
-        try! modelContext.save()
+    /// returns exactly one patternGroup
+    private func determinePattern(from transactions: [Transaction]) -> String
+    {
+        // Ignore repeated transactions
+        let sortedTransactions = transactions.sorted { $0.date < $1.date }
+            .reduce(into: [Transaction]())
+            { result, transaction in
+                if !result.contains(where: { $0.sameDayAs(transaction) })
+                { result.append(transaction) }
+            }
+        guard sortedTransactions.count > 1 else
+        { return "" }
+        let pattern = RelationshipBetween(date1: sortedTransactions[0].date,
+                                          date2: sortedTransactions[1].date)
+        print(pattern.getTypeInternal() == .None)
+        var patterns : [TransactionPattern] = [pattern]
+        for i in 2..<sortedTransactions.count
+        {
+            let otherPattern = RelationshipBetween(date1: sortedTransactions[0].date,
+                                                  date2: sortedTransactions[i].date)
+            patterns.append(otherPattern)
+            print(otherPattern.getType() != pattern.getType())
+            print("Occurs on pattern", sortedTransactions[i].date, patternOccursOn(date: sortedTransactions[i].date, pattern: pattern))
+        }
+        print(patterns)
+        return patterns.first!.getType().rawValue
+    }
+    
+    private func patternOccursOn(date: Date, pattern: TransactionPattern) -> Bool
+    {
+        let beginDate = pattern.getBeginDate()
+        if Calendar.current.startOfDay(for: pattern.getBeginDate()) > Calendar.current.startOfDay(for: date)
+        { return false }
+        switch (pattern.getType())
+        {
+        case .Yearly:
+            var i : Int = 0
+            var dateRunner : Date = beginDate
+            while dateRunner <= date.addingTimeInterval(365*24*3600)
+            {
+                if dateRunner.sameDayAs(date)
+                {
+                    return i % pattern.getInterval() == 0
+                }
+                i += 1
+                dateRunner = Calendar.current.date(byAdding: .year, value: i, to: beginDate)!
+                print(dateRunner, date, dateRunner.sameDayAs(date))
+            }
+        case .Monthly:
+            var i : Int = 0
+            var dateRunner : Date = beginDate
+            while dateRunner <= date.addingTimeInterval(30*24*3600)
+            {
+                if dateRunner.sameDayAs(date)
+                {
+                    return i % pattern.getInterval() == 0
+                }
+                i += 1
+                dateRunner = Calendar.current.date(byAdding: .month, value: i, to: beginDate)!
+                print(dateRunner, date, dateRunner.sameDayAs(date))
+            }
+        case .Weekly:
+            let interval : Int = beginDate.amountOfDays(from: date)
+            return interval % 7 == 0
+                    && interval/7 % pattern.getInterval() == 0
+        case .Custom:
+            let interval : Int = beginDate.amountOfDays(from: date)
+            return interval % pattern.getInterval() == 0
+        }
+        return false
     }
 }
 
+
+
 #Preview {
     RecurringTransactionsTestView()
-        .modelContainer(for: RecurringTransaction.self, inMemory: true)
 }
