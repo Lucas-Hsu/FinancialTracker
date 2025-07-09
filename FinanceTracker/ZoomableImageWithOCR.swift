@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-
 struct ZoomableImageWithOCR: View {
     let image: UIImage
     let ocrResults: [OCRResult]
@@ -22,13 +21,17 @@ struct ZoomableImageWithOCR: View {
             let imageWidth = size.width
             let imageHeight = imageWidth / imageAspectRatio
 
+            // Calculate the center offset for the image based on the available space
+            let imageXOffset = (size.width - imageWidth) / 2
+            let imageYOffset = (size.height - imageHeight) / 2
+
             ZStack {
                 Image(uiImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: imageWidth, height: imageHeight)
+                    .offset(x: imageXOffset + offset.width, y: offset.height)
                     .scaleEffect(scale)
-                    .offset(offset)
                     .gesture(
                         MagnificationGesture()
                             .onChanged { value in
@@ -45,6 +48,7 @@ struct ZoomableImageWithOCR: View {
                             }
                     ) // Removed .onEnded to keep translation continuous
 
+                // Position the OCR results relative to the image
                 ForEach(ocrResults) { result in
                     Button(action: {
                         onTextTap(result)
@@ -56,9 +60,10 @@ struct ZoomableImageWithOCR: View {
                             .foregroundColor(.white)
                             .clipShape(Capsule())
                     }
+                    // Calculate the position relative to the image
                     .position(
-                        x: imageWidth * result.x * scale + offset.width,
-                        y: imageHeight * result.y * scale + offset.height
+                        x: imageXOffset + imageWidth * result.x * scale + offset.width,
+                        y: imageYOffset + imageHeight * result.y * scale + offset.height
                     )
                 }
             }
@@ -66,4 +71,3 @@ struct ZoomableImageWithOCR: View {
         }
     }
 }
-
