@@ -21,18 +21,22 @@ func saveModelContext(_ modelContext: ModelContext)
         try modelContext.save()
     } catch
     {
-        print("Failed to save context: \(error)")
+        print("[ERROR] Failed to save context: \(error)")
     }
 }
 
 struct ContentView: View
 {
     @StateObject private var addNewSheetController = SheetController()
+    @Query(sort: \Transaction.name, order: .forward) var transactions: [Transaction]
+    @Query(sort: \RecurringTransaction.name, order: .forward) var recurringTransactions: [RecurringTransaction]
+    @Query var selectedRecurringTransactionIDs: [SelectedRecurringTransactionIDs]
     @State private var selectedRecurringTransactions: [RecurringTransaction] = []
     @State private var selectedTab: Tab = Tab.records
-    
+        
     var body: some View
     {
+
         TabView (selection: $selectedTab)
         {
             Suggestions(selectedRecurringTransactions: $selectedRecurringTransactions)
@@ -71,11 +75,20 @@ struct ContentView: View
                 .tag(Tab.statistics)
         }
             .environment(\.horizontalSizeClass, .compact)
+            .onAppear
+            {
+                print(selectedRecurringTransactionIDs)
+                print(recurringTransactions)
+                print(transactions)
+                selectedRecurringTransactions = recurringTransactions.filter
+                { selectedRecurringTransactionIDs.map{$0.selectedID}.contains([$0.id]) }
+            }
     }
 }
 
 #Preview
 { ContentView()
         .modelContainer(for: [Transaction.self,
-                              RecurringTransaction.self],
+                              RecurringTransaction.self,
+                              SelectedRecurringTransactionIDs.self],
                         inMemory: true) }

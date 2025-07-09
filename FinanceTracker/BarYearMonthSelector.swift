@@ -37,7 +37,6 @@ struct BarYearMonthSelector: View {
     }
 
     private func validateDates() -> Void {
-        print(startDate, endDate, startDate>endDate)
         if (startDate > endDate) {
             selectedStartYear = selectedEndYear
             selectedStartMonth = selectedEndMonth
@@ -50,7 +49,6 @@ struct BarYearMonthSelector: View {
         if let newStart = Calendar.current.date(from: DateComponents(year: selectedStartYear, month: selectedStartMonth, day: 1)) {
             startDate = newStart
         }
-        print(startDate)
     }
 
     private func updateEndDate() {

@@ -20,8 +20,6 @@ struct AddNew: View
          notes: [String]? = nil,
          image: Data? = Data())
     {
-        print("*")
-        print(name)
         transaction = Transaction(date: date,
                                   name: name,
                                   tag: tag,
@@ -29,8 +27,6 @@ struct AddNew: View
                                   paid: paid,
                                   notes: notes,
                                   image: image)
-        print (transaction.name)
-        print("*")
     }
     
     var body: some View

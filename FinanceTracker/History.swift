@@ -71,7 +71,7 @@ struct History: View
             try modelContext.save()
             print("Cleared all transactions")
         } catch {
-            print("Failed to clear transactions: \(error.localizedDescription)")
+            print("[ERROR] Failed to clear transactions: \(error.localizedDescription)")
         }
     }
     
@@ -211,7 +211,7 @@ struct History: View
                           defaultFilename: "Transactions")
             { result in
                 if case .failure(let error) = result
-                { print("Export error: \(error.localizedDescription)") }
+                { print("[ERROR] Exporting error: \(error.localizedDescription)") }
             }
             .fileImporter(isPresented: $customsCenter.isImporting,
                           allowedContentTypes: [.json])

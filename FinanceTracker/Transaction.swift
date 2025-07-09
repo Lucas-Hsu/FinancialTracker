@@ -64,9 +64,6 @@ struct TransactionSignature: Codable, Equatable, Hashable
          notes: [String]? = nil,
          image: Data? = nil)
     {
-        print("___")
-        print(name)
-        print("___")
         self.id = UUID()
         self.date = date
         self.name = name
@@ -131,7 +128,7 @@ struct TransactionSignature: Codable, Equatable, Hashable
             """
     }
     
-    static func ==(lhs: Transaction, rhs: Transaction) -> Bool
+    static func == (lhs: Transaction, rhs: Transaction) -> Bool
     {
         abs(lhs.date.timeIntervalSince(rhs.date)) < 0.1 &&
         lhs.name == rhs.name &&

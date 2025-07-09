@@ -14,6 +14,7 @@ struct FinanceTrackerApp: App
     {
         let schema = Schema([Transaction.self,
                              RecurringTransaction.self,
+                             SelectedRecurringTransactionIDs.self
                             ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

@@ -12,7 +12,10 @@ struct Suggestions: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Transaction.name, order: .forward) var transactions: [Transaction]
     @Query(sort: \RecurringTransaction.name, order: .forward) var recurringTransactions: [RecurringTransaction]
+    @Query var selectedRecurringTransactionIDs: [SelectedRecurringTransactionIDs]
     @Binding var selectedRecurringTransactions: [RecurringTransaction]
+    @State var refreshScale : CGFloat = 1.0
+    @State var isRefreshing: Bool = false
     
     // Update `categoree` when `transactions` changes
     var body: some View
@@ -21,7 +24,20 @@ struct Suggestions: View {
         VStack
         {
             Button("Refresh")
-            { refresh() }
+            {
+                if (!isRefreshing)
+                {
+                    refresh()
+                    isRefreshing = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0)
+                    { isRefreshing = false }
+                }
+                refreshScale = 1.2
+                withAnimation(.easeInOut(duration: 2))
+                { refreshScale = 1.0 }
+            }
+                .scaleEffect(refreshScale)
+                
             
             VStack
             {
@@ -38,11 +54,8 @@ struct Suggestions: View {
     {
         clearRecurringTransactions()
         let categories = categorizeTransactions()
-        print(categories)
         let patterns = determinePatterns(from: categories)
-        print(patterns)
         let newRecurringTransactions = createRecurringTransactions(from: patterns)
-        print(newRecurringTransactions)
         addRecurringTransactions(recurringTransactions: newRecurringTransactions)
     }
     
@@ -57,20 +70,20 @@ struct Suggestions: View {
         return recurringGroupedTransactions
     }
     
-    private func determinePatterns(from groupedTransactions: [TransactionSignature:[Transaction]]) -> [TransactionPattern: [Transaction]]
+    private func determinePatterns(from groupedTransactions: [TransactionSignature:[Transaction]]) -> [TransactionPattern: Transaction]
     {
-        var patterns: [TransactionPattern: [Transaction]] = [:]
+        var patterns: [TransactionPattern: Transaction] = [:]
         for group in groupedTransactions.keys
         {
-            let pattern = determinePattern(from: groupedTransactions[group]!).first!
-            if (pattern.key.getTypeInternal() == .None) { continue }
-            patterns[pattern.key] = pattern.value
+            let pattern = determinePattern(from: groupedTransactions[group]!)
+            if (pattern.getTypeInternal() == .None) { continue }
+            patterns[pattern] = groupedTransactions[group]?.first!
         }
         return patterns
     }
     
     /// returns exactly one patternGroup
-    private func determinePattern(from transactions: [Transaction]) -> [TransactionPattern: [Transaction]]
+    private func determinePattern(from transactions: [Transaction]) -> TransactionPattern
     {
         // Ignore repeated transactions
         let sortedTransactions = transactions.sorted { $0.date < $1.date }
@@ -79,30 +92,29 @@ struct Suggestions: View {
                 if !result.contains(where: { $0.sameDayAs(transaction) })
                 { result.append(transaction) }
             }
-        print(sortedTransactions.map { $0.date })
         guard sortedTransactions.count > 1 else
-        { return [TransactionPattern(type: .None):[]] }
+        { return TransactionPattern(type: .None) }
         let pattern = RelationshipBetween(date1: sortedTransactions[0].date,
                                           date2: sortedTransactions[1].date)
         if pattern.getTypeInternal() == .None
-        { return [TransactionPattern(type: .None):[]] }
+        { return TransactionPattern(type: .None) }
         for i in 1..<(sortedTransactions.count - 1)
         {
             let otherPattern = RelationshipBetween(date1: sortedTransactions[i].date,
                                                   date2: sortedTransactions[i + 1].date)
             if otherPattern.getType() != pattern.getType() || otherPattern.getInterval() != pattern.getInterval()
-            { return [TransactionPattern(type: .None):[]] }
+            { return TransactionPattern(type: .None) }
         }
-        return [pattern:transactions]
+        return pattern
     }
     
-    private func createRecurringTransactions(from patternGroups: [TransactionPattern: [Transaction]]) -> [RecurringTransaction]
+    private func createRecurringTransactions(from patternGroups: [TransactionPattern: Transaction]) -> [RecurringTransaction]
     {
         var recurringTransactions : [RecurringTransaction] = []
         for patternGroup in patternGroups
         {
             let pattern : TransactionPattern = patternGroup.key
-            let transactionSample : Transaction = patternGroup.value.first!
+            let transactionSample : Transaction = patternGroup.value
             if pattern.getTypeInternal() == .None
             { continue }
             let recurringTransaction : RecurringTransaction = RecurringTransaction(beginDate: pattern.getBeginDate(),
@@ -111,8 +123,7 @@ struct Suggestions: View {
                                                                                    name: transactionSample.name,
                                                                                    tag: transactionSample.tag,
                                                                                    price: transactionSample.price,
-                                                                                   notes: transactionSample.notes,
-                                                                                   transactions: patternGroup.value)
+                                                                                   notes: transactionSample.notes)
             recurringTransactions.append(recurringTransaction)
         }
         return recurringTransactions
@@ -120,17 +131,30 @@ struct Suggestions: View {
 
     private func clearRecurringTransactions()
     {
-        selectedRecurringTransactions = []
+        if self.recurringTransactions.count == 0 { return }
+        
         for recurringTransaction in recurringTransactions
         { modelContext.delete(recurringTransaction) }
         saveModelContext(modelContext)
+        
+        for selectedRecurringTransactionId in selectedRecurringTransactionIDs {
+            modelContext.delete(selectedRecurringTransactionId)
+            saveModelContext(modelContext)
+        }
+        
+        selectedRecurringTransactions = []
     }
     
     private func addRecurringTransactions(recurringTransactions: [RecurringTransaction])
     {
+        if self.recurringTransactions.count > 0 { return }
+        
         for recurringTransaction in recurringTransactions
-        { modelContext.insert(recurringTransaction) }
-        saveModelContext(modelContext)
+        {
+            if self.recurringTransactions.map({$0.id}).contains(recurringTransaction.id) == false
+            { modelContext.insert(recurringTransaction) }
+            saveModelContext(modelContext)
+        } 
     }
 }
 
@@ -153,7 +177,6 @@ func RelationshipBetween(date1: Date, date2: Date) -> TransactionPattern
     }
 
     if components1.month != components2.month {
-        print("Entered Month If")
         var i : Int = 1
         var dateRunner : Date = Calendar.current.date(byAdding: DateComponents(month: i), to: dates[0])!
         while dateRunner <= dates[1].addingTimeInterval(31*24*60*60) // + 1 month to make sure not accidentally neglect dates

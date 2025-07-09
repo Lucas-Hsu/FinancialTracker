@@ -70,13 +70,13 @@ class CustomsCenter
                     let models = decoded.map { $0.toModel() }
                     self.importCallback?(models)
                 } catch {
-                    print("[Error] Import failed:", error.localizedDescription)
+                    print("[ERROR] Import failed:", error.localizedDescription)
                 }
             } else {
-                print("[Error] Could not start security scoped access")
+                print("[ERROR] Could not start security scoped access")
             }
         case .failure(let error):
-            print("[Error] File selection failed:", error.localizedDescription)
+            print("[ERROR] File selection failed:", error.localizedDescription)
         }
     }
 }

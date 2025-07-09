@@ -21,6 +21,7 @@ struct CalendarView: View
 {
     
     @EnvironmentObject var addNewSheetController: SheetController
+    @Query var transactions: [Transaction]
     @Binding var selectedRecurringTransactions : [RecurringTransaction]
         
     @State private var scaleEffect: CGFloat = 1.0
@@ -157,8 +158,8 @@ struct CalendarView: View
                 ForEach(getEvents(date: selectedDate), id: \.self)
                 { event in 
                     
-                    let textColor: Color = (event.transactionOn(date: selectedDate) == nil ||
-                                            event.transactionOn(date: selectedDate)?.paid == false) ? .red : .accentColor
+                    let textColor: Color = (event.transactionOn(date: selectedDate, from: transactions) == nil ||
+                                            event.transactionOn(date: selectedDate, from: transactions)?.paid == false) ? .red : .accentColor
 
                     HStack
                     {

@@ -58,7 +58,7 @@ struct RecurringTransactionSignature: Codable, Equatable, Hashable
     var tag: Tag
     var price: Double
     var notes: [String]?
-    var transactions: [Transaction]
+
     var signature : RecurringTransactionSignature
     { RecurringTransactionSignature(recurringTransaction: self) }
     
@@ -68,8 +68,7 @@ struct RecurringTransactionSignature: Codable, Equatable, Hashable
          name: String = "Recurring Transaction",
          tag: Tag = Tag.other,
          price: Double = 1999,
-         notes: [String]? = nil,
-         transactions: [Transaction] = [Transaction(),Transaction(),Transaction()])
+         notes: [String]? = nil)
     {
         self.id = UUID()
         self.beginDate = beginDate
@@ -79,7 +78,6 @@ struct RecurringTransactionSignature: Codable, Equatable, Hashable
         self.tag = tag
         self.price = price
         self.notes = notes
-        self.transactions = transactions
     }
     
     init(patternType : TransactionPattern = TransactionPattern(beginDate: Date(),
@@ -88,8 +86,7 @@ struct RecurringTransactionSignature: Codable, Equatable, Hashable
          name: String = "Recurring Transaction",
          tag: Tag = Tag.other,
          price: Double = 1999,
-         notes: [String]? = nil,
-         transactions: [Transaction] = [Transaction(),Transaction(),Transaction()])
+         notes: [String]? = nil)
     {
         self.id = UUID()
         self.beginDate = patternType.getBeginDate()
@@ -99,7 +96,6 @@ struct RecurringTransactionSignature: Codable, Equatable, Hashable
         self.tag = tag
         self.price = price
         self.notes = notes
-        self.transactions = transactions
     }
     
     public func toString() -> String {
@@ -158,9 +154,9 @@ struct RecurringTransactionSignature: Codable, Equatable, Hashable
         return !date.sameDayAs(self.beginDate) && occursOn(date: date)
     }
     
-    public func transactionOn(date: Date) -> Transaction?
+    public func transactionOn(date: Date, from transactions: [Transaction]) -> Transaction?
     {
-        for transaction in self.transactions
+        for transaction in transactions
         {
             if transaction.sameDayAs(date: date)
             { return transaction }
@@ -199,7 +195,7 @@ struct RecurringTransactionSignature: Codable, Equatable, Hashable
     
     // Conformance to Equatable
     static func == (lhs: RecurringTransaction, rhs: RecurringTransaction) -> Bool {
-        return lhs.beginDate == rhs.beginDate && lhs.name == rhs.name && lhs.price == rhs.price && lhs.tag == rhs.tag && lhs.interval == rhs.interval && lhs.intervalType == rhs.intervalType
+        return lhs.id == rhs.id
     }
 }
 
@@ -208,6 +204,7 @@ struct RecurringTransactionTile: View {
    @Environment(\.modelContext) private var modelContext
    @State var recurringTransaction: RecurringTransaction
     @Binding var selectedRecurringTransactions: [RecurringTransaction]
+    @Query var selectedRecurringTransactionIDs: [SelectedRecurringTransactionIDs]
     
    var body: some View {
    HStack {
@@ -230,9 +227,18 @@ struct RecurringTransactionTile: View {
            if (recurringTransaction.isIn(array: selectedRecurringTransactions))
            {
                let index : Int = selectedRecurringTransactions.firstIndex(where: { $0.id == recurringTransaction.id })!
+               for selectedRecurringTransactionID in selectedRecurringTransactionIDs {
+                   if (selectedRecurringTransactionID.selectedID == recurringTransaction.id) {
+                       modelContext.delete(selectedRecurringTransactionID)
+                       saveModelContext(modelContext)
+                   }
+               }
                selectedRecurringTransactions.remove(at: index)
+               
            } else {
                selectedRecurringTransactions.append(recurringTransaction)
+               modelContext.insert(SelectedRecurringTransactionIDs(selectedID: recurringTransaction.id))
+               saveModelContext(modelContext)
            }
        })
        {

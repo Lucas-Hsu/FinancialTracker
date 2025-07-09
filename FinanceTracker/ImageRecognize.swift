@@ -100,7 +100,7 @@ struct ImageRecognize: View {
     func performOCR() {
         let request = VNRecognizeTextRequest { request, error in
             if let error = error {
-                print("OCR failed: \(error.localizedDescription)")
+                print("[ERROR] OCR failed: \(error.localizedDescription)")
                 return
             }
 
@@ -117,7 +117,7 @@ struct ImageRecognize: View {
         do {
             try handler.perform([request])
         } catch {
-            print("Failed to perform OCR request: \(error.localizedDescription)")
+            print("[ERROR] Failed to perform OCR request: \(error.localizedDescription)")
         }
     }
 
@@ -158,7 +158,6 @@ struct ImageRecognize: View {
         
         // Special logic for month without year (past year)
         if let date = parseMonthWithoutYear(str) {
-            print(date)
             return date
         }
         
@@ -177,7 +176,6 @@ struct ImageRecognize: View {
                 // Determine if the date should be from last year or current year
                 let calendar = Calendar.current
                 let currentYear = calendar.component(.year, from: today)
-                print(currentYear)
                 // Check if the parsed date has already occurred this year
                 
                 // Extract the components of the date (year, month, day)
@@ -191,9 +189,6 @@ struct ImageRecognize: View {
                     
                 
                 // If this year's date has passed, use the current year, else use the previous year
-                print(currentYearDate)
-                print(today)
-                print(currentYearDate > today)
                 let finalYear = (currentYearDate > today) ? currentYear - 1 : currentYear
                 
                 // Replace the year with the correct year
