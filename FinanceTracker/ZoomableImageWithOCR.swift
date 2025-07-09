@@ -12,7 +12,7 @@ struct ZoomableImageWithOCR: View {
     let ocrResults: [OCRResult]
     var onTextTap: (OCRResult) -> Void
 
-    @State private var scale: CGFloat = 1.0
+    @State private var scale: CGFloat = 2.0
     @State private var offset: CGSize = .zero
 
     var body: some View {
@@ -31,7 +31,7 @@ struct ZoomableImageWithOCR: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: imageWidth, height: imageHeight)
-                    .offset(x: imageXOffset + offset.width, y: offset.height)
+                    .offset(x: offset.width, y: offset.height)
                     .scaleEffect(scale, anchor: .center) // Ensure zoom is centered
                     .gesture(
                         MagnificationGesture()
@@ -63,8 +63,8 @@ struct ZoomableImageWithOCR: View {
                     }
                     // Position relative to image scaling and offsets
                     .position(
-                        x: imageXOffset + imageWidth * result.x * scale + offset.width,
-                        y: imageYOffset + imageHeight * result.y * scale + offset.height
+                        x: ( imageWidth * (result.x-0.5) + offset.width ) * scale  + size.width/2,
+                        y: ( imageHeight * (result.y-0.5) + offset.height ) * scale + size.height/2
                     )
                 }
             }
