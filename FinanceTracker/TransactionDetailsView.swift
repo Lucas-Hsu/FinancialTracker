@@ -223,7 +223,6 @@ struct TransactionDetailsView: View {
         ]
     }
 }
-
 func performOCR(on image: UIImage, in size: CGSize, completion: @escaping ([OCRResult]) -> Void) {
     guard let cgImage = image.cgImage else {
         completion([])
@@ -252,8 +251,10 @@ func performOCR(on image: UIImage, in size: CGSize, completion: @escaping ([OCRR
         }
     }
 
+    // Setting OCR to support both English and Chinese
     request.recognitionLevel = .accurate
     request.usesLanguageCorrection = true
+    request.recognitionLanguages = ["zh-Hans"]
 
     let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
     DispatchQueue.global(qos: .userInitiated).async {

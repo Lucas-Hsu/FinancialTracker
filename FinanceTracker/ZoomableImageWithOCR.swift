@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+
 struct ZoomableImageWithOCR: View {
     let image: UIImage
     let ocrResults: [OCRResult]
@@ -31,7 +32,7 @@ struct ZoomableImageWithOCR: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(width: imageWidth, height: imageHeight)
                     .offset(x: imageXOffset + offset.width, y: offset.height)
-                    .scaleEffect(scale)
+                    .scaleEffect(scale, anchor: .center) // Ensure zoom is centered
                     .gesture(
                         MagnificationGesture()
                             .onChanged { value in
@@ -60,7 +61,7 @@ struct ZoomableImageWithOCR: View {
                             .foregroundColor(.white)
                             .clipShape(Capsule())
                     }
-                    // Calculate the position relative to the image
+                    // Position relative to image scaling and offsets
                     .position(
                         x: imageXOffset + imageWidth * result.x * scale + offset.width,
                         y: imageYOffset + imageHeight * result.y * scale + offset.height
