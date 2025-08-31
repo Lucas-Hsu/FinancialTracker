@@ -16,6 +16,7 @@ enum Tag: String, CaseIterable, Identifiable, Codable
          other
 }
 
+
 let tagSymbol = [Tag.clothing: "tshirt.fill",
                  Tag.commute: "car.fill",
                  Tag.education: "books.vertical.fill",

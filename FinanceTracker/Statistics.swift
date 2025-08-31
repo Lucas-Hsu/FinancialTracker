@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import Charts
 
 extension UIImage {
     func makeOpaque() -> UIImage {
@@ -42,6 +43,16 @@ struct Statistics: View {
     @State private var frozenGroupedByTag: [(tag: Tag, total: Double)] = []
     @State private var frozenTotalSum: Double = 0.0
 
+    
+    let tagColor: [Tag: Color] = [
+        .clothing: .red,
+        .commute: .blue,
+        .education: .green,
+        .entertainment: .orange,
+        .food: .purple,
+        .other: .pink
+    ]
+    
     private var pieFilteredTransactions: [Transaction] {
         transactions.filter {
             $0.date >= dateStart &&
@@ -204,165 +215,202 @@ struct Statistics: View {
             
             Text("Statistics Page")
                 .font(.largeTitle)
+                .frame(maxWidth: .infinity)
+                        .padding()
             
-            Picker("Chart Type", selection: $selectedChart) {
-                ForEach(ChartType.allCases) { type in
-                    Text(type.rawValue).tag(type)
-                }
-            }.pickerStyle(SegmentedPickerStyle())
-                .frame(width: 500)
+            VStack{
+                Picker("Chart Type", selection: $selectedChart) {
+                    ForEach(ChartType.allCases) { type in
+                        Text(type.rawValue).tag(type)
+                    }
+                }.pickerStyle(SegmentedPickerStyle())
+                    .frame(width: 500)
+            }.frame(maxWidth: .infinity)
             
-            switch (selectedChart) {
-            case .pie:
-                VStack(spacing: 16)
+            Divider()
+            
+            ScrollView {
+                switch (selectedChart)
                 {
-
-                    HStack {
-                        ForEach(Tag.allCases, id: \.self) { tag in
-                            Image(systemName: tagSymbol[tag] ?? "questionmark")
-                                .padding()
-                                .frame(width: 80, height: 50)
-                                .background(selectedTags.contains(tag) ? Color.accentColor : Color.gray.opacity(0.2))
+                case .pie:
+                    VStack(spacing: 16)
+                    {
+                        
+                        HStack {
+                            ForEach(Tag.allCases, id: \.self) { tag in
+                                Image(systemName: tagSymbol[tag] ?? "questionmark")
+                                    .padding()
+                                    .frame(width: 80, height: 50)
+                                    .background(selectedTags.contains(tag) ? Color.accentColor : Color.gray.opacity(0.2))
+                                    .cornerRadius(8)
+                                    .foregroundColor(selectedTags.contains(tag) ? .white : .secondary)
+                                    .onTapGesture {
+                                        if selectedTags.contains(tag) {
+                                            selectedTags.remove(tag)
+                                        } else {
+                                            selectedTags.insert(tag)
+                                        }
+                                    }
+                            }
+                        }
+                        .padding(.horizontal)
+                        
+                        Toggle("Show Only Payment Pending", isOn: $isUnpaid)
+                            .toggleStyle(ButtonToggleStyle())
+                            .scaleEffect(isUnpaid ? 1.2 : 1.0)
+                            .animation(.easeInOut(duration: 0.2), value: isUnpaid)
+                        
+                        VStack{
+                            DatePicker("Start Date", selection: $dateStart, displayedComponents: .date)
+                            DatePicker("End Date", selection: $dateEnd, displayedComponents: .date)
+                        }
+                        .frame(width: 500)
+                        
+                        Button(action: {
+                            computePieChartData()
+                            showPieChart = true
+                        }) {
+                            Text("Generate Pie Chart")
+                                .font(.headline)
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 24)
+                                .background(Color.accentColor)
+                                .foregroundColor(.white)
                                 .cornerRadius(8)
-                                .foregroundColor(selectedTags.contains(tag) ? .white : .secondary)
-                                .onTapGesture {
-                                    if selectedTags.contains(tag) {
-                                        selectedTags.remove(tag)
-                                    } else {
-                                        selectedTags.insert(tag)
+                        }
+                        .fullScreenCover(isPresented: $showPieChart) {
+                            ZStack {
+                                Color.clear
+                                    .background(.ultraThinMaterial)
+                                    .ignoresSafeArea()
+                                PieChartView(data: frozenGroupedByTag, total: frozenTotalSum)
+                            }
+                        }
+                    }
+                    
+                case .bar:
+                    VStack(spacing: 16) {
+                        Picker("Tag", selection: $selectedBarTag) {
+                            ForEach(Tag.allCases) { tag in
+                                Image(systemName: tagSymbol[tag] ?? "questionmark")
+                                    .tag(tag)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .frame(width: 500)
+                        
+                        Toggle("Show Only Payment Pending", isOn: $isUnpaid)
+                            .toggleStyle(ButtonToggleStyle())
+                            .scaleEffect(isUnpaid ? 1.2 : 1.0)
+                            .animation(.easeInOut(duration: 0.2), value: isUnpaid)
+                        
+                        Button(action: {
+                            scaleEffect = 1.1
+                            showBarDates = true
+                            withAnimation {
+                                scaleEffect = 1.0
+                            }
+                        }) {
+                            Text("Start Date \(barStart.formatted(.dateTime.year().month()))\nEnd Date \(barEnd.formatted(.dateTime.year().month()))")
+                                .padding()
+                        }
+                        .sheet(isPresented: $showBarDates){ BarYearMonthSelector(startDate: $barStart, endDate: $barEnd)
+                        }
+                        .accentButton()
+                        .foregroundStyle(.white)
+                        .cornerRadius(10)
+                        .scaleEffect(scaleEffect)
+                        .padding()
+                        
+                        Button(action: {
+                            computeBarChartData()
+                            showBarChart = true
+                        }) {
+                            Text("Generate Bar Chart")
+                                .font(.headline)
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 24)
+                                .background(Color.accentColor)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                        }
+                        .fullScreenCover(isPresented: $showBarChart) {
+                            ZStack {
+                                Color.clear
+                                    .background(.ultraThinMaterial)
+                                    .ignoresSafeArea()
+                                BarChartView(grouped: frozenGroupedByMonth, average: frozenAverage)
+                            }
+                        }
+                        
+                    }
+                    
+                case .mtsum:
+                    let calendar = Calendar.current
+                    let currentMonth = calendar.component(.month, from: Date())
+                    let currentYear = calendar.component(.year, from: Date())
+
+                    // Current month totals per tag
+                    let currentMonthTotals: [Tag: Double] = Dictionary(
+                        grouping: transactions.filter {
+                            let comp = calendar.dateComponents([.month, .year], from: $0.date)
+                            return comp.month == currentMonth && comp.year == currentYear
+                        },
+                        by: { $0.tag }
+                    ).mapValues { txns in
+                        txns.reduce(0.0) { $0 + $1.price }
+                    }
+
+                    let past12MonthsAvg = pastDataSummary()
+
+                    HStack(alignment: .bottom, spacing: 16) {
+                        ForEach(Tag.allCases) { tag in
+                            VStack(spacing: 8) {
+                                
+                                HStack{
+                                    Text("$\(String(format: "%.2f", currentMonthTotals[tag] ?? 0))")
+                                                                    .foregroundColor(.blue)
+                                                                Text("/")
+                                                                Text("$\(String(format: "%.2f", past12MonthsAvg[tag] ?? 0))")
+                                                                    .foregroundColor(.gray)
+                                }
+                                
+                                Text(tag.rawValue.capitalized)
+                                    .font(.headline)
+
+                                Chart {
+                                    // Bar for the current month
+                                    BarMark(
+                                        x: .value("Tag", tag.rawValue),  // <-- important: unique x-value
+                                        y: .value("Amount", currentMonthTotals[tag] ?? 0)
+                                    )
+                                    .foregroundStyle(tagColor[tag] ?? .blue)
+                                    .cornerRadius(4)
+
+                                    // Red average line
+                                    if let avg = past12MonthsAvg[tag] {
+                                        RuleMark(y: .value("Average", avg))
+                                            .lineStyle(StrokeStyle(lineWidth: 2, dash: [4]))
+                                            .foregroundStyle(.red)
                                     }
                                 }
-                        }
-                    }
-                    .padding(.horizontal)
-                    
-                    Toggle("Show Only Payment Pending", isOn: $isUnpaid)
-                        .toggleStyle(ButtonToggleStyle())
-                        .scaleEffect(isUnpaid ? 1.2 : 1.0)
-                        .animation(.easeInOut(duration: 0.2), value: isUnpaid)
-                    
-                    VStack{
-                        DatePicker("Start Date", selection: $dateStart, displayedComponents: .date)
-                        DatePicker("End Date", selection: $dateEnd, displayedComponents: .date)
-                    }
-                    .frame(width: 500)
-                
-                    Button(action: {
-                        computePieChartData()
-                        showPieChart = true
-                    }) {
-                        Text("Generate Pie Chart")
-                            .font(.headline)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 24)
-                            .background(Color.accentColor)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                    }
-                    .fullScreenCover(isPresented: $showPieChart) {
-                        ZStack {
-                            Color.clear
-                                .background(.ultraThinMaterial)
-                                .ignoresSafeArea()
-                            PieChartView(data: frozenGroupedByTag, total: frozenTotalSum)
-                        }
-                    }
-                }
-                
-            case .bar:
-                VStack(spacing: 16) {
-                    Picker("Tag", selection: $selectedBarTag) {
-                        ForEach(Tag.allCases) { tag in
-                            Image(systemName: tagSymbol[tag] ?? "questionmark")
-                                .tag(tag)
-                        }
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .frame(width: 500)
-                    
-                    Toggle("Show Only Payment Pending", isOn: $isUnpaid)
-                        .toggleStyle(ButtonToggleStyle())
-                        .scaleEffect(isUnpaid ? 1.2 : 1.0)
-                        .animation(.easeInOut(duration: 0.2), value: isUnpaid)
-                    
-                    Button(action: {
-                        scaleEffect = 1.1
-                        showBarDates = true
-                        withAnimation {
-                            scaleEffect = 1.0
-                        }
-                    }) {
-                        Text("Start Date \(barStart.formatted(.dateTime.year().month()))\nEnd Date \(barEnd.formatted(.dateTime.year().month()))")
-                            .padding()
-                    }
-                    .sheet(isPresented: $showBarDates){ BarYearMonthSelector(startDate: $barStart, endDate: $barEnd)
-                    }
-                    .accentButton()
-                    .foregroundStyle(.white)
-                    .cornerRadius(10)
-                    .scaleEffect(scaleEffect)
-                    .padding()
-                    
-                    Button(action: {
-                        computeBarChartData()
-                        showBarChart = true
-                    }) {
-                        Text("Generate Bar Chart")
-                            .font(.headline)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 24)
-                            .background(Color.accentColor)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                    }
-                    .fullScreenCover(isPresented: $showBarChart) {
-                        ZStack {
-                            Color.clear
-                                .background(.ultraThinMaterial)
-                                .ignoresSafeArea()
-                            BarChartView(grouped: frozenGroupedByMonth, average: frozenAverage)
-                        }
-                    }
-                    
-                }
-                
-            case .mtsum:
-                VStack(spacing: 12) {
-                    ForEach(Tag.allCases, id: \.self) { tag in
-                        HStack {
-                            
-                            let calendar = Calendar.current
-                            let currentMonth = calendar.component(.month, from: Date())
-                            let currentYear = calendar.component(.year, from: Date())
-
-                            let currentMonthTotals: [Tag: Double] = Dictionary(
-                                grouping: transactions.filter {
-                                    let comp = calendar.dateComponents([.month, .year], from: $0.date)
-                                    return comp.month == currentMonth && comp.year == currentYear
-                                },
-                                by: { $0.tag }
-                            ).mapValues { txns in
-                                txns.reduce(0.0) { $0 + $1.price }
+                                .chartXAxis(.hidden)
+                                .chartYAxisLabel("Amount ($)", position: .leading)
+                                .frame(maxWidth: 200, maxHeight: 200)
                             }
-
-                            let past12MonthsAvg = pastDataSummary()
-                            
-                            Text(tag.rawValue.capitalized)
-                                .frame(width: 120, alignment: .leading)
-                            Spacer()
-                            Text("$\(String(format: "%.2f", currentMonthTotals[tag] ?? 0))")
-                                .foregroundColor(.blue)
-                            Text("/")
-                            Text("$\(String(format: "%.2f", past12MonthsAvg[tag] ?? 0))")
-                                .foregroundColor(.gray)
                         }
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+
+
+
                 }
-                .frame(width: 300)
-                .padding()
             }
+            .frame(maxWidth: .infinity) // Center outer VStack
+            .padding()
         }
-        .frame(maxHeight: .infinity, alignment: .top)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
             computePieChartData()
             computeBarChartData()
