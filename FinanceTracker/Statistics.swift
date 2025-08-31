@@ -78,17 +78,25 @@ struct Statistics: View {
     }
     
     private var past12MonthsTransactions: [Transaction] {
-        transactions.filter {
-            let pastYear = Calendar.current.date(byAdding: .year, value: -1, to: Date())
-            let startYear = Calendar.current.component(.year, from: pastYear!)
-            let startMonth = Calendar.current.component(.month, from: pastYear!)
-
-            let tYear = Calendar.current.component(.year, from: $0.date)
-            let tMonth = Calendar.current.component(.month, from: $0.date)
-
-            return ( (tYear == startYear && tMonth >= startMonth) || (tYear > startYear) )
+        let calendar = Calendar.current
+        let pastYear = calendar.date(byAdding: .year, value: -1, to: Date())!
+        let startYear = calendar.component(.year, from: pastYear)
+        let startMonth = calendar.component(.month, from: pastYear)
+        
+        let currentYear = calendar.component(.year, from: Date())
+        let currentMonth = calendar.component(.month, from: Date())
+        
+        return transactions.filter {
+            let tYear = calendar.component(.year, from: $0.date)
+            let tMonth = calendar.component(.month, from: $0.date)
+            
+            // Include only past 12 months AND exclude the current month
+            let afterStart = (tYear == startYear && tMonth >= startMonth) || (tYear > startYear)
+            let beforeCurrent = (tYear < currentYear) || (tYear == currentYear && tMonth < currentMonth)
+            return afterStart && beforeCurrent
         }
     }
+
 
     private func computePieChartData() {
         let groups = Dictionary(grouping: pieFilteredTransactions, by: { $0.tag })
@@ -172,6 +180,7 @@ struct Statistics: View {
         let groups = Dictionary(grouping: past12MonthsTransactions, by: { $0.tag })
         return calculateAverageMonthlyExpenditures(groups: groups)
     }
+
     
     private func computeBarChartData() {
         let groups = Dictionary(grouping: barFilteredTransactions, by: { Calendar.current.component(.year, from: $0.date) * 100 + Calendar.current.component(.month, from: $0.date) })
