@@ -175,9 +175,12 @@ struct Statistics: View {
         print(frozenAverage)
         print()
     }
+    
     private func convertToMonthlyTotal(_ input: [(date: Int, total: Double)]) -> [MonthlyTotal] {
         input.map { MonthlyTotal(date: $0.date, total: $0.total) }
+             .sorted { $0.date < $1.date }
     }
+
     
     enum ChartType: String, CaseIterable, Identifiable {
         case bar = "Bar"

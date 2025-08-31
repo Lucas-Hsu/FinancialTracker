@@ -12,6 +12,15 @@ public struct MonthlyTotal: Identifiable {
     public let id = UUID()
     let date: Int   // e.g., 202506 for June 2025
     let total: Double
+    var date_Date: Date {
+           let year = date / 100
+           let month = date % 100
+           var comps = DateComponents()
+           comps.year = year
+           comps.month = month
+           comps.day = 1
+           return Calendar.current.date(from: comps) ?? Date()
+       }
 }
 
 struct BarChartView: View {
@@ -46,7 +55,7 @@ struct BarChartView: View {
                 Chart {
                     ForEach(grouped) { entry in
                         BarMark(
-                            x: .value("Month", formattedDate(from: entry.date)),
+                            x: .value("Month", entry.date_Date),
                             y: .value("Total", entry.total)
                         )
                         .foregroundStyle(.blue)
@@ -60,6 +69,28 @@ struct BarChartView: View {
                                 .font(.caption)
                                 .foregroundColor(.red)
                         }
+                }
+                .chartXScale(domain: Calendar.current.date(byAdding: .month, value: -1, to: grouped.first!.date_Date)! ... Calendar.current.date(byAdding: .month, value: 1, to: grouped.last!.date_Date)!)
+                .chartXAxis {
+                    let calendar = Calendar.current
+                    let allMonths: [Date] = {
+                        var dates: [Date] = []
+                        var current = grouped.first!.date_Date
+                        let end = grouped.last!.date_Date
+                        while current <= end {
+                            dates.append(current)
+                            current = calendar.date(byAdding: .month, value: 1, to: current)!
+                        }
+                        return dates
+                    }()
+                    
+                    AxisMarks(values: allMonths) { value in
+                        AxisTick()
+                        AxisValueLabel {
+                            Text(value.as(Date.self)!, format: .dateTime.month(.abbreviated).year(.twoDigits))
+                                .fixedSize()
+                        }
+                    }
                 }
                 .frame(width: chartWidth, height: 300)
 
