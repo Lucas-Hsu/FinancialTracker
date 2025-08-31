@@ -378,15 +378,15 @@ struct Statistics: View {
                                 
                                 HStack{
                                     Text("$\(String(format: "%.2f", currentMonthTotals[tag] ?? 0))")
-                                                                    .foregroundColor(.blue)
-                                                                Text("/")
-                                                                Text("$\(String(format: "%.2f", past12MonthsAvg[tag] ?? 0))")
-                                                                    .foregroundColor(.gray)
+                                        .foregroundColor(.blue)
+                                    Text("/")
+                                    Text("$\(String(format: "%.2f", past12MonthsAvg[tag] ?? 0))")
+                                        .foregroundColor(.gray)
                                 }
                                 
                                 Text(tag.rawValue.capitalized)
                                     .font(.headline)
-
+                                
                                 Chart {
                                     // Bar for the current month
                                     BarMark(
@@ -395,7 +395,7 @@ struct Statistics: View {
                                     )
                                     .foregroundStyle(tagColor[tag] ?? .blue)
                                     .cornerRadius(4)
-
+                                    
                                     // Red average line
                                     if let avg = past12MonthsAvg[tag] {
                                         RuleMark(y: .value("Average", avg))
@@ -405,11 +405,11 @@ struct Statistics: View {
                                 }
                                 .chartXAxis(.hidden)
                                 .chartYAxisLabel("Amount ($)", position: .leading)
-                                .frame(maxWidth: 200, maxHeight: 200)
+                                .frame(width: 200, height: 600)
                             }
                         }
                     }
-                    .frame(maxWidth: .infinity)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .padding()
 
 
