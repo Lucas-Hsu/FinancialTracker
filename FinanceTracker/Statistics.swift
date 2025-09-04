@@ -348,7 +348,7 @@ struct Statistics: View {
                                 Color.clear
                                     .background(.ultraThinMaterial)
                                     .ignoresSafeArea()
-                                BarChartView(grouped: frozenGroupedByMonth, average: frozenAverage)
+                                BarChartView(grouped: frozenGroupedByMonth, average: frozenAverage, selectedTag: selectedBarTag)
                             }
                         }
                         

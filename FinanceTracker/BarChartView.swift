@@ -10,29 +10,30 @@ import Charts
 
 public struct MonthlyTotal: Identifiable {
     public let id = UUID()
-    let date: Int   // e.g., 202506 for June 2025
+    let date: Int
     let total: Double
     var date_Date: Date {
-           let year = date / 100
-           let month = date % 100
-           var comps = DateComponents()
-           comps.year = year
-           comps.month = month
-           comps.day = 1
-           return Calendar.current.date(from: comps) ?? Date()
-       }
+        let year = date / 100
+        let month = date % 100
+        var comps = DateComponents()
+        comps.year = year
+        comps.month = month
+        comps.day = 1
+        return Calendar.current.date(from: comps) ?? Date()
+    }
 }
 
 struct BarChartView: View {
     let grouped: [MonthlyTotal]
     let average: Double
-
+    let selectedTag: Tag // Pass the selected tag to the view
+    
     @Environment(\.dismiss) private var dismiss
     @Environment(\.displayScale) var displayScale
     
     private let barWidth: CGFloat = 100
     private let spacing: CGFloat = 40
-
+    
     private func formattedDate(from tag: Int) -> String {
         let year = tag / 100
         let month = tag % 100
@@ -52,50 +53,67 @@ struct BarChartView: View {
             HStack {
                 Spacer(minLength: 0)
                 
-                Chart {
-                    ForEach(grouped) { entry in
-                        BarMark(
-                            x: .value("Month", entry.date_Date),
-                            y: .value("Total", entry.total)
-                        )
-                        .foregroundStyle(.blue)
+                if grouped.isEmpty {
+                    ContentUnavailableView("No Data", systemImage: "chart.bar.xaxis")
+                } else {
+                    VStack{
+                        
+                        Text(selectedTag.rawValue.capitalized)
+                        
+                        Chart {
+                            ForEach(grouped) { entry in
+                                BarMark(
+                                    x: .value("Month", entry.date_Date),
+                                    y: .value("Total", entry.total)
+                                )
+                                .foregroundStyle(.blue)
+                                .cornerRadius(4)
+                                .annotation(position: .overlay, alignment: .top) {
+                                    Text("$\(entry.total, format: .number.precision(.fractionLength(2)))")
+                                        .font(.caption)
+                                        .foregroundColor(.white)
+                                        .offset(y: -5)
+                                }
+                            }
+                            
+                            RuleMark(y: .value("Average", average))
+                                .lineStyle(StrokeStyle(lineWidth: 2, dash: [5]))
+                                .foregroundStyle(.red)
+                                .annotation(position: .top, alignment: .leading) {
+                                    Text("Average: \(average, format: .number.precision(.fractionLength(2)))")
+                                        .font(.caption)
+                                        .foregroundColor(.red)
+                                }
+                        }
+                        .chartXScale(domain: Calendar.current.date(byAdding: .month, value: -1, to: grouped.first!.date_Date)! ... Calendar.current.date(byAdding: .month, value: 1, to: grouped.last!.date_Date)!)
+                        .chartXAxis {
+                            let calendar = Calendar.current
+                            let allMonths: [Date] = {
+                                var dates: [Date] = []
+                                var current = grouped.first!.date_Date
+                                let end = grouped.last!.date_Date
+                                while current <= end {
+                                    dates.append(current)
+                                    current = calendar.date(byAdding: .month, value: 1, to: current)!
+                                }
+                                return dates
+                            }()
+                            
+                            AxisMarks(values: allMonths) { value in
+                                AxisTick()
+                                AxisValueLabel {
+                                    Text(value.as(Date.self)!, format: .dateTime.month(.abbreviated).year(.twoDigits))
+                                        .fixedSize()
+                                }
+                            }
+                        }
+                        .frame(width: chartWidth, height: 300)
                     }
-
-                    RuleMark(y: .value("Average", average))
-                        .lineStyle(StrokeStyle(lineWidth: 2, dash: [5]))
-                        .foregroundStyle(.red)
-                        .annotation(position: .top, alignment: .leading) {
-                            Text("Average: \(average, format: .number.precision(.fractionLength(2)))")
-                                .font(.caption)
-                                .foregroundColor(.red)
-                        }
                 }
-                .chartXScale(domain: Calendar.current.date(byAdding: .month, value: -1, to: grouped.first!.date_Date)! ... Calendar.current.date(byAdding: .month, value: 1, to: grouped.last!.date_Date)!)
-                .chartXAxis {
-                    let calendar = Calendar.current
-                    let allMonths: [Date] = {
-                        var dates: [Date] = []
-                        var current = grouped.first!.date_Date
-                        let end = grouped.last!.date_Date
-                        while current <= end {
-                            dates.append(current)
-                            current = calendar.date(byAdding: .month, value: 1, to: current)!
-                        }
-                        return dates
-                    }()
-                    
-                    AxisMarks(values: allMonths) { value in
-                        AxisTick()
-                        AxisValueLabel {
-                            Text(value.as(Date.self)!, format: .dateTime.month(.abbreviated).year(.twoDigits))
-                                .fixedSize()
-                        }
-                    }
-                }
-                .frame(width: chartWidth, height: 300)
-
+                
                 Spacer(minLength: 0)
             }
+            .navigationTitle(selectedTag.rawValue.capitalized) // Add navigation title
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea()
@@ -114,7 +132,7 @@ struct BarChartView: View {
                 .padding(.top, 20)
                 
                 Button(action: {
-                    BarChartView(grouped: grouped, average: average)
+                    BarChartView(grouped: grouped, average: average, selectedTag: selectedTag)
                         .asUIImage(displayScale: displayScale)
                         .makeOpaque()
                         .saveToAlbum()
