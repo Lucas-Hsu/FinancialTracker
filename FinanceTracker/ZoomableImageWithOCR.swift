@@ -79,7 +79,7 @@ struct ZoomableImageWithOCR: View {
                     offset = .zero
                     lastDragOffset = offset
                 }) {
-                    Image(systemName: "arrow.uturn.backward.circle.fill")
+                    Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90.circle.fill")
                         .resizable()
                         .frame(width: 40, height: 40)
                         .foregroundColor(.white)
