@@ -18,6 +18,7 @@ struct ZoomableImageWithOCR: View {
     private let maxZoomScale : CGFloat = 3.0
     @State private var offset: CGSize = .zero
     @State private var lastDragOffset: CGSize = .zero
+    var onCameraTap: () -> Void
     
     var body: some View {
         GeometryReader { geometry in
@@ -82,13 +83,29 @@ struct ZoomableImageWithOCR: View {
                         .resizable()
                         .frame(width: 40, height: 40)
                         .foregroundColor(.white)
-                        .padding()
+                        .padding(16)
                         .background(Circle().fill(Color.blue))
                         .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 4)
                 }
                     .padding(10)
-                    .position( x: size.width * 0.5,
-                               y: size.height * 0.9 )
+                    .position( x: size.width * 0.85,
+                               y: size.height * 0.1 )
+                
+                Button(action: {
+                    onCameraTap() 
+                }) {
+                    Image(systemName: "camera.fill")
+                        .resizable()
+                        .frame(width: 40, height: 30)
+                        .foregroundColor(.white)
+                        .padding(23)
+                        .background(Circle().fill(Color.blue))
+                        .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 4)
+                }
+                    .padding(10)
+                    .position( x: size.width * 0.15,
+                               y: size.height * 0.1 )
+                
             }
                 .frame(width: size.width, height: size.height)
         }

@@ -31,6 +31,7 @@ struct TransactionDetailsView: View {
 
     @State private var ocrResults: [OCRResult] = []
     
+    
     private func toUIImage(from data: Data?) -> UIImage? {
         guard let data = data else { return nil }
         return UIImage(data: data)
@@ -47,8 +48,18 @@ struct TransactionDetailsView: View {
     }
 
     var body: some View {
+        
+        GeometryReader { geometry in
+            let size = geometry.size
+        
+            
+            
         HStack {
             ZStack {
+                
+                
+                
+                
                 ZoomableImageWithOCR(
                     image: convertedUIImage(from: transaction.image),
                     ocrResults: ocrResults,
@@ -59,7 +70,10 @@ struct TransactionDetailsView: View {
                             if transaction.notes == nil { transaction.notes = [] }
                             transaction.notes?.append(result.text)
                         }
-                    }
+                    },
+                    onCameraTap: {
+                                                showUploadMethodAlert = true
+                                            }
                 )
                 .onAppear {
                     let uiImage = convertedUIImage(from: transaction.image)
@@ -67,6 +81,20 @@ struct TransactionDetailsView: View {
                         ocrResults = results
                     }
                 }
+                .sheet(isPresented: $showChosenMethod) {
+                    ImagePicker(selectedImage: $transaction.image, sourceType: chosenUploadMethod)
+                }
+                .alert("Upload Receipt Image", isPresented: $showUploadMethodAlert) {
+                    Button("Use Camera") {
+                        showChosenMethod = true
+                        chosenUploadMethod = .camera
+                    }
+                    Button("Photo Album") {
+                        showChosenMethod = true
+                        chosenUploadMethod = .photoLibrary
+                    }
+                    Button("Cancel", role: .cancel) {}
+                    }
 
                 .padding()
                 .plainFill(material: .ultraThinMaterial, opacity: 0.4, cornerRadius: 20)
@@ -110,22 +138,7 @@ struct TransactionDetailsView: View {
                                 .padding(.leading, 20),
                             alignment: .topLeading
                         )
-                        Button("Select Image") { showUploadMethodAlert = true }
-                            .padding()
-                            .sheet(isPresented: $showChosenMethod) {
-                                ImagePicker(selectedImage: $transaction.image, sourceType: chosenUploadMethod)
-                            }
-                            .alert("Upload Receipt Image", isPresented: $showUploadMethodAlert) {
-                                Button("Use Camera") {
-                                    showChosenMethod = true
-                                    chosenUploadMethod = .camera
-                                }
-                                Button("Photo Album") {
-                                    showChosenMethod = true
-                                    chosenUploadMethod = .photoLibrary
-                                }
-                                Button("Cancel", role: .cancel) {}
-                            }
+                        
                     }
                     header: {
                         Text("Transaction Record")
@@ -189,6 +202,7 @@ struct TransactionDetailsView: View {
             .padding(20)
         }
         .colorfulAccentBackground(colorLinear: [.white, .white, .accentColor], colorRadial: [.accentColor, .white])
+        }
     }
 
     private func saveTransaction(date: Date, name: String, tag: Tag, price: Double, paid: Bool, notes: [String]?, image: Data?) {
