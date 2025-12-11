@@ -40,18 +40,34 @@ import SwiftData
     
     // Mutators
     public func setDate(date: Date)
-    { self.date = date }
+    { // Ensure Date is not in the future.
+        if date > Date()
+        {
+            self.date = Date()
+            self.notes?.append("Warning: \(date.toMediumString())) is in the future. Set as  \(self.date.toMediumString()).")
+        }
+        else
+        { self.date = date }
+    }
     public func setName(name: String)
     { self.name = name }
     public func setPrice(price: Double)
-    { self.price = price }
+    { // Ensure Price is not negative
+        if price < 0
+        {
+            self.price = abs(price)
+            self.notes?.append("Warning: \(price) is negative. Set as absolute value.")
+        }
+        else
+        { self.price = price }
+    }
     public func setTag(tag: Tag)
     { self.tag = tag }
     public func setIsPaid(isPaid: Bool)
     { self.isPaid = isPaid }
     public func setNotes(notes: [String]?)
     { self.notes = notes }
-    public func setReceiptImage(receiptImage: Data?)
+    public func setReceiptImage(receiptImage: Data?) // [TODO] Might want to limit filesize
     { self.receiptImage = receiptImage }
     
     public func setId(id: UUID)
@@ -104,5 +120,72 @@ import SwiftData
         lhs.isPaid == rhs.isPaid &&
         lhs.notes == rhs.notes &&
         lhs.receiptImage == rhs.receiptImage
+    }
+}
+
+
+/// For serializing `Transaction` into JSON when exporting.
+struct TransactionCodable: Codable, Identifiable
+{
+    var id: UUID
+    var date: Date
+    var name: String
+    var price: Double
+    var tag: Tag
+    var isPaid: Bool
+    var notes: [String]?
+    var receiptImage: Data?
+
+    init(from transaction: Transaction)
+    {
+        self.id = transaction.id
+        self.date = transaction.date
+        self.name = transaction.name
+        self.price = transaction.price
+        self.tag = transaction.tag
+        self.isPaid = transaction.isPaid
+        self.notes = transaction.notes
+        self.receiptImage = transaction.receiptImage
+    }
+
+    public func toModel() -> Transaction
+    {
+        let transaction = Transaction(date: self.date,
+                                      name: self.name,
+                                      price: self.price,
+                                      tag: self.tag,
+                                      isPaid: self.isPaid,
+                                      notes: self.notes,
+                                      receiptImage: self.receiptImage)
+        transaction.setId(id: self.id)
+        return transaction
+    }
+}
+
+
+/// For additional funcitonality that are not core Model methods.
+extension Transaction
+{
+    static func exportAll(from context: ModelContext) throws -> Data
+    {
+        let fetchDescriptor = FetchDescriptor<Transaction>()
+        let transactions = try context.fetch(fetchDescriptor)
+        
+        let codables = transactions.map { CodableTransaction(from: $0) }
+        return try JSONEncoder().encode(codables)
+    }
+    
+    static func importFrom(data: Data, into context: ModelContext) throws -> Int
+    {
+        let codables = try JSONDecoder().decode([CodableTransaction].self, from: data)
+        
+        for codable in codables
+        {
+            let transaction = codable.toModel()
+            context.insert(transaction)
+        }
+        
+        try context.save()
+        return codables.count
     }
 }
