@@ -14,16 +14,7 @@ enum Tab: Int, CaseIterable {
        statistics
 }
 
-func saveModelContext(_ modelContext: ModelContext)
-{
-    do
-    {
-        try modelContext.save()
-    } catch
-    {
-        print("[ERROR] Failed to save context: \(error)")
-    }
-}
+
 
 struct ContentView: View
 {

@@ -11,6 +11,7 @@ import SwiftData
 /// The `Transaction` class stores information about individual units of expenses.
 @Model class Transaction: Equatable
 {
+    // MARK: - Read-Only Attributes
     @Attribute(.unique) private(set) var id: UUID
     private(set) var date: Date
     private(set) var name: String
@@ -20,6 +21,7 @@ import SwiftData
     private(set) var notes: [String]?
     private(set) var receiptImage: Data?
     
+    // MARK: - Constructors
     init(date: Date = Date(),
          name: String = "",
          price: Double = 9.9,
@@ -38,43 +40,88 @@ import SwiftData
         self.receiptImage = receiptImage
     }
     
-    // Mutators
+    // MARK: - Boundary Case Checkers
+    public func isDateValid(date: Date) -> Bool
+    { return date <= Date() }
+    public func isNameValid(name: String) -> Bool
+    { return name.strip().count > 0 }
+    public func isPriceValid(price: Double) -> Bool
+    { return price >= 0 }
+    // The following mutators do not need to do validation (for now)
+    public func isTagValid(tag: Tag) -> Bool
+    { return true }
+    public func isIsPaidValid(isPaid: Bool) -> Bool
+    { return true }
+    public func isNotesValid(notes: [String]?) -> Bool
+    { return true }
+    public func isReceiptImageValid(receiptImage: Data?) -> Bool
+    { return true }
+    public func isIdValid(id: UUID) -> Bool
+    { return true }
+    
+    // MARK: - Mutators
     public func setDate(date: Date)
-    { // Ensure Date is not in the future.
-        if date > Date()
-        {
-            self.date = Date()
-            self.notes?.append("Warning: \(date.toMediumString())) is in the future. Set as  \(self.date.toMediumString()).")
-        }
-        else
+    {
+        if isDateValid(date: date)
         { self.date = date }
+        else
+        { self.date = Date() }
     }
     public func setName(name: String)
-    { self.name = name }
-    public func setPrice(price: Double)
-    { // Ensure Price is not negative
-        if price < 0
-        {
-            self.price = abs(price)
-            self.notes?.append("Warning: \(price) is negative. Set as absolute value.")
-        }
+    {
+        if isNameValid(name: name)
+        { self.name = name }
         else
-        { self.price = price }
+        { self.name = "Transaction at \(Date().toMediumString())" }
     }
+    public func setPrice(price: Double)
+    {
+        if isPriceValid(price: price)
+        { self.price = price }
+        else
+        { self.price = abs(price) }
+    }
+    // The following mutators do not need to do validation (for now)
     public func setTag(tag: Tag)
-    { self.tag = tag }
+    {
+        if isTagValid(tag: tag)
+        { self.tag = tag }
+        else
+        { self.tag = tag }
+    }
     public func setIsPaid(isPaid: Bool)
-    { self.isPaid = isPaid }
+    {
+        if isIsPaidValid(isPaid: isPaid)
+        { self.isPaid = isPaid }
+        else
+        { self.isPaid = isPaid }
+    }
     public func setNotes(notes: [String]?)
-    { self.notes = notes }
-    public func setReceiptImage(receiptImage: Data?) // [TODO] Might want to limit filesize
-    { self.receiptImage = receiptImage }
-    
+    {
+        if isNotesValid(notes: notes)
+        { self.notes = notes }
+        else
+        { self.notes = notes }
+    }
+    public func setReceiptImage(receiptImage: Data?)
+    {
+        if isReceiptImageValid(receiptImage: receiptImage)
+        { self.receiptImage = receiptImage }
+        else
+        { self.receiptImage = receiptImage }
+    }
     public func setId(id: UUID)
-    { self.id = id }
+    {
+        if isIdValid(id: id)
+        { self.id = id }
+        else
+        { self.id = id }
+    }
     
+    // MARK: - Accessors
     // Accessors are not needed because private(set) means read-only when outside of this class.
     
+    // MARK: - Public Methods
     /// `matchesFilter` checks if the the Transaction matches provided filter criteria.
     public func matchesFilter(notIsPaid: Bool = false,
                               selectedTags: Set<Tag>? = nil,
@@ -92,6 +139,7 @@ import SwiftData
         return true
     }
 
+    // For grouping same transactions occuring at different dates
     public func getTransactionGroupHeader() -> TransactionGroupHeader
     { return TransactionGroupHeader(name: self.name, price: self.price, tag: self.tag)   }
     
@@ -159,33 +207,5 @@ struct TransactionCodable: Codable, Identifiable
                                       receiptImage: self.receiptImage)
         transaction.setId(id: self.id)
         return transaction
-    }
-}
-
-
-/// For additional funcitonality that are not core Model methods.
-extension Transaction
-{
-    static func exportAll(from context: ModelContext) throws -> Data
-    {
-        let fetchDescriptor = FetchDescriptor<Transaction>()
-        let transactions = try context.fetch(fetchDescriptor)
-        
-        let codables = transactions.map { CodableTransaction(from: $0) }
-        return try JSONEncoder().encode(codables)
-    }
-    
-    static func importFrom(data: Data, into context: ModelContext) throws -> Int
-    {
-        let codables = try JSONDecoder().decode([CodableTransaction].self, from: data)
-        
-        for codable in codables
-        {
-            let transaction = codable.toModel()
-            context.insert(transaction)
-        }
-        
-        try context.save()
-        return codables.count
     }
 }
