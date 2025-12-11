@@ -33,7 +33,27 @@
 		6EC9BB0F2D4FB7BC00BA12F4 /* Exceptions for "FinanceTracker" folder in "FinanceTracker" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				AddNew.swift,
+				BarChartView.swift,
+				BarYearMonthSelector.swift,
+				Calendar.swift,
+				CustomModifiers.swift,
+				CustomsCenter.swift,
+				History.swift,
+				ImagePicker.swift,
+				ImageRecognize.swift,
 				Info.plist,
+				ModifyOld.swift,
+				PieChartView.swift,
+				RecurringTransaction.swift,
+				RecurringTransactionsTestView.swift,
+				SelectedRecurringTransactionIDs.swift,
+				Statistics.swift,
+				Suggestions.swift,
+				TransactionCodable.swift,
+				TransactionDetailsView.swift,
+				TransactionPattern.swift,
+				ZoomableImageWithOCR.swift,
 			);
 			target = 6EF2F0F02D35670A003429AC /* FinanceTracker */;
 		};
@@ -334,7 +354,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -391,7 +411,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;

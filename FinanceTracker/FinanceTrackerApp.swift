@@ -4,30 +4,34 @@
 //
 //  Created by Lucas Hsu on 1/13/25.
 //
+
 import SwiftUI
 import SwiftData
 
+/// main: The app starts here
 @main
 struct FinanceTrackerApp: App
 {
     var sharedModelContainer: ModelContainer =
     {
-        let schema = Schema([Transaction.self,
-                             RecurringTransaction.self,
-                             SelectedRecurringTransactionIDs.self
-                            ])
+        let schema = Schema([Transaction.self])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
+        do
+        {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
+        }
+        catch
+        {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
 
     var body: some Scene
     {
-        WindowGroup { ContentView() }
+        WindowGroup
+        {
+            ContentView()
+        }
             .modelContainer(sharedModelContainer)
     }
 }

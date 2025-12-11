@@ -77,6 +77,7 @@ final class TransactionEditorViewModel
             hasSaved = true
             hasDeleted = false
         }
+        NotificationCenter.default.post(name: .transactionDidSave, object: nil)
     }
     
     func delete()
@@ -89,6 +90,7 @@ final class TransactionEditorViewModel
                 hasDeleted = true
                 hasSaved = false
             }
+            NotificationCenter.default.post(name: .transactionDidSave, object: nil)
             return
         }
         print("[WARN] No need to delete when adding new Transaction.")

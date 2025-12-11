@@ -56,3 +56,8 @@ extension ModelContext {
         }
     }
 }
+
+extension Notification.Name
+{
+    static let transactionDidSave = Notification.Name("TransactionDidSaveNotification")
+}
