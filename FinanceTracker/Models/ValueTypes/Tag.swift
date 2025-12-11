@@ -15,11 +15,3 @@ enum Tag: String, CaseIterable, Identifiable, Codable
          food,
          other
 }
-
-
-let tagSymbol = [Tag.clothing: "tshirt.fill",
-                 Tag.commute: "car.fill",
-                 Tag.education: "books.vertical.fill",
-                 Tag.entertainment: "popcorn.fill",
-                 Tag.food: "fork.knife",
-                 Tag.other: "ellipsis"]

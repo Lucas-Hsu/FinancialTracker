@@ -117,7 +117,7 @@ struct TransactionDetailsView: View {
                         HStack {
                             Text("Price (CN¥)")
                             Spacer()
-                            TextField("Enter Price", value: $transaction.price, formatter: Transaction().priceFormatter)
+                            TextField("Enter Price", value: $transaction.price, formatter: PriceFormatter.formatter)
                                 .keyboardType(.decimalPad)
                         }
                         .padding()
