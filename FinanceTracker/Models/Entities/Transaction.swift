@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import SwiftUI
 
 /// The `Transaction` class stores information about individual units of expenses.
 @Model class Transaction: Equatable
@@ -207,5 +208,62 @@ struct TransactionCodable: Codable, Identifiable
                                       receiptImage: self.receiptImage)
         transaction.setId(id: self.id)
         return transaction
+    }
+}
+
+struct TransactionView: View
+{
+    let transaction: Transaction
+    var body: some View
+    {
+        VStack(alignment: .leading, spacing: 4)
+        {
+            HStack {
+                Text(transaction.name)
+                    .font(.headline)
+                    .lineLimit(1)
+                
+                Spacer()
+                
+                Text("¥\(transaction.price, specifier: "%.2f")")
+                    .font(.headline)
+                    .foregroundColor(transaction.price < 0 ? .red : .primary)
+            }
+            
+            HStack {
+                Text(transaction.date, style: .date)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Spacer()
+                
+                Text(transaction.tag.rawValue)
+                    .font(.caption)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .cornerRadius(4)
+            }
+
+            HStack {
+                if !transaction.isPaid
+                {
+                    Text("UNPAID")
+                        .font(.caption2)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.orange.opacity(0.2))
+                        .foregroundColor(.orange)
+                        .cornerRadius(3)
+                }
+                
+                if let notes = transaction.notes, !notes.isEmpty {
+                    Spacer()
+                    Image(systemName: "note.text")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding(.vertical, 8)
     }
 }

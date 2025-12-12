@@ -20,7 +20,7 @@ final class TransactionEditorViewModel
     private(set) var errorMessage: String?
     
     // MARK: - Fully Private: No need to be observed by View.
-    @ObservationIgnored private let modelContext: ModelContext
+    @ObservationIgnored let modelContext: ModelContext
     
     // MARK: - Constructors
     init(modelContext: ModelContext)
@@ -111,17 +111,17 @@ final class TransactionEditorViewModel
                           notes: [String]? = nil,
                           receiptImage: Data? = nil) -> Bool
     {
-        if (transaction.isNameValid(name: name))
+        if (!transaction.isNameValid(name: name))
         {
             print("[ERROR] Name cannot be empty. Set to default.")
             return false
         }
-        else if (transaction.isPriceValid(price: price))
+        else if (!transaction.isPriceValid(price: price))
         {
             print("[ERROR] Price \(price) cannot be negative. Set as absolute value.")
             return false
         }
-        else if (transaction.isDateValid(date: date))
+        else if (!transaction.isDateValid(date: date))
         {
             print("[ERROR] \(date.toMediumString()) Date cannot be in the future. Set to default.")
             return false

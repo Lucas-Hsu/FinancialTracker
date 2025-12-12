@@ -17,7 +17,7 @@ final class RecordsListViewModel
     private(set) var sortedTransactions: [Transaction] = []
     
     // MARK: - Fully Private
-    @ObservationIgnored private let modelContext: ModelContext
+    @ObservationIgnored let modelContext: ModelContext
     @ObservationIgnored private var transactionObserver: NSObjectProtocol?
     
     // MARK: - Constructors

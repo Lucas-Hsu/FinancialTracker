@@ -10,18 +10,17 @@ import SwiftData
 
 struct ContentView: View
 {
-    @State private var selectedTab: ViewTabs = .transactionRecords
-    
+    @Environment(\.modelContext) var modelContext
     var body: some View
     {
-        TabView (selection: $selectedTab)
+        TabView
         {
             // MARK: - Saved Patterns (Recurring Transactions)
             NavigationStack
             {
                 HStack
                 {
-                    RecordsListView()
+                    RecordsListView(modelContext: modelContext)
                 }
             }
                 .tabItem { Label("Suggestions", systemImage: "person.text.rectangle") }
@@ -35,7 +34,7 @@ struct ContentView: View
                 {
                     Text("Calendar")
                         .padding()
-                    RecordsListView()
+                    RecordsListView(modelContext: modelContext)
                         .padding()
                 }
             }
@@ -48,7 +47,7 @@ struct ContentView: View
             {
                 HStack
                 {
-                    RecordsListView()
+                    RecordsListView(modelContext: modelContext)
                 }
             }
                 .tabItem { Label("Statistics", systemImage: "chart.bar.fill") }
@@ -57,7 +56,11 @@ struct ContentView: View
     }
 }
 
+
 #Preview
 {
     ContentView()
+        .modelContainer(for: [Transaction.self],
+                        inMemory: true)
 }
+
