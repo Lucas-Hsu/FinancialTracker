@@ -41,7 +41,8 @@ extension String
     }
 }
 
-extension ModelContext {
+extension ModelContext
+{
     func saveSuccess() -> Bool
     {
         do

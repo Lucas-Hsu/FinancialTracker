@@ -8,14 +8,25 @@
 import SwiftUI
 import SwiftData
 
+/// This is the UI/window manager
 struct ContentView: View
 {
-    @Environment(\.modelContext) var modelContext
+    // MARK: - Tab View Enums
+    private enum ViewTabs: CaseIterable
+    {
+      case savedPatterns,
+           transactionRecords,
+           graphicalRepresentation
+    }
+    // MARK: - Attributes
+    @Environment(\.modelContext) private var modelContext
+    
+    // MARK: - UI
     var body: some View
     {
         TabView
         {
-            // MARK: - Saved Patterns (Recurring Transactions)
+            // MARK: Saved Patterns (Recurring Transactions)
             NavigationStack
             {
                 HStack
@@ -23,26 +34,24 @@ struct ContentView: View
                     RecordsListView(modelContext: modelContext)
                 }
             }
-                .tabItem { Label("Suggestions", systemImage: "person.text.rectangle") }
-                .tag(ViewTabs.savedPatterns)
-                .edgesIgnoringSafeArea(.all)
+            .tabItem { Label("Suggestions", systemImage: "person.text.rectangle") }
+            .tag(ViewTabs.savedPatterns)
             
-            // MARK: - Transaction Records: Calendar and List
+            // MARK: Transaction Records: Calendar and List
             NavigationStack
             {
                 HStack
                 {
                     Text("Calendar")
-                        .padding()
+                    .padding()
                     RecordsListView(modelContext: modelContext)
-                        .padding()
+                    .padding()
                 }
             }
-                .tabItem { Label("Records", systemImage: "list.dash") }
-                .tag(ViewTabs.transactionRecords)
-                .edgesIgnoringSafeArea(.all)
+            .tabItem { Label("Records", systemImage: "list.dash") }
+            .tag(ViewTabs.transactionRecords)
             
-            // MARK: - Charts and Summaries
+            // MARK: Charts and Summaries
             NavigationStack
             {
                 HStack
@@ -50,17 +59,12 @@ struct ContentView: View
                     RecordsListView(modelContext: modelContext)
                 }
             }
-                .tabItem { Label("Statistics", systemImage: "chart.bar.fill") }
-                .tag(ViewTabs.graphicalRepresentation)
+            .tabItem { Label("Statistics", systemImage: "chart.bar.fill") }
+            .tag(ViewTabs.graphicalRepresentation)
         }
     }
 }
 
-
 #Preview
-{
-    ContentView()
-        .modelContainer(for: [Transaction.self],
-                        inMemory: true)
-}
+{ ContentView().modelContainer(for: [Transaction.self], inMemory: true) }
 

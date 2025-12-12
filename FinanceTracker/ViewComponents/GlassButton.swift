@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+// MARK: - Primitive Shapes
 struct BaseButton: View
 {
     let title: String
@@ -21,6 +22,18 @@ struct BaseButton: View
     }
 }
 
+// MARK: - Templates
+struct PrimaryButton: View
+{
+    let title: String
+    var action: () -> Void
+    
+    var body: some View
+    {
+        BaseButton(title: title, action: action)
+            .tint(.accentColor)
+    }
+}
 struct PrimarySaveButton: View
 {
     let title: String = "Save"
@@ -56,6 +69,19 @@ struct DestructiveDeleteButton: View
     }
 }
 
+// MARK: - Liquid Glass Themed
+struct PrimaryButtonGlass: View
+{
+    let title: String
+    var action: () -> Void
+    var body: some View
+    {
+        if #available(iOS 26.0, *)
+        { PrimarySaveButton(action: action).glassEffect(.regular.interactive()) }
+        else
+        { PrimarySaveButton(action: action) }
+    }
+}
 struct PrimarySaveButtonGlass: View
 {
     let title: String = "Save"

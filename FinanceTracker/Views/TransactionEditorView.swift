@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 
+/// View for adding, editing, and deleting individual Transaction objects. Connects to `TransactionEditorViewModel`.
 struct TransactionEditorView: View
 {
     // MARK: - Attributes
@@ -62,11 +63,17 @@ struct TransactionEditorView: View
         VStack
         {
             // MARK: Form
-                VStack(spacing: 20)
+            VStack(spacing: 20)
             {
+                // Name
                 TextField("Name", text: $name)
+                // Price
                 TextField("Price", value: $price, formatter: PriceFormatter.formatter )
+                // IsPaid
+                Toggle("Payment Deposited", isOn: $isPaid)
+                // Date
                 DatePicker("Date", selection: $date)
+                // Tag
                 Picker("Category", selection: $tag)
                 {
                     ForEach(Tag.allCases, id: \.self)
@@ -74,18 +81,14 @@ struct TransactionEditorView: View
                         Text(tag.rawValue).tag(tag)
                     }
                 }
-                    .pickerStyle(SegmentedPickerStyle())
-                
-                Toggle("Paid", isOn: $isPaid)
-                
-                // Notes field
-                TextEditor(text: Binding(
-                    get: { notes?.joined(separator: "\n") ?? "" },
-                    set: { notes = $0.isEmpty ? nil : $0.split(separator: "\n").map(String.init) }
-                ))
-                    .frame(height: 100)
+                .pickerStyle(SegmentedPickerStyle())
+                // Notes
+                TextEditor(text: Binding( get: { notes?.joined(separator: "\n") ?? "" },
+                                          set: { notes = $0.isEmpty ? nil : $0.split(separator: "\n").map(String.init) } ))
+                .frame(height: 100)
+                // [TODO] Need Image Add+Display
             }
-                .padding()
+            .padding()
             
             Spacer()
             
@@ -93,19 +96,15 @@ struct TransactionEditorView: View
             HStack {
                 PrimarySaveButtonGlass
                 {
-                    viewModel.save(
-                        date: date,
-                        name: name,
-                        price: price,
-                        tag: tag,
-                        isPaid: isPaid,
-                        notes: notes,
-                        receiptImage: receiptImage
-                    )
+                    viewModel.save(date: date,
+                                   name: name,
+                                   price: price,
+                                   tag: tag,
+                                   isPaid: isPaid,
+                                   notes: notes,
+                                   receiptImage: receiptImage)
                     if viewModel.hasSaved
-                    {
-                        dismiss()
-                    }
+                    { dismiss() }
                 }
                 .padding()
                 
@@ -113,21 +112,18 @@ struct TransactionEditorView: View
                 {
                     viewModel.cancel()
                     if (!viewModel.hasSaved && !viewModel.hasDeleted)
-                    {
-                        dismiss()
-                    }
+                    { dismiss() }
                 }
                 .padding()
                 
+                // Only show Delete if it's an existing Transaction
                 if (!viewModel.isNew)
                 {
                     DestructiveDeleteButtonGlass
                     {
                         viewModel.delete()
                         if viewModel.hasDeleted
-                        {
-                            dismiss()
-                        }
+                        { dismiss() }
                     }
                     .padding()
                 }

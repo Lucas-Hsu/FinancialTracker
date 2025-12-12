@@ -172,10 +172,10 @@ import SwiftUI
     }
 }
 
-
 /// For serializing `Transaction` into JSON when exporting.
 struct TransactionCodable: Codable, Identifiable
 {
+    // MARK: - Public Attributes accessed by SwiftData system
     var id: UUID
     var date: Date
     var name: String
@@ -185,6 +185,7 @@ struct TransactionCodable: Codable, Identifiable
     var notes: [String]?
     var receiptImage: Data?
 
+    // MARK: - Constructor
     init(from transaction: Transaction)
     {
         self.id = transaction.id
@@ -196,7 +197,8 @@ struct TransactionCodable: Codable, Identifiable
         self.notes = transaction.notes
         self.receiptImage = transaction.receiptImage
     }
-
+    
+    // MARK: - Public Methods
     public func toModel() -> Transaction
     {
         let transaction = Transaction(date: self.date,
@@ -211,56 +213,68 @@ struct TransactionCodable: Codable, Identifiable
     }
 }
 
+/// View for one `Transaction` record
 struct TransactionView: View
 {
-    let transaction: Transaction
+    // MARK: - Read-Only Attributes
+    private let transaction: Transaction
+    
+    // MARK: - Constructor
+    init(transaction: Transaction)
+    { self.transaction = transaction }
+    
+    // MARK: - UI
     var body: some View
     {
         VStack(alignment: .leading, spacing: 4)
         {
-            HStack {
+            HStack
+            {
                 Text(transaction.name)
-                    .font(.headline)
-                    .lineLimit(1)
+                .font(.headline)
+                .lineLimit(1)
                 
                 Spacer()
                 
                 Text("¥\(transaction.price, specifier: "%.2f")")
-                    .font(.headline)
-                    .foregroundColor(transaction.price < 0 ? .red : .primary)
+                .font(.headline)
+                .foregroundColor(transaction.price < 0 ? .red : .primary)
             }
             
-            HStack {
+            HStack
+            {
                 Text(transaction.date, style: .date)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                .font(.caption)
+                .foregroundColor(.secondary)
                 
                 Spacer()
                 
                 Text(transaction.tag.rawValue)
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 2)
-                    .cornerRadius(4)
+                .font(.caption)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 2)
+                .cornerRadius(4)
             }
 
-            HStack {
+            HStack
+            {
                 if !transaction.isPaid
                 {
                     Text("UNPAID")
-                        .font(.caption2)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Color.orange.opacity(0.2))
-                        .foregroundColor(.orange)
-                        .cornerRadius(3)
+                    .font(.caption2)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color.orange.opacity(0.2))
+                    .foregroundColor(.orange)
+                    .cornerRadius(3)
                 }
                 
-                if let notes = transaction.notes, !notes.isEmpty {
+                if let notes = transaction.notes, !notes.isEmpty
+                {
                     Spacer()
                     Image(systemName: "note.text")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
                 }
             }
         }

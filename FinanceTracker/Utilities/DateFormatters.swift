@@ -8,8 +8,8 @@
 import Foundation
 
 /// Conver `Date` to `String`s of various formats.
-public class DateFormatters {
-    
+public class DateFormatters
+{
     private static let mediumDateFormatter: DateFormatter =
     {
         let formatter = DateFormatter()
@@ -19,8 +19,5 @@ public class DateFormatters {
     }()
 
     public static func medium(date: Date) -> String
-    {
-        return mediumDateFormatter.string(from: date)
-    }
-    
+    { return mediumDateFormatter.string(from: date) }
 }
