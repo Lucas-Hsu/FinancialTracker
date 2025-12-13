@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import SwiftUI
 
 public extension Date
 {
@@ -60,5 +61,28 @@ extension ModelContext
 
 extension Notification.Name
 {
-    static let transactionDidSave = Notification.Name("TransactionDidSaveNotification")
+    static let transactionBSTUpdated = Notification.Name("TransactionDidSaveNotification")
 }
+
+private struct TransactionBSTKey: EnvironmentKey
+{
+    static let defaultValue: TransactionBST? = nil
+}
+
+extension EnvironmentValues
+{
+    var transactionBST: TransactionBST?
+    {
+        get { self[TransactionBSTKey.self] }
+        set { self[TransactionBSTKey.self] = newValue }
+    }
+}
+
+extension View
+{
+    func transactionBST(_ bst: TransactionBST?) -> some View
+    {
+        self.environment(\.transactionBST, bst)
+    }
+}
+

@@ -12,14 +12,14 @@ import SwiftData
 @Observable
 final class TransactionEditorViewModel
 {
-    // MARK: - Read-only Attributes: the View can access and be notified of change in.
+    // MARK: - Read-only Attributes
     private(set) var transaction: Transaction
     private(set) var isNew: Bool
     private(set) var hasSaved: Bool = false
     private(set) var hasDeleted: Bool = false
     private(set) var errorMessage: String?
     
-    // MARK: - Fully Private: No need to be observed by View.
+    // MARK: - Fully Private
     @ObservationIgnored let modelContext: ModelContext
     
     // MARK: - Constructors
@@ -29,6 +29,7 @@ final class TransactionEditorViewModel
         self.transaction = Transaction()
         self.isNew = true
     }
+    
     init(transaction: Transaction, modelContext: ModelContext)
     {
         self.modelContext = modelContext
@@ -72,12 +73,22 @@ final class TransactionEditorViewModel
             isNew = false
         }
         
-        if (modelContext.saveSuccess())
-        {
+        do {
+            try modelContext.save()
             hasSaved = true
             hasDeleted = false
+            
+            // POST NOTIFICATION to refresh BST
+            NotificationCenter.default.post(
+                name: .transactionBSTUpdated,
+                object: nil,
+                userInfo: ["operation": isNew ? "insert" : "update"]
+            )
+            print("Transaction saved, notification posted")
+            
+        } catch {
+            print("[ERROR] Failed to save context: \(error)")
         }
-        NotificationCenter.default.post(name: .transactionDidSave, object: nil)
     }
     
     func delete()
@@ -85,12 +96,22 @@ final class TransactionEditorViewModel
         if (!isNew)
         {
             modelContext.delete(transaction)
-            if modelContext.saveSuccess()
-            {
+            do {
+                try modelContext.save()
                 hasDeleted = true
                 hasSaved = false
+                
+                // POST NOTIFICATION to refresh BST
+                NotificationCenter.default.post(
+                    name: .transactionBSTUpdated,
+                    object: nil,
+                    userInfo: ["operation": "delete"]
+                )
+                print("Transaction deleted, notification posted")
+                
+            } catch {
+                print("[ERROR] Failed to delete transaction: \(error)")
             }
-            NotificationCenter.default.post(name: .transactionDidSave, object: nil)
             return
         }
         print("[WARN] No need to delete when adding new Transaction.")

@@ -18,8 +18,11 @@ struct ContentView: View
            transactionRecords,
            graphicalRepresentation
     }
+    
     // MARK: - Attributes
     @Environment(\.modelContext) private var modelContext
+    @State private var transactionBST: TransactionBST?
+    @State private var refreshFlag = false // Add this
     
     // MARK: - UI
     var body: some View
@@ -31,7 +34,7 @@ struct ContentView: View
             {
                 HStack
                 {
-                    RecordsListView(modelContext: modelContext)
+                    Text("Suggestions")
                 }
             }
             .tabItem { Label("Suggestions", systemImage: "person.text.rectangle") }
@@ -44,8 +47,19 @@ struct ContentView: View
                 {
                     Text("Calendar")
                     .padding()
-                    RecordsListView(modelContext: modelContext)
-                    .padding()
+                    if let bst = transactionBST
+                    {
+                        RecordsListView(modelContext: modelContext, transactionBST: bst)
+                            .padding()
+                    }
+                    else
+                    {
+                        ProgressView("Loading transactions...")
+                        .onAppear
+                        {
+                            transactionBST = TransactionBST(modelContext: modelContext)
+                        }
+                    }
                 }
             }
             .tabItem { Label("Records", systemImage: "list.dash") }
@@ -56,12 +70,16 @@ struct ContentView: View
             {
                 HStack
                 {
-                    RecordsListView(modelContext: modelContext)
+                    Text("Statistics")
                 }
             }
             .tabItem { Label("Statistics", systemImage: "chart.bar.fill") }
             .tag(ViewTabs.graphicalRepresentation)
         }
+        .onReceive(NotificationCenter.default.publisher(for: .transactionBSTUpdated)) { _ in
+                    // When BST updates, toggle the refresh flag
+                    refreshFlag.toggle()
+                }
     }
 }
 

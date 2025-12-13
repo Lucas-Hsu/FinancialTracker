@@ -10,100 +10,154 @@ import SwiftData
 
 /// Builds and traverses a Binary Search Tree with `TransactionNode`s.
 @Observable
-final class TransactionBST
-{
+final class TransactionBST {
     // MARK: - Options enums
-    private enum NodeCompareDecision: CaseIterable
-    {
-        case leftSubtree,
-             rightSubtree
+    private enum NodeCompareDecision: CaseIterable {
+        case leftSubtree, rightSubtree
     }
+    
     private enum BSTSortMethod: CaseIterable
     {
         case date
     }
     
-    // MARK: - Read-only Attributes: the View can access and be notified of change in.
+    // MARK: - Read-only Attributes
     private(set) var root: TransactionNode?
+    private(set) var isReady: Bool = false
+    
+    // MARK: - Fully Private
+    @ObservationIgnored let modelContext: ModelContext
+    @ObservationIgnored private var transactions: [Transaction]
     @ObservationIgnored private var notificationToken: Any?
     
-    // MARK: - Fully Private: No need to be observed by View.
-    @ObservationIgnored let modelContext: ModelContext
-    @ObservationIgnored var transactions: [Transaction]
-    
     // MARK: - Constructors
-    init(modelContext: ModelContext)
-    {
+    init(modelContext: ModelContext) {
         self.modelContext = modelContext
         self.root = nil
         self.transactions = []
-        readTransactions()
+        // asynchronously load to avoid slowing UI
+        Task { @MainActor in
+            await self.loadInitialData()
+        }
+        setupContextObserver()
     }
     
-    // MARK: - Destructors
-    deinit
-    {
-        if let token = notificationToken
-        {
+    deinit {
+        if let token = notificationToken {
             NotificationCenter.default.removeObserver(token)
         }
     }
     
     // MARK: - Public Methods
-    public func inOrderTravesal() -> [Transaction]
-    {
-        guard let rootNode = self.root else
-        { return [] }
+    public func inOrderTraversal() -> [Transaction] {
+        guard let rootNode = self.root else { return [] }
         return rootNode.inOrder()
     }
     
-    // MARK: - Helpers Methods
-    // Set up Context Observer to see when modelContext changes
-    private func setupContextObserver()
-    {
-        notificationToken = NotificationCenter.default.addObserver(forName: .NSManagedObjectContextObjectsDidChange,
-                                                                   object: modelContext,
-                                                                   queue: .main)
-        { [weak self] notification in
-            print("Notification 'modelContext: .NSManagedObjectContextObjectsDidChange' Received.")
+    public func refresh() {
+        readTransactions()
+        buildTree()
+        // Notify everyone that BST has been updated
+        NotificationCenter.default.post(
+                    name: .transactionBSTUpdated,
+                    object: self,
+                    userInfo: ["initialLoad": false]  // NEW: different from initial load
+                )
+    }
+    
+    /*
+    public func findTransaction(id: PersistentIdentifier?) -> Transaction? {
+        guard let id = id else { return nil }
+        return findTransactionRecursive(root: root, id: id)
+    }
+    */
+    
+    private func findTransactionRecursive(root: TransactionNode?, id: PersistentIdentifier) -> Transaction? {
+        guard let root = root else { return nil }
+        
+        if root.value.id == id {
+            return root.value
+        }
+        
+        if let foundInLeft = findTransactionRecursive(root: root.left, id: id) {
+            return foundInLeft
+        }
+        
+        if let foundInRight = findTransactionRecursive(root: root.right, id: id) {
+            return foundInRight
+        }
+        
+        return nil
+    }
+    
+    // MARK: - Context Observation
+    private func setupContextObserver() {
+        // Observe SwiftData context saves
+        notificationToken = NotificationCenter.default.addObserver(
+            forName: .NSPersistentStoreRemoteChange,
+            object: modelContext,
+            queue: .main
+        ) { [weak self] _ in
+            print("SwiftData context changed - refreshing BST")
             self?.refresh()
         }
-    }
-    // Refresh Sorted Transaction Array
-    private func refresh()
-    {
-        print("Refreshing TransactionBST...")
-        self.readTransactions()
-        self.buildTree()
-        print("Refreshing TransactionBST Complete!")
-    }
-    // Read Transactions from the ModelContext
-    private func readTransactions()
-    {
-        do
-        {
-            let descriptor = FetchDescriptor<Transaction>( sortBy: [SortDescriptor(\.id)] )
-            self.transactions = try modelContext.fetch(descriptor)
+        
+        // Also observe our custom notification for immediate updates
+        NotificationCenter.default.addObserver(
+            forName: .transactionBSTUpdated,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            if notification.object as? TransactionBST !== self {
+                print("Received BST update notification from another source")
+                self?.refresh()
+            }
         }
-        catch
-        { fatalError("[ERROR] Failed to load transactions: \(error)") }
+    }
+    
+    // MARK: - Helper Methods
+    @MainActor
+        private func loadInitialData() async {
+            readTransactions()
+            buildTree()
+            isReady = true  // MARK: Set ready flag after async load completes
+            NotificationCenter.default.post(
+                name: .transactionBSTUpdated,
+                object: self,
+                userInfo: ["initialLoad": true]  // NEW: Flag for initial load
+            )
+            print("BST: Initial load complete with \(transactions.count) transactions")
+        }
+    
+    private func readTransactions() {
+        do {
+            let descriptor = FetchDescriptor<Transaction>()
+            self.transactions = try modelContext.fetch(descriptor)
+            print("BST: Loaded \(transactions.count) transactions")
+        } catch {
+            print("[ERROR] Failed to load transactions: \(error)")
+            self.transactions = []
+            self.root = nil
+        }
     }
     
     // Build a BST from the unsorted Transaction array
     private func buildTree(choice: BSTSortMethod = .date)
     {
-        if (transactions.count == 0)
-        { self.root = nil }
-        else
+        if transactions.isEmpty
         {
-            self.root = TransactionNode(value: transactions[0])
-            guard let rootNode: TransactionNode = self.root else
-            { return }
-            for i in 1..<transactions.count
-            {
-                recursiveAdd(node: TransactionNode(value: transactions[i]),to: rootNode, compareType: choice)
-            }
+            self.root = nil
+            return
         }
+        
+        self.root = TransactionNode(value: transactions[0])
+        guard let rootNode: TransactionNode = self.root else { return }
+        
+        for i in 1..<transactions.count
+        {
+            recursiveAdd(node: TransactionNode(value: transactions[i]),to: rootNode, compareType: choice)
+        }
+        print("BST: Tree rebuilt with \(transactions.count) nodes")
     }
     
     // Recursively add a new node to a node's subtrees
