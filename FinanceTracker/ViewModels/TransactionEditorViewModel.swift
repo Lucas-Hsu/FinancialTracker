@@ -17,7 +17,7 @@ final class TransactionEditorViewModel
     private(set) var isNew: Bool
     private(set) var hasSaved: Bool = false
     private(set) var hasDeleted: Bool = false
-    private(set) var errorMessage: String?
+    private(set) var errorMessage: String = ""
     
     // MARK: - Fully Private
     @ObservationIgnored let modelContext: ModelContext
@@ -29,7 +29,6 @@ final class TransactionEditorViewModel
         self.transaction = Transaction()
         self.isNew = true
     }
-    
     init(transaction: Transaction, modelContext: ModelContext)
     {
         self.modelContext = modelContext
@@ -58,7 +57,6 @@ final class TransactionEditorViewModel
             print("[WARN] Aborted Transaction save.")
             return
         }
-        
         _ = writeToTransaction(date: date,
                             name: name,
                             price: price,
@@ -66,55 +64,39 @@ final class TransactionEditorViewModel
                             isPaid: isPaid,
                             notes: notes,
                             receiptImage: receiptImage)
-        
         if (isNew)
         {
             modelContext.insert(transaction)
             isNew = false
         }
-        
-        do {
-            try modelContext.save()
+        if modelContext.saveSuccess()
+        {
             hasSaved = true
             hasDeleted = false
-            
-            // POST NOTIFICATION to refresh BST
-            NotificationCenter.default.post(
-                name: .transactionBSTUpdated,
-                object: nil,
-                userInfo: ["operation": isNew ? "insert" : "update"]
-            )
-            print("Transaction saved, notification posted")
-            
-        } catch {
-            print("[ERROR] Failed to save context: \(error)")
+            NotificationCenter.default.post(name: .transactionsUpdated,
+                                            object: nil,
+                                            userInfo: ["operation": isNew ? "insert" : "update"])
+            print("TransactionEditorViewModel Saved Transaction and posted .transactionsUpdated notif.")
         }
     }
     
     func delete()
     {
-        if (!isNew)
+        guard isNew else
         {
-            modelContext.delete(transaction)
-            do {
-                try modelContext.save()
-                hasDeleted = true
-                hasSaved = false
-                
-                // POST NOTIFICATION to refresh BST
-                NotificationCenter.default.post(
-                    name: .transactionBSTUpdated,
-                    object: nil,
-                    userInfo: ["operation": "delete"]
-                )
-                print("Transaction deleted, notification posted")
-                
-            } catch {
-                print("[ERROR] Failed to delete transaction: \(error)")
-            }
+            print("[WARN] No need to delete when adding new Transaction.")
             return
         }
-        print("[WARN] No need to delete when adding new Transaction.")
+        modelContext.delete(transaction)
+        if modelContext.saveSuccess()
+        {
+            hasDeleted = true
+            hasSaved = false
+            NotificationCenter.default.post(name: .transactionsUpdated,
+                                            object: nil,
+                                            userInfo: ["operation": "delete"])
+            print("TransactionEditorViewModel Deleted Transaction and posted .transactionsUpdated notif.")
+        }
     }
 
     func cancel()
@@ -134,22 +116,26 @@ final class TransactionEditorViewModel
     {
         if (!transaction.isNameValid(name: name))
         {
-            print("[ERROR] Name cannot be empty. Set to default.")
+            errorMessage = "[ERROR] Name cannot be empty. Save aborted."
+            print(errorMessage)
             return false
         }
         else if (!transaction.isPriceValid(price: price))
         {
-            print("[ERROR] Price \(price) cannot be negative. Set as absolute value.")
+            errorMessage = "[ERROR] Price \(price) cannot be negative. Save aborted."
+            print(errorMessage)
             return false
         }
         else if (!transaction.isDateValid(date: date))
         {
-            print("[ERROR] \(date.toMediumString()) Date cannot be in the future. Set to default.")
+            errorMessage = "[ERROR] \(date.toMediumString()) Date cannot be in the future. Save aborted."
+            print(errorMessage)
             return false
         }
         else if (!transaction.isTagValid(tag: tag) || !transaction.isIsPaidValid(isPaid: isPaid) || !transaction.isNotesValid(notes: notes) || !transaction.isReceiptImageValid(receiptImage: receiptImage))
         {
-            print("[ERROR] Uncaught error type.")
+            errorMessage = "[ERROR] Uncaught error type. Save aborted."
+            print(errorMessage)
             return false
         }
         return true

@@ -25,107 +25,119 @@ struct TransactionEditorView: View
     @Environment(\.dismiss) private var dismiss
     
     // MARK: - Constructors
-        init(modelContext: ModelContext) {
-            // Initialize View state with defaults
-            _date = State(initialValue: Date())
-            _name = State(initialValue: "")
-            _price = State(initialValue: 0)
-            _tag = State(initialValue: .other)
-            _isPaid = State(initialValue: true)
-            _notes = State(initialValue: nil)
-            _receiptImage = State(initialValue: nil)
-            
-            // Initialize ViewModel
-            _viewModel = State(initialValue: TransactionEditorViewModel(modelContext: modelContext))
-        }
+    init(modelContext: ModelContext)
+    {
+        print("TransactionEditorView Editing new Transaction.")
+        // Initialize View state with defaults
+        _date = State(initialValue: Date())
+        _name = State(initialValue: "")
+        _price = State(initialValue: 0)
+        _tag = State(initialValue: .other)
+        _isPaid = State(initialValue: true)
+        _notes = State(initialValue: nil)
+        _receiptImage = State(initialValue: nil)
         
-        init(transaction: Transaction, modelContext: ModelContext) {
-            print("Editing Existing Transaction.")
-            // Initialize View state with existing transaction values
-            _date = State(initialValue: transaction.date)
-            _name = State(initialValue: transaction.name)
-            _price = State(initialValue: transaction.price)
-            _tag = State(initialValue: transaction.tag)
-            _isPaid = State(initialValue: transaction.isPaid)
-            _notes = State(initialValue: transaction.notes)
-            _receiptImage = State(initialValue: transaction.receiptImage)
-            
-            // Initialize ViewModel with transaction
-            _viewModel = State(initialValue: TransactionEditorViewModel(
-                transaction: transaction,
-                modelContext: modelContext
-            ))
-        }
+        // Initialize ViewModel
+        _viewModel = State(initialValue: TransactionEditorViewModel(modelContext: modelContext))
+    }
+        
+    init(transaction: Transaction, modelContext: ModelContext)
+    {
+        print("TransactionEditorView Editing existing Transaction.")
+        // Initialize View state with existing transaction values
+        _date = State(initialValue: transaction.date)
+        _name = State(initialValue: transaction.name)
+        _price = State(initialValue: transaction.price)
+        _tag = State(initialValue: transaction.tag)
+        _isPaid = State(initialValue: transaction.isPaid)
+        _notes = State(initialValue: transaction.notes)
+        _receiptImage = State(initialValue: transaction.receiptImage)
+        
+        // Initialize ViewModel with transaction
+        _viewModel = State(initialValue: TransactionEditorViewModel(
+            transaction: transaction,
+            modelContext: modelContext
+        ))
+    }
     
     // MARK: - UI
     var body: some View
     {
-        VStack
-        {
-            // MARK: Form
-            VStack(spacing: 20)
+        HStack {
+            // Transaction Receipt Image Editor
+            // [TODO] Need Image Add+Display
+            
+            // Transaction Details Editor
+            VStack
             {
-                // Name
-                TextField("Name", text: $name)
-                // Price
-                TextField("Price", value: $price, formatter: PriceFormatter.formatter )
-                // IsPaid
-                Toggle("Payment Deposited", isOn: $isPaid)
-                // Date
-                DatePicker("Date", selection: $date)
-                // Tag
-                Picker("Category", selection: $tag)
+                // MARK: Form
+                VStack(spacing: 20)
                 {
-                    ForEach(Tag.allCases, id: \.self)
-                    { tag in
-                        Text(tag.rawValue).tag(tag)
-                    }
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                // Notes
-                TextEditor(text: Binding( get: { notes?.joined(separator: "\n") ?? "" },
-                                          set: { notes = $0.isEmpty ? nil : $0.split(separator: "\n").map(String.init) } ))
-                .frame(height: 100)
-                // [TODO] Need Image Add+Display
-            }
-            .padding()
-            
-            Spacer()
-            
-            // MARK: Action Buttons
-            HStack {
-                PrimarySaveButtonGlass
-                {
-                    viewModel.save(date: date,
-                                   name: name,
-                                   price: price,
-                                   tag: tag,
-                                   isPaid: isPaid,
-                                   notes: notes,
-                                   receiptImage: receiptImage)
-                    if viewModel.hasSaved
-                    { dismiss() }
-                }
-                .padding()
-                
-                SecondaryCancelButtonGlass
-                {
-                    viewModel.cancel()
-                    if (!viewModel.hasSaved && !viewModel.hasDeleted)
-                    { dismiss() }
-                }
-                .padding()
-                
-                // Only show Delete if it's an existing Transaction
-                if (!viewModel.isNew)
-                {
-                    DestructiveDeleteButtonGlass
+                    if viewModel.errorMessage != ""
                     {
-                        viewModel.delete()
-                        if viewModel.hasDeleted
+                        Text(viewModel.errorMessage)
+                    }
+                    // Name
+                    TextField("Name", text: $name)
+                    // Price
+                    TextField("Price", value: $price, formatter: PriceFormatter.formatter )
+                    // IsPaid
+                    Toggle("Payment Deposited", isOn: $isPaid)
+                    // Date
+                    DatePicker("Date", selection: $date)
+                    // Tag
+                    Picker("Category", selection: $tag)
+                    {
+                        ForEach(Tag.allCases, id: \.self)
+                        { tag in
+                            Text(tag.rawValue).tag(tag)
+                        }
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    // Notes
+                    TextEditor(text: Binding( get: { notes?.joined(separator: "\n") ?? "" },
+                                              set: { notes = $0.isEmpty ? nil : $0.split(separator: "\n").map(String.init) } ))
+                    .frame(height: 100)
+                }
+                .padding()
+                
+                Spacer()
+                
+                // MARK: Action Buttons
+                HStack {
+                    PrimarySaveButtonGlass
+                    {
+                        viewModel.save(date: date,
+                                       name: name,
+                                       price: price,
+                                       tag: tag,
+                                       isPaid: isPaid,
+                                       notes: notes,
+                                       receiptImage: receiptImage)
+                        if viewModel.hasSaved
                         { dismiss() }
                     }
                     .padding()
+                    
+                    SecondaryCancelButtonGlass
+                    {
+                        viewModel.cancel()
+                        if (!viewModel.hasSaved && !viewModel.hasDeleted)
+                        { dismiss() }
+                    }
+                    .padding()
+                    
+                    // Only show Delete if it's an existing Transaction
+                    if (!viewModel.isNew)
+                    {
+                        DestructiveDeleteButtonGlass
+                        {
+                            viewModel.delete()
+                            if viewModel.hasDeleted
+                            { dismiss() }
+                        }
+                        .padding()
+                    }
                 }
             }
         }

@@ -25,18 +25,24 @@ final class RecordsListViewModel
     // MARK: - Constructors
     init(modelContext: ModelContext, transactionBST: TransactionBST)
     {
+        print("\t///RecordListViewModel Init")
         self.modelContext = modelContext
         self.transactionBST = transactionBST
         setupTransactionObserver()
-        // Check if BST is already ready (e.g., from previous init)
-        if transactionBST.isReady {
+        if transactionBST.isReady
+        {
             loadSortedTransactions()
-            isLoading = false  // MARK: Data ready, no loading needed
+            isLoading = false
+            print("\tRecordListViewModel loadedSortedTransactions")
         }
-                // If not ready, observer will handle initial load notification
-        
+        else
+        {
+            print("\tRecordListViewModel TransactionBST is not ready.")
+        }
+        print("\tRecordListViewModel Init///")
     }
     
+    // MARK: - Destructors
     deinit
     {
         if let token = transactionObserver
@@ -46,43 +52,48 @@ final class RecordsListViewModel
     }
     
     // MARK: - Public Methods
-    func refresh() {
+    func refresh()
+    {
         loadSortedTransactions()
     }
     
-    // MARK: - Helpers Methods
-    private func setupTransactionObserver() {
-            transactionObserver = NotificationCenter.default.addObserver(
-                forName: .transactionBSTUpdated,
-                object: transactionBST,  // CHANGED: Observe specific BST instance
-                queue: .main
-            ) { [weak self] notification in
-                guard let self = self else { return }
-                
-                let isInitialLoad = notification.userInfo?["initialLoad"] as? Bool ?? false
-                
-                if isInitialLoad {
-                    // MARK: Handle initial async load completion
-                    self.loadSortedTransactions()
-                    self.isLoading = false
-                    print("ViewModel: Initial load complete")
-                } else {
-                    // MARK: Handle subsequent updates
-                    self.loadSortedTransactions()
-                    print("ViewModel: Updated with changes")
-                }
-            }
-        }
+    func delete(transactions: [Transaction])
+    {
+        for transaction in transactions
+        { modelContext.delete(transaction) }
+        if modelContext.saveSuccess()
+        { NotificationCenter.default.post(name: .transactionsUpdated, object: nil) }
+    }
     
-    private func loadSortedTransactions() {
-            // Ensure BST is ready before accessing data
-            guard transactionBST.isReady else {
-                print("ViewModel: BST not ready yet, skipping load")
-                return
+    // MARK: - Helpers Methods
+    // Wait for notifications from TransactionBST of transactions changes
+    private func setupTransactionObserver()
+    {
+        transactionObserver = NotificationCenter.default.addObserver(forName: .transactionBSTUpdated,
+                                                                     object: transactionBST,
+                                                                     queue: .main)
+        { [weak self] notification in
+            guard let self = self else
+            { return }
+            let isInitialLoad = notification.userInfo?["initialLoad"] as? Bool ?? false
+            if isInitialLoad
+            {
+                print("RecordsListViewModel Initializing...")
+                self.isLoading = false
             }
-            
-            let transactions = transactionBST.inOrderTraversal()
-            sortedTransactions = transactions.sorted { $0.date > $1.date }
-            print("ViewModel: Loaded \(sortedTransactions.count) sorted transactions")
+            self.loadSortedTransactions()
         }
+    }
+    // Load sorted Transactions from TransactionBST
+    private func loadSortedTransactions()
+    {
+        print("RecordListViewModel LoadingSortedTransactions...")
+        guard transactionBST.isReady else
+        {
+            print("RecordsListViewModel: TransactionBST not ready yet. Loading skipped.")
+            return
+        }
+        sortedTransactions = transactionBST.inOrderTraversal()
+        print("RecordsListViewModel: Loaded \(sortedTransactions.count) sorted transactions from TransactionBST")
+    }
 }

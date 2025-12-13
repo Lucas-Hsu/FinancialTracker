@@ -202,7 +202,7 @@ struct Statistics: View {
     }
 
     
-    enum ChartType: String, CaseIterable, Identifiable {
+    enum ChartType: String, Identifiable {
         case bar = "Bar"
         case mtsum = "Monthly Summary"
         case pie = "Pie"

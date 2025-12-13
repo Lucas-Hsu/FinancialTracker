@@ -54,7 +54,7 @@ struct ContentView: View
                     }
                     else
                     {
-                        ProgressView("Loading transactions...")
+                        ProgressView("Building TransactionBST...")
                         .onAppear
                         {
                             transactionBST = TransactionBST(modelContext: modelContext)
@@ -76,10 +76,6 @@ struct ContentView: View
             .tabItem { Label("Statistics", systemImage: "chart.bar.fill") }
             .tag(ViewTabs.graphicalRepresentation)
         }
-        .onReceive(NotificationCenter.default.publisher(for: .transactionBSTUpdated)) { _ in
-                    // When BST updates, toggle the refresh flag
-                    refreshFlag.toggle()
-                }
     }
 }
 

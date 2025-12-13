@@ -243,7 +243,7 @@ func RelationshipBetween(date1: Date, date2: Date) -> TransactionPattern
     return TransactionPattern(type: .None)
 }
 
-enum TypesOfRecurringTransaction: String, CaseIterable, Codable
+enum TypesOfRecurringTransaction: String, Codable
 {
     case Yearly, Monthly, Weekly, Custom
     
@@ -262,7 +262,7 @@ enum TypesOfRecurringTransaction: String, CaseIterable, Codable
         }
     }
 }
-enum TypesOfRecurringTransactionsInternal: String, CaseIterable, Codable // To differentiate between groups of transactions that have and don't have patterns
+enum TypesOfRecurringTransactionsInternal: String, Codable // To differentiate between groups of transactions that have and don't have patterns
 {
     case Yearly, Monthly, Weekly, Custom, None
 }

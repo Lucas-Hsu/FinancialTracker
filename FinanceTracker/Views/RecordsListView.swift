@@ -12,14 +12,13 @@ import SwiftData
 struct RecordsListView: View
 {
     // MARK: - State Management
-    private enum TransactionEditorState: CaseIterable
+    private enum TransactionEditorState
     {
         case addNew,
              modify,
              disabled
     }
     @State private var transactionEditorState: TransactionEditorState = .disabled
-    @State private var refreshID = UUID() // Force view refresh
     
     // MARK: - Private Attributes
     @State private var viewModel: RecordsListViewModel
@@ -29,8 +28,10 @@ struct RecordsListView: View
     // MARK: - Constructor
     init(modelContext: ModelContext, transactionBST: TransactionBST)
     {
+        print("\t///RecordsListView init")
         _transactionBST = State(initialValue: transactionBST)
         _viewModel = State(initialValue: RecordsListViewModel(modelContext: modelContext, transactionBST: transactionBST))
+        print("\tRecordsListView init///")
     }
     
     // MARK: - UI
@@ -38,22 +39,35 @@ struct RecordsListView: View
     {
         VStack
         {
-            if viewModel.isLoading {
-                            // MARK: Show loading state while BST initializes
-                            ProgressView("Loading transactions...")
-                                .padding()
-            } else {
-                // MARK: Add New Transaction button
+            if viewModel.isLoading
+            {
+                ProgressView("Loading Transaction records...")
+                .padding()
+            }
+            else
+            {
                 Button(action: { openTransactionEdit() } )
                 {
                     Text("Add New")
-                        .font(.headline)
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                    .font(.headline)
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
                 }
-                
+                if (viewModel.sortedTransactions.isEmpty)
+                {
+                    VStack
+                    {
+                        Spacer()
+                        Text("No Transaction records found. Please tap 'Add New'.")
+                        .onAppear
+                        {
+                            viewModel.refresh()
+                        }
+                        Spacer()
+                    }
+                }
                 // MARK: Sorted list of Transactions
                 VStack
                 {
@@ -62,42 +76,26 @@ struct RecordsListView: View
                         ForEach(viewModel.sortedTransactions)
                         { transaction in
                             TransactionView(transaction: transaction)
-                                .onTapGesture
+                            .onTapGesture
                             { openTransactionEdit(transaction: transaction) }
                         }
-                        .onDelete { indexSet in
+                        .onDelete
+                        { indexSet in
                             deleteTransactions(at: indexSet)
                         }
                     }
-                    .id(refreshID) // Force List refresh when ID changes
                 }
             }
         }
-        .onChange(of: viewModel.sortedTransactions) { _, _ in
-            refreshID = UUID() // Refresh view when data changes
-        }
-        // MARK: Opens Transaction Edit Page
         .fullScreenCover(isPresented: Binding(get: { transactionEditorState == .modify },
                                               set: { if !$0 { transactionEditorState = .disabled } }))
         {
-            if let transaction = self.transaction {
-                TransactionEditorView(transaction: transaction, modelContext: viewModel.modelContext)
-                    .onDisappear {
-                        // Refresh when editor closes
-                        viewModel.refresh()
-                    }
-            }
+            if let transaction = self.transaction
+            { TransactionEditorView(transaction: transaction, modelContext: viewModel.modelContext) }
         }
-        // MARK: Opens Transaction AddNew Page
         .fullScreenCover(isPresented: Binding(get: { transactionEditorState == .addNew },
                                               set: { if !$0 { transactionEditorState = .disabled } }))
-        {
-            TransactionEditorView(modelContext: viewModel.modelContext)
-                .onDisappear {
-                    // Refresh when editor closes
-                    viewModel.refresh()
-                }
-        }
+        { TransactionEditorView(modelContext: viewModel.modelContext) }
     }
     
     // MARK: - Helper Functions
@@ -110,18 +108,12 @@ struct RecordsListView: View
         { transactionEditorState = TransactionEditorState.modify }
     }
     
-    private func deleteTransactions(at offsets: IndexSet) {
-        for index in offsets {
-            let transaction = viewModel.sortedTransactions[index]
-            viewModel.modelContext.delete(transaction)
-        }
-        
-        do {
-            try viewModel.modelContext.save()
-            // Post notification to refresh BST
-            NotificationCenter.default.post(name: .transactionBSTUpdated, object: nil)
-        } catch {
-            print("[ERROR] Failed to delete transactions: \(error)")
-        }
+    // For slide to delete
+    private func deleteTransactions(at indices: IndexSet)
+    {
+        var transactionsToDelete: [Transaction] = []
+        for index in indices
+        { transactionsToDelete.append(viewModel.sortedTransactions[index]) }
+        viewModel.delete(transactions: transactionsToDelete)
     }
 }

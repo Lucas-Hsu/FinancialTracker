@@ -8,8 +8,8 @@
 import Foundation
 
 /// Numerical prices (e.g. 13.1) into formatted string prices (e.g. "13.10") and parsing formatted strings back to Double.
-public class PriceFormatter {
-    
+public class PriceFormatter
+{
     // For converting numerical price values to properly formatted string
     private static let priceFormatter: NumberFormatter =
     {

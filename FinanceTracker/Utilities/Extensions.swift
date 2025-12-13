@@ -61,7 +61,8 @@ extension ModelContext
 
 extension Notification.Name
 {
-    static let transactionBSTUpdated = Notification.Name("TransactionDidSaveNotification")
+    static let transactionBSTUpdated = Notification.Name("TransactionBSTDidSaveNotification")
+    static let transactionsUpdated = Notification.Name("TransactionsDidSaveNotification")
 }
 
 private struct TransactionBSTKey: EnvironmentKey
