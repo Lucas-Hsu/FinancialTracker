@@ -12,12 +12,13 @@ import SwiftData
 struct ContentView: View
 {
     // MARK: - Tab View Enums
-    private enum ViewTabs: CaseIterable
+    private enum ViewTabs: Hashable
     {
       case savedPatterns,
            transactionRecords,
            graphicalRepresentation
     }
+    @State private var viewTabs: ViewTabs = .transactionRecords
     
     // MARK: - Attributes
     @Environment(\.modelContext) private var modelContext
@@ -27,7 +28,7 @@ struct ContentView: View
     // MARK: - UI
     var body: some View
     {
-        TabView
+        TabView (selection: $viewTabs)
         {
             // MARK: Saved Patterns (Recurring Transactions)
             NavigationStack
@@ -37,7 +38,7 @@ struct ContentView: View
                     Text("Suggestions")
                 }
             }
-            .tabItem { Label("Suggestions", systemImage: "person.text.rectangle") }
+            .tabItem { Label("Recurring", systemImage: "calendar") }
             .tag(ViewTabs.savedPatterns)
             
             // MARK: Transaction Records: Calendar and List
@@ -50,7 +51,7 @@ struct ContentView: View
                     if let bst = transactionBST
                     {
                         RecordsListView(modelContext: modelContext, transactionBST: bst)
-                            .padding()
+                        .padding()
                     }
                     else
                     {
@@ -62,7 +63,7 @@ struct ContentView: View
                     }
                 }
             }
-            .tabItem { Label("Records", systemImage: "list.dash") }
+            .tabItem { Label("Records", systemImage: "line.3.horizontal") }
             .tag(ViewTabs.transactionRecords)
             
             // MARK: Charts and Summaries
@@ -73,9 +74,10 @@ struct ContentView: View
                     Text("Statistics")
                 }
             }
-            .tabItem { Label("Statistics", systemImage: "chart.bar.fill") }
+            .tabItem { Label("Stats", systemImage: "chart.line.uptrend.xyaxis") }
             .tag(ViewTabs.graphicalRepresentation)
         }
+        .environment(\.horizontalSizeClass, .compact)
     }
 }
 

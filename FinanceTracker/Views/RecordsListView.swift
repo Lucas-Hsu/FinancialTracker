@@ -46,15 +46,10 @@ struct RecordsListView: View
             }
             else
             {
-                Button(action: { openTransactionEdit() } )
-                {
-                    Text("Add New")
-                    .font(.headline)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                }
+                PrimaryButtonGlass(title:"Add New")
+                { openTransactionEdit() }
+                .padding()
+                
                 if (viewModel.sortedTransactions.isEmpty)
                 {
                     VStack

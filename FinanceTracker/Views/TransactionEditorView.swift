@@ -90,7 +90,8 @@ struct TransactionEditorView: View
                     {
                         ForEach(Tag.allCases, id: \.self)
                         { tag in
-                            Text(tag.rawValue).tag(tag)
+                            let symbol = tagSymbols[tag] ?? "questionmark"
+                            Image(systemName: symbol).tag(tag)
                         }
                     }
                     .pickerStyle(SegmentedPickerStyle())
@@ -140,6 +141,7 @@ struct TransactionEditorView: View
                     }
                 }
             }
+            .frame(width: 0.5 * UIScreen.main.bounds.width)
         }
     }
 }

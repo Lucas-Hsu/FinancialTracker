@@ -77,9 +77,9 @@ struct PrimaryButtonGlass: View
     var body: some View
     {
         if #available(iOS 26.0, *)
-        { PrimarySaveButton(action: action).glassEffect(.regular.interactive()) }
+        { PrimaryButton(title: title, action: action).glassEffect(.regular.interactive()) }
         else
-        { PrimarySaveButton(action: action) }
+        { PrimaryButton(title: title, action: action) }
     }
 }
 struct PrimarySaveButtonGlass: View
