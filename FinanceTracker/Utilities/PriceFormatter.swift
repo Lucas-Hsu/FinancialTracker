@@ -27,7 +27,8 @@ public class PriceFormatter
         guard let formatterCopy = tempCopiedObject as? NumberFormatter
         else
         {
-            fatalError("Copied formatter failed cast to NumberFormatter.")
+            print("[ERROR] Copied formatter failed cast to NumberFormatter.")
+            return priceFormatter
         }
         return formatterCopy
     }

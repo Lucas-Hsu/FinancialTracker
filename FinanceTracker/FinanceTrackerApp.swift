@@ -22,7 +22,7 @@ struct FinanceTrackerApp: App
         }
         catch
         {
-            fatalError("Could not create ModelContainer: \(error)")
+            fatalError("[ERROR] Could not create ModelContainer: \(error)")
         }
     }()
 

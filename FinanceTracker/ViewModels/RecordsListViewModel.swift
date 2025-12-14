@@ -31,7 +31,7 @@ final class RecordsListViewModel
         setupTransactionObserver()
         if transactionBST.isReady
         {
-            loadSortedTransactions()
+            refresh()
             isLoading = false
             print("\tRecordListViewModel loadedSortedTransactions")
         }
@@ -81,7 +81,7 @@ final class RecordsListViewModel
                 print("RecordsListViewModel Initializing...")
                 self.isLoading = false
             }
-            self.loadSortedTransactions()
+            self.refresh()
         }
     }
     // Load sorted Transactions from TransactionBST

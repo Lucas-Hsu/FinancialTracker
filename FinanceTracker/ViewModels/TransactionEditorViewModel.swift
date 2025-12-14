@@ -28,12 +28,14 @@ final class TransactionEditorViewModel
         self.modelContext = modelContext
         self.transaction = Transaction()
         self.isNew = true
+        print("TransactionEditorViewModel isNew \(self.isNew)")
     }
     init(transaction: Transaction, modelContext: ModelContext)
     {
         self.modelContext = modelContext
         self.transaction = transaction
         self.isNew = false
+        print("TransactionEditorViewModel isNew \(self.isNew)")
     }
     
     // MARK: - Public Methods
@@ -82,7 +84,8 @@ final class TransactionEditorViewModel
     
     func delete()
     {
-        guard isNew else
+        print("TransactionEditorViewModel attempted delete(), isNew \(self.isNew)")
+        guard !isNew else
         {
             print("[WARN] No need to delete when adding new Transaction.")
             return
@@ -116,23 +119,23 @@ final class TransactionEditorViewModel
     {
         if (!transaction.isNameValid(name: name))
         {
-            errorMessage = "[ERROR] Name cannot be empty. Save aborted."
+            errorMessage = "[WARN] Name cannot be empty. Set to default."
             print(errorMessage)
-            return false
+            // return false
         }
-        else if (!transaction.isPriceValid(price: price))
+        if (!transaction.isPriceValid(price: price))
         {
             errorMessage = "[ERROR] Price \(price) cannot be negative. Save aborted."
             print(errorMessage)
             return false
         }
-        else if (!transaction.isDateValid(date: date))
+        if (!transaction.isDateValid(date: date))
         {
             errorMessage = "[ERROR] \(date.toMediumString()) Date cannot be in the future. Save aborted."
             print(errorMessage)
             return false
         }
-        else if (!transaction.isTagValid(tag: tag) || !transaction.isIsPaidValid(isPaid: isPaid) || !transaction.isNotesValid(notes: notes) || !transaction.isReceiptImageValid(receiptImage: receiptImage))
+        if (!transaction.isTagValid(tag: tag) || !transaction.isIsPaidValid(isPaid: isPaid) || !transaction.isNotesValid(notes: notes) || !transaction.isReceiptImageValid(receiptImage: receiptImage))
         {
             errorMessage = "[ERROR] Uncaught error type. Save aborted."
             print(errorMessage)
