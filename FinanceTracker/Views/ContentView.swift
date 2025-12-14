@@ -35,7 +35,16 @@ struct ContentView: View
             {
                 HStack
                 {
-                    Text("Suggestions")
+                    if let bst = transactionBST
+                    {
+                        
+                        RecurringTransactionView(modelContext: modelContext, transactionBST: bst)
+                        .padding()
+                    }
+                    else
+                    {
+                        ProgressView("Building TransactionBST...")
+                    }
                 }
             }
             .tabItem { Label("Recurring", systemImage: "calendar") }
@@ -56,10 +65,6 @@ struct ContentView: View
                     else
                     {
                         ProgressView("Building TransactionBST...")
-                        .onAppear
-                        {
-                            transactionBST = TransactionBST(modelContext: modelContext)
-                        }
                     }
                 }
             }
@@ -78,6 +83,10 @@ struct ContentView: View
             .tag(ViewTabs.graphicalRepresentation)
         }
         .environment(\.horizontalSizeClass, .compact)
+        .onAppear
+        {
+            self.transactionBST = TransactionBST(modelContext: modelContext)
+        }
     }
 }
 
