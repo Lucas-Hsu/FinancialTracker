@@ -47,7 +47,7 @@ struct RecurringTransactionSignature: Codable, Equatable, Hashable
         self.interval = recurringTransaction.interval
     }
 }
-
+d
 @Model class RecurringTransaction: Equatable
 {
     @Attribute(.unique) var id: UUID
