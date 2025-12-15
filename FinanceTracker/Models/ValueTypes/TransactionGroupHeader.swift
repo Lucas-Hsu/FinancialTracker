@@ -11,15 +11,12 @@ import Foundation
 struct TransactionGroupHeader: Codable, Equatable, Hashable
 {
     var name: String
-    var price: Double
     var tagString: String
 
     init(name: String,
-         price: Double,
          tag: Tag)
     {
         self.name = name
-        self.price = price
         self.tagString = tag.rawValue
     }
 }

@@ -10,7 +10,8 @@ import SwiftData
 import SwiftUI
 
 /// The `Transaction` class stores information about individual units of expenses.
-@Model class Transaction: Equatable
+@Model
+class Transaction: Equatable
 {
     // MARK: - Read-Only Attributes
     @Attribute(.unique) private(set) var id: UUID
@@ -142,7 +143,7 @@ import SwiftUI
 
     // For grouping same transactions occuring at different dates
     public func getTransactionGroupHeader() -> TransactionGroupHeader
-    { return TransactionGroupHeader(name: self.name, price: self.price, tag: self.tag)   }
+    { return TransactionGroupHeader(name: self.name, tag: self.tag)   }
     
     public func toString() -> String
     {

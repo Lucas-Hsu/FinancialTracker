@@ -119,7 +119,7 @@ struct TestCaseRow: View {
         
         if let recurring = RecurringPatternRecognition.findRecurringTransaction(transactions) {
             let startStr = recurring.startDate.formatted(date: .abbreviated, time: .omitted)
-            resultString = "FOUND: \(recurring.pattern.rawValue.uppercased()) | Int: \(recurring.interval) | Start: \(startStr)"
+            resultString = "FOUND: \(recurring.pattern.uppercased()) | Int: \(recurring.interval) | Start: \(startStr)"
             // If we expected success, green. If we expected fail but found one, orange/red.
             resultColor = testCase.expectedSuccess ? .green : .red
         } else {

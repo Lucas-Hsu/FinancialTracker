@@ -6,8 +6,9 @@
 //
 
 /// For categorizing transaction types
-enum RecurringPattern: String, Codable
+enum RecurringPattern: String, Identifiable, Codable
 {
+    var id: String { self.rawValue }
     case days,
          months,
          years

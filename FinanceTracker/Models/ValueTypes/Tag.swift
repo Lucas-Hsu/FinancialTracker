@@ -15,4 +15,15 @@ enum Tag: String, CaseIterable, Identifiable, Codable
          entertainment,
          food,
          other
+    
+    init(_ rawValue: String)
+    {
+        let normalized = rawValue.lowercased()
+        guard let tag = Tag.allCases.first(where: {$0.rawValue.lowercased() == normalized}) else
+        {
+            self = .other
+            return
+        }
+        self = tag
+    }
 }

@@ -11,22 +11,24 @@ import SwiftData
 
 /// `RecordsListViewModel` provides methods for the UI to read and modify `Transaction` objects.
 @Observable
-final class RecurringTransactionViewModel
+final class RecurringTransactionListViewModel
 {
     // MARK: - Read-only Attributes
-    private(set) var filteredRecurringTransactions: [RecurringTransaction] = []
     private(set) var transactionBST: TransactionBST
     private(set) var isLoading: Bool = true
+    private(set) var recurringTransactions: [RecurringTransaction] = []
     
     // MARK: - Fully Private
     @ObservationIgnored private var transactionObserver: Any?
-    @ObservationIgnored private var recurringTransactions: [RecurringTransaction] = []
+    @ObservationIgnored private var savedRecurringTransactions: [RecurringTransaction] = []
+    @ObservationIgnored private var modelContext: ModelContext
     
     // MARK: - Constructors
-    init(transactionBST: TransactionBST)
+    init(transactionBST: TransactionBST, modelContext: ModelContext)
     {
         print("\t///RecurringTransactionViewModel Init")
         self.transactionBST = transactionBST
+        self.modelContext = modelContext
         setupTransactionObserver()
         if transactionBST.isReady
         {
@@ -54,7 +56,49 @@ final class RecurringTransactionViewModel
     func refresh()
     {
         findRecurringTransactions()
-        filterRecurringTransactions()
+    }
+    // Filters out already saved RecurringTransactions
+    func filterOut(_ saved: [RecurringTransaction]) -> [RecurringTransaction]
+    {
+        return recurringTransactions.filter { !saved.contains($0) }
+    }
+    // Save a RecurringTransaction
+    func save(recurringTransaction: RecurringTransaction)
+    {
+        for rT in fetchRecurringTransactions()
+        {
+            if recurringTransaction == rT // Skip if already in modelContext
+            { return }
+        }
+        modelContext.insert(recurringTransaction)
+        if modelContext.saveSuccess()
+        {
+            print("Saved RecurringTransaction \n \(recurringTransaction)")
+        }
+        refresh()
+    }
+    // Delete a RecurringTransaction
+    func delete(recurringTransaction: RecurringTransaction)
+    {
+        modelContext.delete(recurringTransaction)
+        if modelContext.saveSuccess()
+        {
+            print("Deleted RecurringTransaction \n \(recurringTransaction)")
+        }
+    }
+    // Get RecurringTransactions from ModelContext
+    func fetchRecurringTransactions() -> [RecurringTransaction]
+    {
+        do
+        {
+            let descriptor = FetchDescriptor<RecurringTransaction>()
+            return try modelContext.fetch(descriptor)
+        }
+        catch
+        {
+            print("Failed to fetch RecurringTransactions: \(error)")
+            return []
+        }
     }
     
     // MARK: - Helpers Methods
@@ -93,11 +137,6 @@ final class RecurringTransactionViewModel
         }
         self.recurringTransactions = recurringTransactions
         print("RecurringTransactionViewModel: Found \(self.recurringTransactions.count) recurring transactions from TransactionBST")
-    }
-    // Filters out already saved RecurringTransactions
-    private func filterRecurringTransactions()
-    {// [TODO] Make this work
-        self.filteredRecurringTransactions = self.recurringTransactions
     }
     // Categorize Transactions into groups distinguised by TransactionGroupHeader
     private func categorizeTransactions(transactions: [Transaction]) -> [TransactionGroupHeader:[Transaction]]

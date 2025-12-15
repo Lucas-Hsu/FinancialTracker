@@ -38,7 +38,7 @@ struct ContentView: View
                     if let bst = transactionBST
                     {
                         
-                        RecurringTransactionView(modelContext: modelContext, transactionBST: bst)
+                        RecurringTransactionListView(modelContext: modelContext, transactionBST: bst)
                         .padding()
                     }
                     else

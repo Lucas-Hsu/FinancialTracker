@@ -21,6 +21,13 @@ public extension Date
     
     static func minuteEquals(date1: Date, date2: Date) -> Bool
     { return Calendar.current.isDate(date1, equalTo: date2, toGranularity: .minute) }
+    
+    func startOfDay(in timeZone: TimeZone = .current) -> Date
+    {
+        var calendar = Calendar.current
+        calendar.timeZone = timeZone
+        return calendar.startOfDay(for: self)
+    }
 }
 
 extension String
@@ -78,12 +85,3 @@ extension EnvironmentValues
         set { self[TransactionBSTKey.self] = newValue }
     }
 }
-
-extension View
-{
-    func transactionBST(_ bst: TransactionBST?) -> some View
-    {
-        self.environment(\.transactionBST, bst)
-    }
-}
-

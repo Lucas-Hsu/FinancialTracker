@@ -22,23 +22,24 @@ struct RecurringPatternRecognition
 
         if let interval = findYearlyPattern(dates: dates)
         {
-            return RecurringTransaction(pattern: .years, interval: interval, startDate: sorted.first!.date)
+            return RecurringTransaction(name: sorted.first!.name, tag: sorted.first!.tag, pattern: .years, interval: interval, startDate: sorted.first!.date.startOfDay())
         }
         
         if let interval = findMonthlyPattern(dates: dates)
         {
-            return RecurringTransaction(pattern: .months, interval: interval, startDate: sorted.first!.date)
+            return RecurringTransaction(name: sorted.first!.name, tag: sorted.first!.tag, pattern: .months, interval: interval, startDate: sorted.first!.date.startOfDay())
         }
         
         if let interval = findDailyPattern(dates: dates)
         {
-            return RecurringTransaction(pattern: .days, interval: interval, startDate: sorted.first!.date)
+            return RecurringTransaction(name: sorted.first!.name, tag: sorted.first!.tag, pattern: .days, interval: interval, startDate: sorted.first!.date.startOfDay())
         }
         
         return nil
     }
     
-    // MARK: - Private Helpers
+    // MARK: - Private Static Helpers
+    // Find if there is a pattern that repeats in terms of years
     private static func findYearlyPattern(dates: [Date]) -> Int?
     {
         let calendar = Calendar.current
@@ -72,7 +73,7 @@ struct RecurringPatternRecognition
         }
         return diffYears
     }
-    
+    // Find if there is a pattern that repeats in terms of months
     private static func findMonthlyPattern(dates: [Date]) -> Int?
     {
         let calendar = Calendar.current
@@ -108,7 +109,7 @@ struct RecurringPatternRecognition
         }
         return diffMonths
     }
-    
+    // Find if there is a pattern that repeats in terms of days
     private static func findDailyPattern(dates: [Date]) -> Int?
     {
         let calendar = Calendar.current
@@ -127,14 +128,12 @@ struct RecurringPatternRecognition
         }
         return diffDays
     }
-    
-    // MARK: - Helpers
-    
+    // If the date is considered the end of the month.
     private static func isEndOfMonth(date: Date, calendar: Calendar) -> Bool
     {
         guard let interval = calendar.dateInterval(of: .month, for: date),
               let lastDay = calendar.date(byAdding: .day, value: -1, to: interval.end) else
         { return false }
-        return calendar.isDate(date, inSameDayAs: lastDay)
+        return date.startOfDay() == lastDay.startOfDay()
     }
 }
