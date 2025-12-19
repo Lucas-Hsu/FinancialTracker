@@ -16,9 +16,9 @@ struct BaseButton: View
     var body: some View
     {
         Button(title, action: action)
-            .controlSize(.large)
-            .buttonStyle(.borderedProminent)
-            .clipShape(Capsule())
+        .controlSize(.large)
+        .buttonStyle(.borderedProminent)
+        .clipShape(Capsule())
     }
 }
 
@@ -31,41 +31,30 @@ struct PrimaryButton: View
     var body: some View
     {
         BaseButton(title: title, action: action)
-            .tint(.accentColor)
+        .tint(.accentColor)
     }
 }
-struct PrimarySaveButton: View
+struct SecondaryButton: View
 {
-    let title: String = "Save"
+    let title: String
     var action: () -> Void
     
     var body: some View
     {
         BaseButton(title: title, action: action)
-            .tint(.accentColor)
+        .tint(Color.white)
+        .foregroundColor(.accentColor)
     }
 }
-struct SecondaryCancelButton: View
+struct DestructiveButton: View
 {
-    let title: String = "Cancel"
+    let title: String
     var action: () -> Void
     
     var body: some View
     {
         BaseButton(title: title, action: action)
-            .tint(Color(.white))
-            .foregroundColor(.accentColor)
-    }
-}
-struct DestructiveDeleteButton: View
-{
-    let title: String = "Delete"
-    var action: () -> Void
-    
-    var body: some View
-    {
-        BaseButton(title: title, action: action)
-            .tint(.red)
+        .tint(.red)
     }
 }
 
@@ -82,39 +71,27 @@ struct PrimaryButtonGlass: View
         { PrimaryButton(title: title, action: action) }
     }
 }
-struct PrimarySaveButtonGlass: View
+struct SecondaryButtonGlass: View
 {
-    let title: String = "Save"
+    let title: String
     var action: () -> Void
     var body: some View
     {
         if #available(iOS 26.0, *)
-        { PrimarySaveButton(action: action).glassEffect(.regular.interactive()) }
+        { SecondaryButton(title: title, action: action).glassEffect(.regular.interactive()) }
         else
-        { PrimarySaveButton(action: action) }
+        { SecondaryButton(title: title, action: action) }
     }
 }
-struct SecondaryCancelButtonGlass: View
+struct DestructiveButtonGlass: View
 {
-    let title: String = "Save"
+    let title: String
     var action: () -> Void
     var body: some View
     {
         if #available(iOS 26.0, *)
-        { SecondaryCancelButton(action: action).glassEffect(.regular.interactive()) }
+        { DestructiveButton(title: title, action: action).glassEffect(.regular.interactive()) }
         else
-        { SecondaryCancelButton(action: action) }
-    }
-}
-struct DestructiveDeleteButtonGlass: View
-{
-    let title: String = "Save"
-    var action: () -> Void
-    var body: some View
-    {
-        if #available(iOS 26.0, *)
-        { DestructiveDeleteButton(action: action).glassEffect(.regular.interactive()) }
-        else
-        { DestructiveDeleteButton(action: action) }
+        { DestructiveButton(title: title, action: action) }
     }
 }

@@ -23,18 +23,14 @@ final class TransactionEditorViewModel
     @ObservationIgnored let modelContext: ModelContext
     
     // MARK: - Constructors
-    init(modelContext: ModelContext)
+    init(modelContext: ModelContext, isNew: Bool, transaction: Transaction = Transaction())
     {
         self.modelContext = modelContext
-        self.transaction = Transaction()
-        self.isNew = true
-        print("TransactionEditorViewModel isNew \(self.isNew)")
-    }
-    init(transaction: Transaction, modelContext: ModelContext)
-    {
-        self.modelContext = modelContext
-        self.transaction = transaction
-        self.isNew = false
+        self.isNew = isNew
+        if isNew
+        { self.transaction = Transaction() }
+        else
+        { self.transaction = transaction }
         print("TransactionEditorViewModel isNew \(self.isNew)")
     }
     

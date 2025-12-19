@@ -25,26 +25,9 @@ struct TransactionEditorView: View
     @Environment(\.dismiss) private var dismiss
     
     // MARK: - Constructors
-    init(modelContext: ModelContext)
-    {
-        print("TransactionEditorView Editing new Transaction.")
-        // Initialize View state with defaults
-        _date = State(initialValue: Date())
-        _name = State(initialValue: "")
-        _price = State(initialValue: 0)
-        _tag = State(initialValue: .other)
-        _isPaid = State(initialValue: true)
-        _notes = State(initialValue: nil)
-        _receiptImage = State(initialValue: nil)
-        
-        // Initialize ViewModel
-        _viewModel = State(initialValue: TransactionEditorViewModel(modelContext: modelContext))
-    }
-        
-    init(transaction: Transaction, modelContext: ModelContext)
+    init(modelContext: ModelContext, isNew: Bool, transaction: Transaction = Transaction())
     {
         print("TransactionEditorView Editing existing Transaction.")
-        // Initialize View state with existing transaction values
         _date = State(initialValue: transaction.date)
         _name = State(initialValue: transaction.name)
         _price = State(initialValue: transaction.price)
@@ -52,12 +35,9 @@ struct TransactionEditorView: View
         _isPaid = State(initialValue: transaction.isPaid)
         _notes = State(initialValue: transaction.notes)
         _receiptImage = State(initialValue: transaction.receiptImage)
-        
-        // Initialize ViewModel with transaction
-        _viewModel = State(initialValue: TransactionEditorViewModel(
-            transaction: transaction,
-            modelContext: modelContext
-        ))
+        _viewModel = State(initialValue: TransactionEditorViewModel(modelContext: modelContext,
+                                                                    isNew: isNew,
+                                                                    transaction: transaction))
     }
     
     // MARK: - UI
@@ -106,7 +86,8 @@ struct TransactionEditorView: View
                 
                 // MARK: Action Buttons
                 HStack {
-                    PrimarySaveButtonGlass
+                    // Save the Transaction to modelContext
+                    PrimaryButtonGlass(title: "Save")
                     {
                         viewModel.save(date: date,
                                        name: name,
@@ -119,19 +100,18 @@ struct TransactionEditorView: View
                         { dismiss() }
                     }
                     .padding()
-                    
-                    SecondaryCancelButtonGlass
+                    // Cancel the operation, nothing is changed
+                    SecondaryButtonGlass(title: "Cancel")
                     {
                         viewModel.cancel()
                         if (!viewModel.hasSaved && !viewModel.hasDeleted)
                         { dismiss() }
                     }
                     .padding()
-                    
                     // Only show Delete if it's an existing Transaction
                     if (!viewModel.isNew)
                     {
-                        DestructiveDeleteButtonGlass
+                        DestructiveButtonGlass(title: "Delete")
                         {
                             viewModel.delete()
                             if viewModel.hasDeleted

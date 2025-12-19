@@ -31,13 +31,12 @@ struct ContentView: View
         TabView (selection: $viewTabs)
         {
             // MARK: Saved Patterns (Recurring Transactions)
-            NavigationStack
+                NavigationStack
             {
                 HStack
                 {
                     if let bst = transactionBST
                     {
-                        
                         RecurringTransactionListView(modelContext: modelContext, transactionBST: bst)
                         .padding()
                     }
@@ -49,13 +48,12 @@ struct ContentView: View
             }
             .tabItem { Label("Recurring", systemImage: "calendar") }
             .tag(ViewTabs.savedPatterns)
-            
             // MARK: Transaction Records: Calendar and List
             NavigationStack
             {
                 HStack
                 {
-                    Text("Calendar")
+                    CalendarView(modelContext: modelContext)
                     .padding()
                     if let bst = transactionBST
                     {
@@ -67,10 +65,22 @@ struct ContentView: View
                         ProgressView("Building TransactionBST...")
                     }
                 }
+                .background(
+                    ZStack
+                    {
+                        Image("iPad26Background")
+                        .resizable()
+                        .scaledToFill()
+                        .ignoresSafeArea()
+                        Rectangle()
+                        .fill(Color(UIColor.systemBackground).mix(with: .accentColor, by: 0.02))
+                        .scaledToFit()
+                        .opacity(0.7)
+                    }
+                )
             }
             .tabItem { Label("Records", systemImage: "line.3.horizontal") }
             .tag(ViewTabs.transactionRecords)
-            
             // MARK: Charts and Summaries
             NavigationStack
             {
@@ -92,4 +102,3 @@ struct ContentView: View
 
 #Preview
 { ContentView().modelContainer(for: [Transaction.self], inMemory: true) }
-

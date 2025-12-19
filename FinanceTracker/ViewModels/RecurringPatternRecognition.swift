@@ -13,10 +13,8 @@ struct RecurringPatternRecognition
 {
     // MARK: - Public Static Methods
     // Analyzes a list of transactions to find a recurring pattern.
-    static func findRecurringTransaction(_ transactions: [Transaction]) -> RecurringTransaction?
+    static func findRecurringTransaction(transactions: [Transaction]) -> RecurringTransaction?
     {
-        guard transactions.count >= 3 else
-        { return nil }
         let sorted = transactions.sorted { $0.date < $1.date }
         let dates = sorted.map { Calendar.current.startOfDay(for: $0.date) }
 
@@ -33,6 +31,28 @@ struct RecurringPatternRecognition
         if let interval = findDailyPattern(dates: dates)
         {
             return RecurringTransaction(name: sorted.first!.name, tag: sorted.first!.tag, pattern: .days, interval: interval, startDate: sorted.first!.date.startOfDay())
+        }
+        
+        return nil
+    }
+    // Analyzes a list of dates to find a recurring pattern.
+    static func findRecurringTransaction(dates: [Date]) -> RecurringTransaction?
+    {
+        let dates = dates.sorted { $0 < $1 }
+
+        if let interval = findYearlyPattern(dates: dates)
+        {
+            return RecurringTransaction(name: "Placeholder", tag: .other, pattern: .years, interval: interval, startDate: dates[0])
+        }
+        
+        if let interval = findMonthlyPattern(dates: dates)
+        {
+            return RecurringTransaction(name: "Placeholder", tag: .other, pattern: .months, interval: interval, startDate: dates[0])
+        }
+        
+        if let interval = findDailyPattern(dates: dates)
+        {
+            return RecurringTransaction(name: "Placeholder", tag: .other, pattern: .days, interval: interval, startDate: dates[0])
         }
         
         return nil

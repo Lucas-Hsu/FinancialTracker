@@ -37,60 +37,131 @@ struct RecordsListView: View
     // MARK: - UI
     var body: some View
     {
-        VStack
+        VStack(spacing: 0)
         {
             if viewModel.isLoading
             {
+                // MARK: Loading Message
                 ProgressView("Loading Transaction records...")
                 .padding()
             }
             else
             {
-                PrimaryButtonGlass(title:"Add New")
-                { openTransactionEdit() }
-                .padding()
+                // MARK: Toolbar
+                if #available(iOS 26.0, *)
+                {
+                    toolbar
+                    .glassEffect(.regular, in: .rect(cornerRadius: 16))
+                }
+                else
+                { toolbar }
                 
-                if (viewModel.sortedTransactions.isEmpty)
+                // MARK: Empty Message
+                if (viewModel.groupedTransactions.isEmpty)
                 {
                     VStack
                     {
                         Spacer()
                         Text("No Transaction records found. Please tap 'Add New'.")
-                        .onAppear
-                        {
-                            viewModel.refresh()
-                        }
+                            .onAppear
+                        { viewModel.refresh() }
                         Spacer()
                     }
                 }
                 // MARK: Sorted list of Transactions
-                VStack
+                List
                 {
-                    List
-                    {
-                        ForEach(viewModel.sortedTransactions)
-                        { transaction in
-                            TransactionView(transaction: transaction)
-                            .onTapGesture
-                            { openTransactionEdit(transaction: transaction) }
-                        }
-                        .onDelete
-                        { indexSet in
-                            deleteTransactions(at: indexSet)
+                    ForEach(viewModel.sortByNewestFirst ? viewModel.groupedTransactions.keys.sorted(by: >) : viewModel.groupedTransactions.keys.sorted(by: <), id: \.self)
+                    { key in
+                        let filteredTransactions: [Transaction] = viewModel.groupedTransactions[key]?.filter(
+                            {transaction in
+                                transaction.matchesFilter(isPaid: viewModel.selectedIsPaid,
+                                                          selectedTags: viewModel.selectedTags)
+                            }) ?? []
+                        if !filteredTransactions.isEmpty
+                        {
+                            Section(header: Text(key).font(.headline))
+                            {
+                                ForEach(viewModel.sortByNewestFirst ? filteredTransactions : filteredTransactions.reversed(), id: \.id)
+                                { transaction in
+                                    TransactionView(transaction: transaction)
+                                    .listRowBackground(Color(UIColor.systemBackground).mix(with: .accentColor, by: 0.02))
+                                    .onTapGesture
+                                    { openTransactionEdit(transaction: transaction) }
+                                }
+                                .onDelete
+                                { indexSet in
+                                    let transactionsToDelete = indexSet.map { filteredTransactions[$0] }
+                                    viewModel.delete(transactions: transactionsToDelete)
+                                }
+                            }
                         }
                     }
                 }
+                .shadow(color: Color(hue: 0.58, saturation: 0.5, brightness: 0.5, opacity: 0.1), radius: 3, x: 0, y: 3)
+                .scrollContentBackground(.hidden)
             }
         }
         .fullScreenCover(isPresented: Binding(get: { transactionEditorState == .modify },
                                               set: { if !$0 { transactionEditorState = .disabled } }))
         {
             if let transaction = self.transaction
-            { TransactionEditorView(transaction: transaction, modelContext: viewModel.modelContext) }
+            { TransactionEditorView(modelContext: viewModel.modelContext, isNew: false, transaction: transaction) }
         }
         .fullScreenCover(isPresented: Binding(get: { transactionEditorState == .addNew },
                                               set: { if !$0 { transactionEditorState = .disabled } }))
-        { TransactionEditorView(modelContext: viewModel.modelContext) }
+        { TransactionEditorView(modelContext: viewModel.modelContext, isNew: true) }
+    }
+    
+    // MARK: - Components
+    private var toolbar: some View
+    {
+        VStack(spacing: 0)
+        {
+            HStack
+            {
+                // !isPaid only filter
+                Button(action: { _ = viewModel.toggleIsPaid(false) })
+                {
+                    HStack(spacing: 6)
+                    {
+                        Image(systemName: viewModel.selectedIsPaid == false ? "checkmark.square.fill" : "square")
+                        Text("Payment Pending")
+                    }
+                    .foregroundColor(viewModel.selectedIsPaid == false ? .blue : .gray)
+                }
+                // Add new Transaction button
+                PrimaryButtonGlass(title:"Add New")
+                { openTransactionEdit() }
+                .padding()
+                .shadow(color: Color(hue: 0.58, saturation: 0.5, brightness: 0.5, opacity: 0.4), radius: 2, x: 0, y: 2)
+                // Sort by newest/oldest
+                Button(action: { viewModel.reverseOrder() })
+                {
+                    HStack(spacing: 6)
+                    {
+                        Image(systemName: viewModel.sortByNewestFirst ? "checkmark.square.fill" : "square")
+                        Text("Newest First")
+                    }
+                    .foregroundColor(viewModel.sortByNewestFirst ? .blue : .gray)
+                }
+            }
+            
+            HStack
+            {
+                ForEach(Tag.allCases, id: \.self)
+                { tag in
+                    IconToggleButtonGlass(icon: tagSymbols[tag] ?? "questionmark", shadow: viewModel.selectedTags.contains(tag), toggle: viewModel.selectedTags.contains(tag))
+                    {viewModel.toggleTagSelection(tag: tag)}
+                    .frame(width: 60, height: 40)
+                    .padding(.vertical)
+                }
+                .padding(.horizontal, 2)
+            }
+            .offset(y: -6)
+        }
+        .frame(maxWidth: .infinity)
+        .zIndex(1)
     }
     
     // MARK: - Helper Functions
@@ -101,14 +172,5 @@ struct RecordsListView: View
         { transactionEditorState = TransactionEditorState.addNew }
         else
         { transactionEditorState = TransactionEditorState.modify }
-    }
-    
-    // For slide to delete
-    private func deleteTransactions(at indices: IndexSet)
-    {
-        var transactionsToDelete: [Transaction] = []
-        for index in indices
-        { transactionsToDelete.append(viewModel.sortedTransactions[index]) }
-        viewModel.delete(transactions: transactionsToDelete)
     }
 }

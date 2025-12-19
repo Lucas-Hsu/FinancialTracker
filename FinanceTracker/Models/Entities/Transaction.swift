@@ -125,13 +125,13 @@ class Transaction: Equatable
     
     // MARK: - Public Methods
     /// `matchesFilter` checks if the the Transaction matches provided filter criteria.
-    public func matchesFilter(notIsPaid: Bool = false,
+    public func matchesFilter(isPaid: Bool? = nil,
                               selectedTags: Set<Tag>? = nil,
                               dateRangeBegin: Date? = nil,
                               dateRangeEnd: Date? = nil) -> Bool
     {
-        // filter for self.isPaid is false
-        if (notIsPaid && self.isPaid)                                           { return false }
+        // filter for self.isPaid 
+        if let paid = isPaid, paid != self.isPaid                             { return false }
         // filter for self.tag included in selectedTags
         if let tags = selectedTags, !tags.contains(self.tag)                    { return false }
         // filter for self.date newer or equals to dateRangeBegin

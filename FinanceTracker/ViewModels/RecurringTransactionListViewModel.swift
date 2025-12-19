@@ -86,20 +86,6 @@ final class RecurringTransactionListViewModel
             print("Deleted RecurringTransaction \n \(recurringTransaction)")
         }
     }
-    // Get RecurringTransactions from ModelContext
-    func fetchRecurringTransactions() -> [RecurringTransaction]
-    {
-        do
-        {
-            let descriptor = FetchDescriptor<RecurringTransaction>()
-            return try modelContext.fetch(descriptor)
-        }
-        catch
-        {
-            print("Failed to fetch RecurringTransactions: \(error)")
-            return []
-        }
-    }
     
     // MARK: - Helpers Methods
     // Wait for notifications from TransactionBST of transactions changes
@@ -131,7 +117,9 @@ final class RecurringTransactionListViewModel
         {
             guard let groupedTransactions = categorized[k] else
             { continue }
-            guard let recurringTransaction  = RecurringPatternRecognition.findRecurringTransaction(groupedTransactions) else
+            guard groupedTransactions.count >= 3 else
+            { continue }
+            guard let recurringTransaction = RecurringPatternRecognition.findRecurringTransaction(transactions: groupedTransactions) else
             { continue }
             recurringTransactions.append(recurringTransaction)
         }
@@ -163,5 +151,19 @@ final class RecurringTransactionListViewModel
         let sortedTransactions = transactionBST.inOrderTraversal()
         print("RecurringTransactionViewModel: Loaded \(sortedTransactions.count) sorted transactions from TransactionBST")
         return sortedTransactions
+    }
+    // Get RecurringTransactions from ModelContext
+    private func fetchRecurringTransactions() -> [RecurringTransaction]
+    {
+        do
+        {
+            let descriptor = FetchDescriptor<RecurringTransaction>()
+            return try modelContext.fetch(descriptor)
+        }
+        catch
+        {
+            print("Failed to fetch RecurringTransactions: \(error)")
+            return []
+        }
     }
 }

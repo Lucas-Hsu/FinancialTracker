@@ -17,7 +17,29 @@ public class DateFormatters
         formatter.timeStyle = .short
         return formatter
     }()
+    
+    private static let MMMMyyyyFormatter: DateFormatter =
+    {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        formatter.locale = Locale.current
+        return formatter
+    }()
+    
+    private static let yyyyMMddFormatter: DateFormatter =
+    {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale.current
+        return formatter
+    }()
 
     public static func medium(date: Date) -> String
     { return mediumDateFormatter.string(from: date) }
+    
+    public static func MMMMyyyy(date: Date) -> String
+    { return MMMMyyyyFormatter.string(from: date) }
+    
+    public static func yyyyMMdd(date: Date) -> String
+    { return yyyyMMddFormatter.string(from: date) }
 }

@@ -15,8 +15,12 @@ final class RecordsListViewModel
 {
     // MARK: - Read-only Attributes
     private(set) var sortedTransactions: [Transaction] = []
+    private(set) var groupedTransactions: [String: [Transaction]] = [:]
     private(set) var transactionBST: TransactionBST
     private(set) var isLoading: Bool = true
+    private(set) var sortByNewestFirst: Bool = true
+    private(set) var selectedIsPaid: Bool? = nil
+    private(set) var selectedTags: Set<Tag> = [Tag.clothing, Tag.other]
     
     // MARK: - Fully Private
     @ObservationIgnored let modelContext: ModelContext
@@ -55,6 +59,7 @@ final class RecordsListViewModel
     func refresh()
     {
         loadSortedTransactions()
+        regroupTransactions()
     }
     
     func delete(transactions: [Transaction])
@@ -63,6 +68,33 @@ final class RecordsListViewModel
         { modelContext.delete(transaction) }
         if modelContext.saveSuccess()
         { NotificationCenter.default.post(name: .transactionsUpdated, object: nil) }
+    }
+    
+    func toggleIsPaid(_ state: Bool) -> Bool?
+    {
+        if selectedIsPaid == nil
+        {
+            selectedIsPaid = state
+            return state
+        }
+        else
+        {
+            selectedIsPaid = nil
+            return nil
+        }
+    }
+    
+    func reverseOrder()
+    {
+        sortByNewestFirst = !sortByNewestFirst
+    }
+    
+    func toggleTagSelection(tag: Tag)
+    {
+        if selectedTags.contains(tag)
+        { selectedTags.remove(tag) }
+        else
+        { selectedTags.insert(tag) }
     }
     
     // MARK: - Helpers Methods
@@ -95,5 +127,13 @@ final class RecordsListViewModel
         }
         sortedTransactions = transactionBST.inOrderTraversal()
         print("RecordsListViewModel: Loaded \(sortedTransactions.count) sorted transactions from TransactionBST")
+    }
+    // Group each key by date
+    private func regroupTransactions()
+    {
+        groupedTransactions = Dictionary(grouping: sortedTransactions)
+        { transaction in
+            return DateFormatters.yyyyMMdd(date: transaction.date)
+        }
     }
 }

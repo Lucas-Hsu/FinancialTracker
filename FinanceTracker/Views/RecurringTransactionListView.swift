@@ -35,35 +35,30 @@ struct RecurringTransactionListView: View
         {
             if viewModel.isLoading
             {
-                VStack
-                {
-                    ProgressView("Loading Transaction and Recurring Transaction records...")
-                    .padding()
-                }
+                // MARK: Loading Message
+                ProgressView("Loading Transaction and Recurring Transaction records...")
+                .padding()
             }
             else
             {
-                // MARK: Saved Recurring Transactions
                 Text("Saved Recurring Transactions")
                 .onAppear
                 { refresh() }
                 if (!savedRecurringTransactions.isEmpty)
                 {
-                    VStack
+                    // MARK: Saved Recurring Transactions
+                    List()
                     {
-                        List()
-                        {
-                            ForEach(savedRecurringTransactions)
-                            { savedRecurringTransaction in
-                                HStack
+                        ForEach(savedRecurringTransactions)
+                        { savedRecurringTransaction in
+                            HStack
+                            {
+                                RecurringTransactionView(recurringTransaction: savedRecurringTransaction)
+                                Spacer()
+                                DestructiveButtonGlass(title: "Delete")
                                 {
-                                    RecurringTransactionView(recurringTransaction: savedRecurringTransaction)
-                                    Spacer()
-                                    DestructiveDeleteButtonGlass()
-                                    {
-                                        viewModel.delete(recurringTransaction: savedRecurringTransaction)
-                                        refresh()
-                                    }
+                                    viewModel.delete(recurringTransaction: savedRecurringTransaction)
+                                    refresh()
                                 }
                             }
                         }
@@ -71,32 +66,33 @@ struct RecurringTransactionListView: View
                 }
                 else
                 {
-                    Spacer()
-                    Text("No Recurring Transaction records saved.")
-                    .onAppear
-                    { viewModel.refresh() }
-                    Spacer()
+                    // MARK: Empty MEssage
+                    VStack
+                    {
+                        Spacer()
+                        Text("No Recurring Transaction records saved.")
+                            .onAppear
+                        { viewModel.refresh() }
+                        Spacer()
+                    }
                 }
-                // MARK: Calculated Recurring Transactions
+                
                 Text("Found Recurring Transactions")
                 if (!viewModel.recurringTransactions.isEmpty)
                 {
-                    VStack
+                    // MARK: Calculated Recurring Transactions
+                    List()
                     {
-                        List()
-                        {
-                            ForEach(notSavedRecurringTransactions)
-                            { recurringTransaction in
-                                
-                                HStack
+                        ForEach(notSavedRecurringTransactions)
+                        { recurringTransaction in
+                            HStack
+                            {
+                                RecurringTransactionView(recurringTransaction: recurringTransaction)
+                                Spacer()
+                                PrimaryButtonGlass(title: "Save")
                                 {
-                                    RecurringTransactionView(recurringTransaction: recurringTransaction)
-                                    Spacer()
-                                    PrimaryButtonGlass(title: "Save")
-                                    {
-                                        viewModel.save(recurringTransaction: recurringTransaction)
-                                        refresh()
-                                    }
+                                    viewModel.save(recurringTransaction: recurringTransaction)
+                                    refresh()
                                 }
                             }
                         }
@@ -104,11 +100,15 @@ struct RecurringTransactionListView: View
                 }
                 else
                 {
-                    Spacer()
-                    Text("No Recurring Transaction records found.")
-                    .onAppear
-                    { viewModel.refresh() }
-                    Spacer()
+                    // MARK: Empty Message
+                    VStack
+                    {
+                        Spacer()
+                        Text("No Recurring Transaction records found.")
+                        .onAppear
+                        { viewModel.refresh() }
+                        Spacer()
+                    }
                 }
             }
         }
@@ -118,6 +118,5 @@ struct RecurringTransactionListView: View
     private func refresh()
     {
         notSavedRecurringTransactions = viewModel.filterOut(savedRecurringTransactions)
-        print("\(notSavedRecurringTransactions)kjhgf")
     }
 }
