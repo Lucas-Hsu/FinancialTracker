@@ -55,10 +55,13 @@ struct ContentView: View
                 {
                     CalendarView(modelContext: modelContext)
                     .padding()
+                    .frame(maxWidth: .infinity, maxHeight: 700)
+                    
                     if let bst = transactionBST
                     {
                         RecordsListView(modelContext: modelContext, transactionBST: bst)
                         .padding()
+                        .frame(maxWidth: .infinity, maxHeight: 700)
                     }
                     else
                     {

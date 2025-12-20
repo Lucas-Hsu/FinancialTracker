@@ -49,6 +49,7 @@ struct CalendarView: View
             else
             { detailsView }
         }
+        .frame(maxWidth: .infinity, minHeight: 700, maxHeight: 700)
         .onAppear
         {
             refresh()
@@ -113,17 +114,14 @@ struct CalendarView: View
                     let day = viewModel.getMonthGrid().flatMap { $0 }[index]
                     if day != 0
                     {
-                        CalendarDayCell(day: day,
-                                        isToday: viewModel.isToday(day),
-                                        isSelected: viewModel.isSelectedDay(day),
-                                        hasEvents: daysWithEvents.contains(day))
-                        .onTapGesture
+                        CalendarDayCellGlass(day: day.description, toggle: viewModel.isSelectedDay(day), state: viewModel.isToday(day))
                         {
                             if viewModel.isSelectedDay(day)
                             { viewModel.clearSelection() }
                             else
                             { viewModel.selectDay(day) }
                         }
+                        .frame(width: 60, height: 40)
                     }
                     else
                     {

@@ -40,7 +40,7 @@ struct IconToggleButtonGlass: View
         if #available(iOS 26.0, *)
         {
             IconToggleButton(icon: self.icon, toggle: self.toggle, action: self.action)
-            .glassEffect(.regular.interactive())
+            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 12))
             .shadow(color: Color(hue: 0.58, saturation: 0.5, brightness: 0.5, opacity: shadow ? 0.1 : 0), radius: 2, x: 0, y: 4)
         }
         else

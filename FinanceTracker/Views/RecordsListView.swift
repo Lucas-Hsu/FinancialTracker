@@ -102,6 +102,7 @@ struct RecordsListView: View
                 .scrollContentBackground(.hidden)
             }
         }
+        .frame(maxWidth: .infinity, minHeight: 700, maxHeight: 700)
         .fullScreenCover(isPresented: Binding(get: { transactionEditorState == .modify },
                                               set: { if !$0 { transactionEditorState = .disabled } }))
         {
@@ -160,7 +161,7 @@ struct RecordsListView: View
             }
             .offset(y: -6)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, minHeight: 160, maxHeight: 160)
         .zIndex(1)
     }
     
