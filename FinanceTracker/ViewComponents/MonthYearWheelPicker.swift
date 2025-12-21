@@ -30,6 +30,7 @@ struct MonthYearWheelPicker: View
                                                 set: { newMonth in
                                                     var components = Calendar.current.dateComponents([.year, .month, .day], from: date)
                                                     components.month = newMonth
+                                                    components.day = 1
                                                     if let newDate = Calendar.current.date(from: components)
                                                     { assignDate(newDate.monthStart()) } }))
             {
@@ -46,6 +47,7 @@ struct MonthYearWheelPicker: View
                                                set: { newYear in
                                                     var components = Calendar.current.dateComponents([.year, .month, .day], from: date)
                                                     components.year = newYear
+                                                    components.day = 1
                                                     if let newDate = Calendar.current.date(from: components)
                                                     { assignDate(newDate.monthStart()) } }))
             {
@@ -66,10 +68,11 @@ struct MonthYearWheelPicker: View
     // Validates selected date (Prevent selecting the future)
     private func assignDate(_ newDate: Date)
     {
-        let now = Date()
-        if newDate > now
+        let now = Date().monthStart()
+        let new = newDate.monthStart()
+        if new > now
         { self.date = now }
         else
-        { self.date = newDate }
+        { self.date = new }
     }
 }
