@@ -17,19 +17,19 @@ final class CalendarViewModel
     private(set) var selectedDay: Int? = nil
     private(set) var eventsForSelectedDay: [RecurringTransaction] = []
     private(set) var isLoading: Bool = true
-    private(set) var currentMonth: Date = Date()
+    private(set) var currentMonth: Date = Date().monthStart()
     
     // MARK: - Computed Properties
     var weekdays: [String]
     {
-        let symbols = calendar.shortWeekdaySymbols
-        let firstWeekday = calendar.firstWeekday
+        let symbols = localCalendar.shortWeekdaySymbols
+        let firstWeekday = localCalendar.firstWeekday
         return Array(symbols[firstWeekday-1..<symbols.count] + symbols[0..<firstWeekday-1])
     }
     
     // MARK: - Private Properties
-    @ObservationIgnored private let calendar = Calendar.current
     @ObservationIgnored private let modelContext: ModelContext
+    @ObservationIgnored private let localCalendar = Calendar.current
     
     // MARK: - Initialization
     init(modelContext: ModelContext)
@@ -43,15 +43,15 @@ final class CalendarViewModel
     // Return a 2D array representing days in the month grid
     func getMonthGrid() -> [[Int]]
     {
-        guard let monthInterval = calendar.dateInterval(of: .month, for: currentMonth) else
+        guard let monthInterval = localCalendar.dateInterval(of: .month, for: currentMonth) else
         { return [] }
         let startDate = monthInterval.start
-        let numberOfDays = calendar.range(of: .day, in: .month, for: startDate)?.count ?? 0
+        let numberOfDays = localCalendar.range(of: .day, in: .month, for: startDate)?.count ?? 0
         // (Sun or Mon)
-        guard let firstWeekday = calendar.dateComponents([.weekday], from: startDate).weekday else
+        guard let firstWeekday = localCalendar.dateComponents([.weekday], from: startDate).weekday else
         { return [] }
         // Add padding at the start
-        let firstWeekdayOfCalendar = calendar.firstWeekday
+        let firstWeekdayOfCalendar = localCalendar.firstWeekday
         let startPadding: Int
         if firstWeekday >= firstWeekdayOfCalendar
         { startPadding = firstWeekday - firstWeekdayOfCalendar }
@@ -71,10 +71,11 @@ final class CalendarViewModel
     // Days of the month that have events
     func getDaysWithEvents() -> [Int]
     {
+        let recurringTransactions = fetchRecurringTransactions()
         var daysWithEvents: [Int] = []
         for day in daysInMonth()
         {
-            if hasEvent(day: day)
+            if hasEvent(day: day, using: recurringTransactions)
             { daysWithEvents.append(day) }
         }
         return daysWithEvents
@@ -115,8 +116,8 @@ final class CalendarViewModel
     // day is today's date
     func isToday(_ day: Int) -> Bool
     {
-        let todayComponents = calendar.dateComponents([.year, .month, .day], from: Date())
-        let currentComponents = calendar.dateComponents([.year, .month], from: currentMonth)
+        let todayComponents = localCalendar.dateComponents([.year, .month, .day], from: Date().monthStart())
+        let currentComponents = localCalendar.dateComponents([.year, .month], from: currentMonth)
         
         guard let currentYear = currentComponents.year,
               let currentMonthNum = currentComponents.month,
@@ -133,19 +134,19 @@ final class CalendarViewModel
     // Controls
     func nextMonth()
     {
-        currentMonth = calendar.date(byAdding: .month, value: 1, to: currentMonth) ?? currentMonth
+        currentMonth = localCalendar.date(byAdding: .month, value: 1, to: currentMonth) ?? currentMonth
         selectedDay = nil
         eventsForSelectedDay = []
     }
     func previousMonth()
     {
-        currentMonth = calendar.date(byAdding: .month, value: -1, to: currentMonth) ?? currentMonth
+        currentMonth = localCalendar.date(byAdding: .month, value: -1, to: currentMonth) ?? currentMonth
         selectedDay = nil
         eventsForSelectedDay = []
     }
     func resetMonth()
     {
-        currentMonth = Date()
+        currentMonth = Date().monthStart()
         selectedDay = nil
         eventsForSelectedDay = []
     }
@@ -174,7 +175,7 @@ final class CalendarViewModel
     
     func getDateOfDay(_ day: Int) -> Date?
     {
-        let components = calendar.dateComponents([.year, .month], from: currentMonth)
+        let components = localCalendar.dateComponents([.year, .month], from: currentMonth)
         guard let year = components.year,
               let month = components.month else
         { return nil }
@@ -184,63 +185,37 @@ final class CalendarViewModel
         dateComponents.month = month
         dateComponents.day = day
         
-        return calendar.date(from: dateComponents)
+        return localCalendar.date(from: dateComponents)
     }
     
     // MARK: - Private Helpers
-    // Check if events do happen on a certain day
-    private func hasEvent(day: Int) -> Bool
+    // If recurringTransactions occur on a certain day
+    private func hasEvent(day: Int, using recurringTransactions: [RecurringTransaction]) -> Bool
     {
-        let year = calendar.component(.year, from: currentMonth)
-        let month = calendar.component(.month, from: currentMonth)
-        guard let selectedDay = calendar.date(from: DateComponents(year: year, month: month, day: day))?.startOfDay() else
+        let year = localCalendar.component(.year, from: currentMonth)
+        let month = localCalendar.component(.month, from: currentMonth)
+        guard let selectedDay = localCalendar.date(from: DateComponents(year: year, month: month, day: day))?.startOfDay() else
         { return false }
-        let recurringTransactions: [RecurringTransaction] = fetchRecurringTransactions()
         for recurringTransaction in recurringTransactions
         {
-            if selectedDay.startOfDay() < recurringTransaction.startDate.startOfDay()
-            { continue }
-            else if selectedDay.startOfDay() == recurringTransaction.startDate.startOfDay()
+            if recurringTransaction.isOccursOn(date: selectedDay)
             { return true }
-            guard let rT = RecurringPatternRecognition.findRecurringTransaction(dates: [recurringTransaction.startDate, selectedDay]) else
-            { continue }
-            if rT.pattern != recurringTransaction.pattern
-            { continue }
-            if rT.interval < recurringTransaction.interval
-            { continue }
-            if rT.interval % recurringTransaction.interval != 0
-            { continue }
-            return true
         }
         return false
     }
     // Get recurringTransactions that occur on a certain day
     private func getEvents(day: Int) -> [RecurringTransaction]
     {
-        let year = calendar.component(.year, from: currentMonth)
-        let month = calendar.component(.month, from: currentMonth)
-        guard let selectedDay = calendar.date(from: DateComponents(year: year, month: month, day: day))?.startOfDay() else
+        let year = localCalendar.component(.year, from: currentMonth)
+        let month = localCalendar.component(.month, from: currentMonth)
+        guard let selectedDay = localCalendar.date(from: DateComponents(year: year, month: month, day: day))?.startOfDay() else
         { return [] }
         let recurringTransactions: [RecurringTransaction] = fetchRecurringTransactions()
         var matchingRecurringTransactions: [RecurringTransaction] = []
         for recurringTransaction in recurringTransactions
         {
-            if selectedDay.startOfDay() < recurringTransaction.startDate.startOfDay()
-            { continue }
-            else if selectedDay.startOfDay() == recurringTransaction.startDate.startOfDay()
-            {
-                matchingRecurringTransactions.append(recurringTransaction)
-                continue
-            }
-            guard let rT = RecurringPatternRecognition.findRecurringTransaction(dates: [recurringTransaction.startDate, selectedDay]) else
-            { continue }
-            if rT.pattern != recurringTransaction.pattern
-            { continue }
-            if rT.interval < recurringTransaction.interval
-            { continue }
-            if rT.interval % recurringTransaction.interval != 0
-            { continue }
-            matchingRecurringTransactions.append(recurringTransaction)
+            if recurringTransaction.isOccursOn(date: selectedDay)
+            { matchingRecurringTransactions.append(recurringTransaction) }
         }
         return matchingRecurringTransactions
     }
@@ -289,7 +264,7 @@ final class CalendarViewModel
     // Get days in month
     private func daysInMonth() -> Range<Int>
     {
-        guard let range = calendar.range(of: .day, in: .month, for: currentMonth) else
+        guard let range = localCalendar.range(of: .day, in: .month, for: currentMonth) else
         { return 0..<0 }
         return range
     }

@@ -42,17 +42,17 @@ struct RecurringPatternRecognition
 
         if let interval = findYearlyPattern(dates: dates)
         {
-            return RecurringTransaction(name: "Placeholder", tag: .other, pattern: .years, interval: interval, startDate: dates[0])
+            return RecurringTransaction(name: "Placeholder", tag: .other, pattern: .years, interval: interval, startDate: dates[0].minuteStart())
         }
         
         if let interval = findMonthlyPattern(dates: dates)
         {
-            return RecurringTransaction(name: "Placeholder", tag: .other, pattern: .months, interval: interval, startDate: dates[0])
+            return RecurringTransaction(name: "Placeholder", tag: .other, pattern: .months, interval: interval, startDate: dates[0].minuteStart())
         }
         
         if let interval = findDailyPattern(dates: dates)
         {
-            return RecurringTransaction(name: "Placeholder", tag: .other, pattern: .days, interval: interval, startDate: dates[0])
+            return RecurringTransaction(name: "Placeholder", tag: .other, pattern: .days, interval: interval, startDate: dates[0].minuteStart())
         }
         
         return nil

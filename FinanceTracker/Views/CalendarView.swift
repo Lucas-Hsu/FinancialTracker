@@ -114,7 +114,10 @@ struct CalendarView: View
                     let day = viewModel.getMonthGrid().flatMap { $0 }[index]
                     if day != 0
                     {
-                        CalendarDayCellGlass(day: day.description, toggle: viewModel.isSelectedDay(day), state: viewModel.isToday(day))
+                        CalendarDayCellGlass(day: day.description,
+                                             toggle: viewModel.isSelectedDay(day),
+                                             state: viewModel.isToday(day),
+                                             mark: viewModel.hasEventsOnDay(day))
                         {
                             if viewModel.isSelectedDay(day)
                             { viewModel.clearSelection() }

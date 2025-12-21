@@ -13,6 +13,7 @@ struct CalendarDayCell: View
     let day: String
     var toggle: Bool
     var state: Bool
+    var mark: Bool
     var action: () -> Void
     
     private var textColor: Color
@@ -43,6 +44,7 @@ struct CalendarDayCell: View
         .background(toggle ? .accentColor : bgColor)
         .font(.title3)
         .fontWeight(textWeight)
+        .underline(mark, color: .accentColor)
         .foregroundColor(toggle ? .white : textColor)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .shadow(color: Color(hue: 0.58, saturation: 0.5, brightness: 0.5, opacity: 0.1), radius: 2, x: 0, y: 4)
@@ -55,16 +57,17 @@ struct CalendarDayCellGlass: View
     let day: String
     var toggle: Bool = false
     var state: Bool
+    var mark: Bool
     var action: () -> Void
     
     var body: some View
     {
         if #available(iOS 26.0, *)
         {
-            CalendarDayCell(day: self.day, toggle: self.toggle, state: self.state, action: self.action)
+            CalendarDayCell(day: self.day, toggle: self.toggle, state: self.state, mark: self.mark, action: self.action)
             .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 12))
         }
         else
-        { CalendarDayCell(day: self.day, toggle: self.toggle, state: self.state, action: self.action) }
+        { CalendarDayCell(day: self.day, toggle: self.toggle, state: self.state, mark: self.mark, action: self.action) }
     }
 }
