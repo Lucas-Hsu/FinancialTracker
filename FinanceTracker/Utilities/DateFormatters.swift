@@ -50,6 +50,14 @@ public class DateFormatters
         return formatter
     }()
     
+    private static let MMMyyyyFormatter: DateFormatter =
+    {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM. yyyy"
+        formatter.locale = Locale.current
+        return formatter
+    }()
+    
     private static let yyyyMMddFormatter: DateFormatter =
     {
         let formatter = DateFormatter()
@@ -80,6 +88,9 @@ public class DateFormatters
     
     public static func MMMddyyyy(date: Date) -> String
     { return MMMddyyyyFormatter.string(from: date) }
+    
+    public static func MMMyyyy(date: Date) -> String
+    { return MMMyyyyFormatter.string(from: date) }
     
     public static func yyyyMMdd(date: Date) -> String
     { return yyyyMMddFormatter.string(from: date) }

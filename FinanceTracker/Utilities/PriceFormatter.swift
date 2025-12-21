@@ -49,4 +49,23 @@ public class PriceFormatter
         { return nil }
         return number.doubleValue
     }
+    
+    // For converting numerical price values to properly formatted string of 1 decimal place
+    private static let priceFormatter1D: NumberFormatter =
+    {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 1
+        formatter.maximumFractionDigits = 1
+        return formatter
+    }()
+    
+    public static func format1D(price: Double) -> String
+    {
+        let number = NSNumber(value: price)
+        if let formattedString = priceFormatter1D.string(from: number)
+        { return formattedString }
+        else
+        { return "nan" }
+    }
 }

@@ -197,21 +197,11 @@ struct ComparisonView: View
             }
             .frame(maxWidth: .infinity)
             // Legend
-            if #available(iOS 26.0, *)
-            {
-                legendView
-                .padding(12)
-                .glassEffect(.regular, in: .rect(cornerRadius: 12))
-                .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 4)
-            }
-            else
-            {
-                legendView
-                .padding(12)
-                .background(defaultPanelBackgroundColor)
-                .cornerRadius(12)
-                .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 4)
-            }
+            legendView
+            .padding(12)
+            .background(defaultPanelBackgroundColor)
+            .cornerRadius(12)
+            .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 4)
         }
     }
     // MARK: Legend
@@ -219,29 +209,40 @@ struct ComparisonView: View
     {
         VStack(alignment: .leading, spacing: 10)
         {
-            Text("Legend")
+            Text("Total Expenditure Comparison by Tags")
+            .font(.caption)
+            .foregroundStyle(.primary)
+            Text("\(DateFormatters.MMMyyyy(date: inputStart)) ~ \(DateFormatters.MMMyyyy(date: inputEnd))")
             .font(.caption)
             .foregroundStyle(.secondary)
             .padding(.bottom, 2)
             ForEach(viewModel.chartData)
             { item in
-                HStack(spacing: 8)
+                HStack(spacing: 0)
                 {
-                    Circle()
-                    .fill(tagColors(item.tag))
-                    .frame(width: 10, height: 10)
-                    Text(item.tag.rawValue.capitalized)
-                    .font(.system(size: 14, weight: .medium))
-                    .frame(width: 90, alignment: .leading)
-                    .lineLimit(1)
+                    HStack
+                    {
+                        Circle()
+                        .fill(tagColors(item.tag))
+                        .frame(width: 10, height: 10)
+                        Image(systemName: tagSymbols[item.tag] ?? "questionmark")
+                        .foregroundStyle(tagColors(item.tag))
+                        .font(.system(size: 14, weight: .medium))
+                        .frame(width: 40, alignment: .leading)
+                        .lineLimit(1)
+                    }
+                    Spacer()
+                    Text("\(PriceFormatter.format1D(price: item.percentage * 100))%")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
                     Spacer()
                     Text("¥" + PriceFormatter.format(price: item.value))
-                        .font(.system(size: 12))
-                        .foregroundStyle(.secondary)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
                 }
             }
         }
-        .frame(width: 220)
+        .frame(maxWidth: 220)
     }
     // MARK: Not Enough Data
     private var contentUnavailable: some View
