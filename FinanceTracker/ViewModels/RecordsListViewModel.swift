@@ -20,7 +20,7 @@ final class RecordsListViewModel
     private(set) var isLoading: Bool = true
     private(set) var sortByNewestFirst: Bool = true
     private(set) var selectedIsPaid: Bool? = nil
-    private(set) var selectedTags: Set<Tag> = [Tag.clothing, Tag.other]
+    private(set) var selectedTags: Set<Tag> = Set(Tag.allCases)
     
     // MARK: - Fully Private
     @ObservationIgnored let modelContext: ModelContext

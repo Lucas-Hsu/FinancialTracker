@@ -43,7 +43,8 @@ struct TransactionEditorView: View
     // MARK: - UI
     var body: some View
     {
-        HStack {
+        HStack
+        {
             // Transaction Receipt Image Editor
             // [TODO] Need Image Add+Display
             
@@ -60,7 +61,12 @@ struct TransactionEditorView: View
                     // Name
                     TextField("Name", text: $name)
                     // Price
-                    TextField("Price", value: $price, formatter: PriceFormatter.formatter )
+                    HStack
+                    {
+                        Text("¥")
+                        TextField("Price", value: $price, formatter: PriceFormatter.formatter)
+                        Spacer()
+                    }
                     // IsPaid
                     Toggle("Payment Deposited", isOn: $isPaid)
                     // Date
@@ -123,5 +129,19 @@ struct TransactionEditorView: View
             }
             .frame(width: 0.5 * UIScreen.main.bounds.width)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
+}
+
+
+private struct BackgroundClearView: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        DispatchQueue.main.async {
+            view.superview?.superview?.backgroundColor = .clear
+        }
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {}
 }

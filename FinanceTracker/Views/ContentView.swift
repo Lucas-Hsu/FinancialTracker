@@ -89,8 +89,21 @@ struct ContentView: View
             {
                 HStack
                 {
-                    Text("Statistics")
+                    SummaryView()
                 }
+                .background(
+                    ZStack
+                    {
+                        Image("iPad26Background")
+                        .resizable()
+                        .scaledToFill()
+                        .ignoresSafeArea()
+                        Rectangle()
+                        .fill(Color(UIColor.systemBackground).mix(with: .accentColor, by: 0.02))
+                        .scaledToFit()
+                        .opacity(0.7)
+                    }
+                )
             }
             .tabItem { Label("Stats", systemImage: "chart.line.uptrend.xyaxis") }
             .tag(ViewTabs.graphicalRepresentation)

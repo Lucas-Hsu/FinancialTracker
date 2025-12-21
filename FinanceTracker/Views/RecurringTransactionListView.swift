@@ -16,8 +16,7 @@ struct RecurringTransactionListView: View
     @State private var transactionBST: TransactionBST
     @State private var transaction: Transaction?
     @State private var notSavedRecurringTransactions: [RecurringTransaction] = []
-    @Query(sort: \RecurringTransaction.startDate, order: .reverse)
-        private var savedRecurringTransactions: [RecurringTransaction]
+    @Query(sort: \RecurringTransaction.startDate, order: .reverse) private var savedRecurringTransactions: [RecurringTransaction]
     
     // MARK: - Constructor
     init(modelContext: ModelContext, transactionBST: TransactionBST)
