@@ -220,7 +220,6 @@ struct ReceiptImageView: View
             let bW = bubble.rect.width * renderW
             let bH = bubble.rect.height * renderH
             OCRBubbleGlass(text: bubble.text, rect: bubble.rect)
-            .frame(width: bW, height: bH)
             .scaleEffect(bubbleScale)
             .position(x: bX + bW/2, y: bY + bH/2)
         }

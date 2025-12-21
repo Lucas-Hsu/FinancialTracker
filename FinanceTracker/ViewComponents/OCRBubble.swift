@@ -26,9 +26,9 @@ struct OCRBubble: View, Identifiable
     var body: some View
     {
         Text(text)
-        .font(.system(size: 12, weight: .medium))
+        .font(.system(size: 14, weight: .medium))
         .lineLimit(1)
-        .minimumScaleFactor(0.6)
+        .fixedSize(horizontal: true, vertical: false)
         .padding(.horizontal, 4)
         .padding(.vertical, 2)
         .onTapGesture
