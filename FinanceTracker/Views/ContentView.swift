@@ -31,7 +31,7 @@ struct ContentView: View
         TabView (selection: $viewTabs)
         {
             // MARK: Saved Patterns (Recurring Transactions)
-                NavigationStack
+            NavigationStack
             {
                 HStack
                 {
@@ -78,7 +78,9 @@ struct ContentView: View
             {
                 HStack
                 {
-                    SummaryView()
+                    StatisticsView()
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: 700)
                 }
                 .background(BackgroundImage())
             }

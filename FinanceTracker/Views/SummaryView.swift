@@ -23,35 +23,18 @@ struct SummaryView: View
     // MARK: - UI
     var body: some View
     {
-        VStack(spacing: 20)
+        VStack
         {
-            // MARK: Header
-            HStack
-            {
-                Text("Monthly Spending")
-                .font(.title2)
-                .fontWeight(.bold)
-                Spacer()
-                Text(Date().formatted(.dateTime.month(.wide).year()))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            ForEach(Tag.allCases, id: \.self)
+            { tag in
+                SpendingPredictionRowGlass(tag: tag,
+                                           current: viewModel.aggregates[tag] ?? 0.0,
+                                           prediction: viewModel.predictions[tag] ?? 0.0)
+                .padding(.horizontal, 20)
             }
-            .padding(.horizontal)
-            .padding(.top)
-            // MARK: Bar Charts
-            VStack(spacing: 16)
-            {
-                ForEach(Tag.allCases, id: \.self)
-                { tag in
-                    SpendingPredictionRowGlass(tag: tag,
-                                               current: viewModel.aggregates[tag] ?? 0.0,
-                                               prediction: viewModel.predictions[tag] ?? 0.0)
-                }
-            }
-            .padding()
+            .frame(maxHeight: .infinity)
         }
         .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 6)
-        .padding()
         .onChange(of: transactions, initial: true)
         { oldValue, newValue in
             viewModel.refresh(transactions: newValue)

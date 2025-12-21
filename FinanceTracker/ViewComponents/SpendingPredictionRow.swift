@@ -79,7 +79,7 @@ struct SpendingPredictionRow: View
                     ZStack(alignment: .trailing)
                     {
                         Capsule()
-                            .fill(Color(isOverBudget ? DynamicColors.red : Color.accentColor).mix(with: .white, by: isOverBudget ? 0.85 : 0.5).opacity(0.25))
+                            .fill(Color(isOverBudget ? DynamicColors.red : Color.accentColor).mix(with: .white, by: isOverBudget ? 0.85 : 0.5).opacity(isOverBudget ? 0.35 : 0.5))
                         .frame(width: max(0, predictionWidth), height: 12)
                         .overlay
                         {
