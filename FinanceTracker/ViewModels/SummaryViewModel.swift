@@ -19,6 +19,13 @@ final class SummaryViewModel
     
     // MARK: - Private Attributes
     @ObservationIgnored private var transactions: [Transaction]
+    @ObservationIgnored private var localCalendar: Calendar = Calendar.current
+    @ObservationIgnored private var utcCalendar: Calendar
+    {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? TimeZone.current
+        return calendar
+    }
     
     // MARK: - Data Structure
     private struct MonthlyExpenditure: Identifiable
@@ -47,7 +54,7 @@ final class SummaryViewModel
     // MARK: - Compute Methods
     private func calculatePredictions(data: [Transaction], cutoff: Int = 24) -> [Tag: Double]
     {
-        guard let startDate = Calendar.current.date(byAdding: .month, value: -cutoff, to: Date()) else
+        guard let startDate = localCalendar.date(byAdding: .month, value: -cutoff, to: Date()) else
         { return [:] }
         var predictions: [Tag: Double] = [:]
         let filteredByDateMap = filterByDate(start: startDate, data: data)
@@ -79,9 +86,8 @@ final class SummaryViewModel
     // MARK: - Private Helper Methods
     private func filterByDate(start: Date, data: [Transaction]) -> [Tag: [Transaction]]
     {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.year, .month], from: Date())
-        guard let startOfCurrentMonth = calendar.date(from: components) else { return [:] }
+        let components = localCalendar.dateComponents([.year, .month], from: Date())
+        guard let startOfCurrentMonth = localCalendar.date(from: components) else { return [:] }
         
         let filteredList = data.filter { transaction in
             return transaction.date >= start && transaction.date < startOfCurrentMonth
@@ -99,12 +105,12 @@ final class SummaryViewModel
     }
     
     private func aggregate(data: [Transaction]) -> [MonthlyExpenditure] {
-        let calendar = Calendar.current
         var dict: [Date: Double] = [:]
         
         for transaction in data {
-            let components = calendar.dateComponents([.year, .month], from: transaction.date)
-            if let startOfMonth = calendar.date(from: components) {
+            let components = localCalendar.dateComponents([.year, .month], from: transaction.date)
+            if let startOfMonth = utcCalendar.date(from: components)
+            {
                 dict[startOfMonth, default: 0] += transaction.price
             }
         }
@@ -119,7 +125,6 @@ final class SummaryViewModel
         guard let firstEntry = data.first, let lastEntry = data.last else { return [] }
         
         var result: [MonthlyExpenditure] = []
-        let calendar = Calendar.current
         var currentMonth = firstEntry.month
         let endMonth = lastEntry.month
         var lastKnownValue: Double = firstEntry.value
@@ -133,7 +138,7 @@ final class SummaryViewModel
             } else {
                 result.append(MonthlyExpenditure(month: currentMonth, value: lastKnownValue))
             }
-            guard let next = calendar.date(byAdding: .month, value: 1, to: currentMonth) else { break }
+            guard let next = localCalendar.date(byAdding: .month, value: 1, to: currentMonth) else { break }
             currentMonth = next
         }
         print(result)
@@ -194,12 +199,11 @@ final class SummaryViewModel
     }
     
     private func getThisMonthTransactions(data: [Transaction]) -> [Transaction] {
-        let calendar = Calendar.current
         let now = Date()
-        let components = calendar.dateComponents([.year, .month], from: now)
+        let components = localCalendar.dateComponents([.year, .month], from: now)
         
-        guard let startOfMonth = calendar.date(from: components),
-              let nextMonth = calendar.date(byAdding: .month, value: 1, to: startOfMonth) else {
+        guard let startOfMonth = localCalendar.date(from: components),
+              let nextMonth = localCalendar.date(byAdding: .month, value: 1, to: startOfMonth) else {
             return []
         }
         
