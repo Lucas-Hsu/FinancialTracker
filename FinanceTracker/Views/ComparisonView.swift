@@ -58,7 +58,11 @@ struct ComparisonView: View
                         .glassEffect(.regular, in: .rect(cornerRadius: 16))
                     }
                     else
-                    { contentUnavailable }
+                    {
+                        contentUnavailable
+                        .background(defaultPanelBackgroundColor)
+                        .cornerRadius(16)
+                    }
                 }
                 else
                 {
@@ -260,8 +264,6 @@ struct ComparisonView: View
             .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(defaultPanelBackgroundColor)
-        .cornerRadius(16)
         .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 6)
     }
     
