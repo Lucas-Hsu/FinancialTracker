@@ -45,10 +45,11 @@ struct TransactionEditorView: View
     {
         HStack
         {
-            // MARK: Transaction Receipt Image Editor
-            // [TODO] Need Image Add+Display
-            
-            // Transaction Details Editor
+            // MARK: Receipt Image Editor
+            ReceiptImageView(receiptData: $receiptImage)
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // MARK: Transaction Details Editor
             VStack
             {
                 // MARK: Form
@@ -126,5 +127,31 @@ struct TransactionEditorView: View
             .frame(width: 0.5 * UIScreen.main.bounds.width)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(defaultPanelBackgroundColor) // Consistent background
+        // MARK: OCR Listeners (trigger when valid data received)
+        .onChange(of: viewModel.detectedName)
+        { _, newName in
+            if let n = newName { self.name = n }
+        }
+        .onChange(of: viewModel.detectedPrice)
+        { _, newPrice in
+            if let p = newPrice { self.price = p }
+        }
+        .onChange(of: viewModel.detectedDate)
+        { _, newDate in
+            if let d = newDate { self.date = d }
+        }
+        .onChange(of: viewModel.detectedNote)
+        { _, newNote in
+            if let n = newNote
+            {
+                var currentNotes = self.notes ?? []
+                if !currentNotes.contains(n)
+                { // Avoid duplicates
+                    currentNotes.append(n)
+                    self.notes = currentNotes
+                }
+            }
+        }
     }
 }

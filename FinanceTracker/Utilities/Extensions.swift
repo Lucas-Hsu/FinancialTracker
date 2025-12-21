@@ -94,6 +94,7 @@ extension Notification.Name
 {
     static let transactionBSTUpdated = Notification.Name("TransactionBSTDidSaveNotification")
     static let transactionsUpdated = Notification.Name("TransactionsDidSaveNotification")
+    static let ocrBubbleTapped = Notification.Name("OCRBubbleTappedNotification")
 }
 
 private struct TransactionBSTKey: EnvironmentKey
@@ -138,5 +139,41 @@ extension UIColor
                        green: g1 + (g2 - g1) * amount,
                        blue: b1 + (b2 - b1) * amount,
                        alpha: a1 + (a2 - a1) * amount)
+    }
+}
+
+struct InteractiveScaleModifier: ViewModifier
+{
+    let scaleAmount: CGFloat
+    @State private var isPressed: Bool = false
+    
+    func body(content: Content) -> some View
+    {
+        content
+        .scaleEffect(isPressed ? scaleAmount : 1.0)
+        .brightness(isPressed ? 0.4 : 0.0)
+        .animation(.spring(response: 0.25, dampingFraction: 0.6), value: isPressed)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+            .onChanged
+            { _ in
+                if !self.isPressed
+                {
+                    self.isPressed = true
+                }
+            }
+            .onEnded
+            { _ in
+                self.isPressed = false
+            }
+        )
+    }
+}
+
+extension View
+{
+    func interactive(scale: CGFloat = 1.1) -> some View
+    {
+        self.modifier(InteractiveScaleModifier(scaleAmount: scale))
     }
 }
