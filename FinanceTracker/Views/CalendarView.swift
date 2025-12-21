@@ -154,7 +154,7 @@ struct CalendarView: View
                 {
                     ContentUnavailableView("No Events",
                                            systemImage: "calendar",
-                                           description: Text("No recurring transactions scheduled for this day"))
+                                           description: Text("No recurring transactions occur on this day"))
                 }
                 else
                 {
@@ -190,7 +190,7 @@ struct CalendarView: View
             {
                 ContentUnavailableView("Select a Day",
                                        systemImage: "calendar.day.timeline.left",
-                                       description: Text("Tap on a day to view scheduled transactions"))
+                                       description: Text("Tap on a day to view recurring transactions"))
             }
         }
         .background(.clear)
