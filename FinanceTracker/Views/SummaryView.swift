@@ -54,7 +54,7 @@ struct SummaryView: View
         .padding()
         .onChange(of: transactions, initial: true)
         { oldValue, newValue in
-            viewModel.transactions = newValue
+            viewModel.refresh(transactions: newValue)
         }
     }
 }

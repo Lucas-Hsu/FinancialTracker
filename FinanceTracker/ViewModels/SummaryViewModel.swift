@@ -14,13 +14,11 @@ import SwiftUI
 final class SummaryViewModel
 {
     // MARK: - Observable Computed Attribute Wrappers
-    var predictions: [Tag: Double]
-    { return calculatePredictions(data: transactions) }
-    var aggregates: [Tag: Double]
-    { return calculateMonthAggregates(data: transactions) }
+    private(set) var predictions: [Tag: Double]
+    private(set) var aggregates: [Tag: Double]
     
-    // MARK: - Public Attributes
-    var transactions: [Transaction]
+    // MARK: - Private Attributes
+    @ObservationIgnored private var transactions: [Transaction]
     
     // MARK: - Data Structure
     private struct MonthlyExpenditure: Identifiable
@@ -34,6 +32,16 @@ final class SummaryViewModel
     init(transactions: [Transaction])
     {
         self.transactions = transactions
+        self.aggregates = [:]
+        self.predictions = [:]
+    }
+    
+    // MARK: - Public Methods
+    func refresh(transactions: [Transaction])
+    {
+        self.transactions = transactions
+        self.aggregates = calculateMonthAggregates(data: transactions)
+        self.predictions = calculatePredictions(data: transactions)
     }
 
     // MARK: - Compute Methods
