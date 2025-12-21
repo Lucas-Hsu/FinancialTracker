@@ -28,29 +28,29 @@ public extension Date
         calendar.timeZone = timeZone
         return calendar.startOfDay(for: self)
     }
-    // Returns the start of the month based on the Local time zone, but in UTC 00:00:00.
+    // Returns the start of the year based on the Local time zone
+    func yearStart() -> Date
+    {
+        let localComponents = Calendar.current.dateComponents([.year], from: self)
+        return Calendar.current.date(from: localComponents) ?? self
+    }
+    // Returns the start of the month based on the Local time zone
     func monthStart() -> Date
     {
         let localComponents = Calendar.current.dateComponents([.year, .month], from: self)
-        var utcCalendar = Calendar(identifier: .gregorian)
-        utcCalendar.timeZone = TimeZone(secondsFromGMT: 0) ?? TimeZone.current
-        return utcCalendar.date(from: localComponents) ?? self
+        return Calendar.current.date(from: localComponents) ?? self
     }
-    // Returns the start of the day based on the Local time zone, but in UTC 00:00:00.
+    // Returns the start of the day based on the Local time zone
     func dayStart() -> Date
     {
         let localComponents = Calendar.current.dateComponents([.year, .month, .day], from: self)
-        var utcCalendar = Calendar(identifier: .gregorian)
-        utcCalendar.timeZone = TimeZone(secondsFromGMT: 0) ?? TimeZone.current
-        return utcCalendar.date(from: localComponents) ?? self
+        return Calendar.current.date(from: localComponents) ?? self
     }
-    // Returns the start of the minute based on the Local time zone, but in UTC 00:00:00.
+    // Returns the start of the minute based on the Local time zone
     func minuteStart() -> Date
     {
         let localComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: self)
-        var utcCalendar = Calendar(identifier: .gregorian)
-        utcCalendar.timeZone = TimeZone(secondsFromGMT: 0) ?? TimeZone.current
-        return utcCalendar.date(from: localComponents) ?? self
+        return Calendar.current.date(from: localComponents) ?? self
     }
 }
 

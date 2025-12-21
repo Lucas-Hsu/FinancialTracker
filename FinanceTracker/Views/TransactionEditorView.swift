@@ -11,7 +11,7 @@ import SwiftData
 /// View for adding, editing, and deleting individual Transaction objects. Connects to `TransactionEditorViewModel`.
 struct TransactionEditorView: View
 {
-    // MARK: - Attributes
+    // MARK: - Private Attributes
     // Transaction
     @State private var date: Date
     @State private var name: String
@@ -45,7 +45,7 @@ struct TransactionEditorView: View
     {
         HStack
         {
-            // Transaction Receipt Image Editor
+            // MARK: Transaction Receipt Image Editor
             // [TODO] Need Image Add+Display
             
             // Transaction Details Editor
@@ -55,9 +55,7 @@ struct TransactionEditorView: View
                 VStack(spacing: 20)
                 {
                     if viewModel.errorMessage != ""
-                    {
-                        Text(viewModel.errorMessage)
-                    }
+                    { Text(viewModel.errorMessage) }
                     // Name
                     TextField("Name", text: $name)
                     // Price
@@ -87,9 +85,7 @@ struct TransactionEditorView: View
                     .frame(height: 100)
                 }
                 .padding()
-                
                 Spacer()
-                
                 // MARK: Action Buttons
                 HStack {
                     // Save the Transaction to modelContext
@@ -131,17 +127,4 @@ struct TransactionEditorView: View
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-}
-
-
-private struct BackgroundClearView: UIViewRepresentable {
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView()
-        DispatchQueue.main.async {
-            view.superview?.superview?.backgroundColor = .clear
-        }
-        return view
-    }
-
-    func updateUIView(_ uiView: UIView, context: Context) {}
 }

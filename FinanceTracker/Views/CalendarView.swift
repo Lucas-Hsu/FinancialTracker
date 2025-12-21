@@ -8,17 +8,16 @@
 import SwiftUI
 import SwiftData
 
+/// View for the `Calendar`
 struct CalendarView: View
 {
-    // MARK: - State Variables
+    // MARK: - Private Variables
+    private var modelContext: ModelContext
     @State private var viewModel: CalendarViewModel
     @State private var selectedTransaction: Transaction?
     @State private var isSelectedNewTransaction: Bool = true
     @State private var isNewTransactionSheetActivated = false
     @State private var daysWithEvents: [Int] = []
-    
-    // MARK: - Private Attributes
-    private var modelContext: ModelContext
     
     // MARK: - Constructors
     init(modelContext: ModelContext)
@@ -62,6 +61,7 @@ struct CalendarView: View
         }
     }
     
+    // MARK: - Components
     private var calendarView: some View
     {
         VStack(spacing: 0)
@@ -69,21 +69,18 @@ struct CalendarView: View
             // MARK: Header
             HStack
             {
-                // Prev Month
                 CircleIconButtonGlass(icon: "chevron.left", shadow: true)
                 {
                     viewModel.previousMonth()
                     updateDaysWithEvents()
                 }
                 Spacer()
-                // Month Year
                 Text(DateFormatters.MMMMyyyy(date: viewModel.currentMonth))
                 .font(.title3)
                 .fontWeight(.semibold)
                 .onTapGesture
                 { viewModel.resetMonth() }
                 Spacer()
-                // Next Month
                 CircleIconButtonGlass(icon: "chevron.right", shadow: true)
                 {
                     viewModel.nextMonth()
@@ -92,8 +89,7 @@ struct CalendarView: View
             }
             .padding(.horizontal)
             .padding(.bottom, 10)
-            
-            // MARK: Weekdays
+            // Weekdays
             HStack(spacing: 0)
             {
                 ForEach(viewModel.weekdays, id: \.self)
@@ -105,8 +101,7 @@ struct CalendarView: View
                     .frame(maxWidth: .infinity)
                 }
             }
-            
-            // MARK: Calendar Grid
+            // Calendar Grid
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 5)
             {
                 ForEach(viewModel.getMonthGrid().flatMap { $0 }.indices, id: \.self)
@@ -141,8 +136,14 @@ struct CalendarView: View
         .background(.clear)
         .cornerRadius(12)
         .padding(.horizontal)
+        .onAppear
+        {
+            viewModel.selectDay(1)
+            viewModel.selectDay(2)
+            viewModel.clearSelection()
+        }
     }
-    
+    // MARK: Details
     private var detailsView: some View
     {
         VStack(alignment: .leading, spacing: 4)
@@ -198,6 +199,7 @@ struct CalendarView: View
         .frame(maxWidth: .infinity, minHeight: 300, maxHeight: 300)
     }
     
+    // MARK: - Private Helpers
     private func refresh()
     {
         updateDaysWithEvents()

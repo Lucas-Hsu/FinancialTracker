@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 
-/// View for list of Transactions sorted by most recent date, and launches Adding New, Editing, and Deleting.
+/// View for list of `Transaction`s
 struct RecordsListView: View
 {
     // MARK: - State Management

@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 
+/// This is the statistics page that shows pie chart or summary.
 struct StatisticsView: View
 {
     // MARK: - State Management
@@ -18,11 +19,15 @@ struct StatisticsView: View
     }
     @State private var selection: StatisticType = StatisticType.predict
 
+    // Fetch transactions here so we can pass them to children
+    @Query(sort: \Transaction.date, order: .reverse) private var transactions: [Transaction]
+
     // MARK: - UI
     var body: some View
     {
         VStack(spacing: 20)
         {
+            // MARK: Statistics Type Selection Toolbar
             Group
             {
                 if #available(iOS 26.0, *)
@@ -34,12 +39,23 @@ struct StatisticsView: View
                 { toolbar }
             }
             .shadow(color: defaultPanelShadowColor, radius: 6, x: 0, y: 4)
+            // MARK: Statistics Window
             Group
             {
                 if selection == .predict
-                { SummaryView() }
+                {
+                    // Existing view
+                    SummaryView()
+                }
+                else if selection == .ratio
+                {
+                    // New view
+                    ComparisonView(transactions: transactions)
+                }
                 else
-                { Spacer() }
+                {
+                    Spacer()
+                }
             }
         }
         .frame(maxWidth: .infinity, minHeight: 700, maxHeight: 700)
@@ -47,7 +63,7 @@ struct StatisticsView: View
     }
     
     // MARK: - Components
-    // Toolbar
+    // MARK: Toolbar
     private var toolbar: some View
     {
         HStack
@@ -65,7 +81,7 @@ struct StatisticsView: View
         .frame(maxWidth: .infinity)
         .frame(height: 60)
     }
-    // Dropdown Selection
+    // MARK: Dropdown Selection
     private var dropdown: some View
     {
         Menu

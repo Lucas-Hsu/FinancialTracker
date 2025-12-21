@@ -35,6 +35,7 @@ final class CalendarViewModel
     init(modelContext: ModelContext)
     {
         self.modelContext = modelContext
+        resetSelection()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1)
         { self.isLoading = false }
     }
@@ -156,6 +157,12 @@ final class CalendarViewModel
     {
         selectedDay = day
         eventsForSelectedDay = getEvents(day: day)
+    }
+    func resetSelection()
+    {
+        currentMonth = Date().monthStart()
+        selectedDay = localCalendar.component(.day, from: Date().dayStart())
+        eventsForSelectedDay = []
     }
     func clearSelection()
     {

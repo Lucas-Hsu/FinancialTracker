@@ -8,10 +8,10 @@
 import SwiftUI
 import SwiftData
 
-/// This is the UI/window manager
+/// Main window
 struct ContentView: View
 {
-    // MARK: - Tab View Enums
+    // MARK: - Tab View Manager
     private enum ViewTabs: Hashable
     {
       case savedPatterns,
@@ -20,7 +20,7 @@ struct ContentView: View
     }
     @State private var viewTabs: ViewTabs = .transactionRecords
     
-    // MARK: - Attributes
+    // MARK: - Private Attributes
     @Environment(\.modelContext) private var modelContext
     @State private var transactionBST: TransactionBST?
     @State private var refreshFlag = false // Add this

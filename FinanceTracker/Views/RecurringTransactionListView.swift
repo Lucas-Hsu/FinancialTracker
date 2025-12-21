@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 
-/// View for list of RecurringTransactions
+/// View for list of `RecurringTransaction`s
 struct RecurringTransactionListView: View
 {
     // MARK: - Private State Attributes
