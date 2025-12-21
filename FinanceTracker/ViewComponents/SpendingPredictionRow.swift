@@ -44,14 +44,14 @@ struct SpendingPredictionRow: View
                 // Status Text
                 if current > prediction
                 {
-                    Text("+\(PriceFormatter.format(price: current - prediction))")
+                    Text("¥\(PriceFormatter.format(price: current - prediction)) over")
                     .font(.caption)
                     .foregroundStyle(.red)
                     .fontWeight(.bold)
                 }
                 else
                 {
-                    Text("\(PriceFormatter.format(price: prediction - current)) left")
+                    Text("¥\(PriceFormatter.format(price: prediction - current)) left")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 }
@@ -103,7 +103,7 @@ struct SpendingPredictionRow: View
                 .font(.caption2)
                 .foregroundStyle(current > prediction ? .red : .primary)
                 Spacer()
-                Text("Forecast: ¥\(PriceFormatter.format(price: prediction))")
+                Text("Forecasted Budget: ¥\(PriceFormatter.format(price: prediction))")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
             }
@@ -115,10 +115,12 @@ struct SpendingPredictionRow: View
 
 struct SpendingPredictionRowGlass: View
 {
+    // MARK: - Attributes
     let tag: Tag
     let current: Double
     let prediction: Double
     
+    // MARK: - UI
     var body: some View
     {
         if #available(iOS 26.0, *)

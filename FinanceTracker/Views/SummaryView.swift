@@ -28,7 +28,7 @@ struct SummaryView: View
             // MARK: Header
             HStack
             {
-                Text("Spending Forecast")
+                Text("Monthly Spending")
                 .font(.title2)
                 .fontWeight(.bold)
                 Spacer()
