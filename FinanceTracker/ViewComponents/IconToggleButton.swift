@@ -19,7 +19,7 @@ struct IconToggleButton: View
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(defaultPanelBackgroundColor)
         .font(.title3)
-        .foregroundColor(toggle ? .accentColor : .secondary)
+        .foregroundColor(toggle ? Color.accentColor : .secondary)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .onTapGesture
         {

@@ -31,7 +31,7 @@ struct PrimaryButton: View
     var body: some View
     {
         BaseButton(title: title, action: action)
-        .tint(.accentColor)
+        .tint(Color.accentColor)
     }
 }
 struct SecondaryButton: View
@@ -43,7 +43,7 @@ struct SecondaryButton: View
     {
         BaseButton(title: title, action: action)
         .tint(Color.white)
-        .foregroundColor(.accentColor)
+        .foregroundColor(Color.accentColor)
     }
 }
 struct DestructiveButton: View
@@ -54,7 +54,7 @@ struct DestructiveButton: View
     var body: some View
     {
         BaseButton(title: title, action: action)
-        .tint(.red)
+        .tint(Color.red)
     }
 }
 

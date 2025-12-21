@@ -45,6 +45,7 @@ struct ContentView: View
                         ProgressView("Building TransactionBST...")
                     }
                 }
+                .background(BackgroundImage())
             }
             .tabItem { Label("Recurring", systemImage: "calendar") }
             .tag(ViewTabs.savedPatterns)
@@ -68,19 +69,7 @@ struct ContentView: View
                         ProgressView("Building TransactionBST...")
                     }
                 }
-                .background(
-                    ZStack
-                    {
-                        Image("iPad26Background")
-                        .resizable()
-                        .scaledToFill()
-                        .ignoresSafeArea()
-                        Rectangle()
-                        .fill(defaultPanelBackgroundColor)
-                        .scaledToFit()
-                        .opacity(0.7)
-                    }
-                )
+                .background(BackgroundImage())
             }
             .tabItem { Label("Records", systemImage: "line.3.horizontal") }
             .tag(ViewTabs.transactionRecords)
@@ -91,19 +80,7 @@ struct ContentView: View
                 {
                     SummaryView()
                 }
-                .background(
-                    ZStack
-                    {
-                        Image("iPad26Background")
-                        .resizable()
-                        .scaledToFill()
-                        .ignoresSafeArea()
-                        Rectangle()
-                        .fill(defaultPanelBackgroundColor)
-                        .scaledToFit()
-                        .opacity(0.7)
-                    }
-                )
+                .background(BackgroundImage())
             }
             .tabItem { Label("Stats", systemImage: "chart.line.uptrend.xyaxis") }
             .tag(ViewTabs.graphicalRepresentation)

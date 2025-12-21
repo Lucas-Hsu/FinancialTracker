@@ -46,7 +46,7 @@ struct SpendingPredictionRow: View
                 {
                     Text("¥\(PriceFormatter.format(price: current - prediction)) over")
                     .font(.caption)
-                    .foregroundStyle(.red)
+                    .foregroundStyle(DynamicColors.red)
                     .fontWeight(.bold)
                 }
                 else
@@ -72,14 +72,14 @@ struct SpendingPredictionRow: View
                     .frame(width: width, height: 12)
                     // Actual spending
                     Capsule()
-                    .fill(isOverBudget ? Color.red : Color.accentColor)
+                    .fill(isOverBudget ? DynamicColors.red : Color.accentColor)
                     .frame(width: max(0, currentWidth), height: 12)
-                    .shadow(color: isOverBudget ? .red.opacity(0.4) : .accentColor.opacity(0.4), radius: 4, x: 0, y: 2)
+                    .shadow(color: isOverBudget ? DynamicColors.red.opacity(0.4) : Color.accentColor.opacity(0.4), radius: 4, x: 0, y: 2)
                     // Expenditure forecast
                     ZStack(alignment: .trailing)
                     {
                         Capsule()
-                        .fill(Color(isOverBudget ? .red : .accentColor).mix(with: .white, by: 0.5).opacity(0.25))
+                            .fill(Color(isOverBudget ? DynamicColors.red : Color.accentColor).mix(with: .white, by: isOverBudget ? 0.85 : 0.5).opacity(0.25))
                         .frame(width: max(0, predictionWidth), height: 12)
                         .overlay
                         {
@@ -88,7 +88,7 @@ struct SpendingPredictionRow: View
                         }
                         // Limit Line
                         Capsule()
-                        .fill(Color(isOverBudget ? .red : .accentColor).mix(with: .white, by: 0.5).opacity(1))
+                        .fill(Color(isOverBudget ? DynamicColors.red : Color.accentColor).mix(with: .white, by: 0.5).opacity(1))
                         .frame(width: 4, height: 16)
                     }
                     .frame(width: max(0, predictionWidth), alignment: .leading)
@@ -101,7 +101,7 @@ struct SpendingPredictionRow: View
             {
                 Text("¥\(PriceFormatter.format(price: current))")
                 .font(.caption2)
-                .foregroundStyle(current > prediction ? .red : .primary)
+                .foregroundStyle(current > prediction ? DynamicColors.red : .primary)
                 Spacer()
                 Text("Forecasted Budget: ¥\(PriceFormatter.format(price: prediction))")
                 .font(.caption2)

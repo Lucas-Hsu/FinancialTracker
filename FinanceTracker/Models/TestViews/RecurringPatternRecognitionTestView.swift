@@ -70,7 +70,7 @@ struct TestCaseRow: View {
                 Text(testCase.expectedSuccess ? "Expect PASS" : "Expect FAIL")
                     .font(.caption)
                     .padding(4)
-                    .background(testCase.expectedSuccess ? Color.green.opacity(0.2) : Color.red.opacity(0.2))
+                    .background(testCase.expectedSuccess ? Color.green.opacity(0.2) : DynamicColors.red.opacity(0.2))
                     .cornerRadius(4)
             }
             

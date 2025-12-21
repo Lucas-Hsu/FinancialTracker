@@ -139,7 +139,7 @@ struct RecordsListView: View
                 PrimaryButtonGlass(title:"Add New")
                 { openTransactionEdit() }
                 .padding()
-                .shadow(color: Color(hue: 0.58, saturation: 0.5, brightness: 0.5, opacity: 0.4), radius: 2, x: 0, y: 2)
+                .shadow(color: defaultButtonShadowColor, radius: 3, x: 0, y: 2)
                 // Sort by newest/oldest
                 Button(action: { viewModel.reverseOrder() })
                 {

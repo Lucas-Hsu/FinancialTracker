@@ -18,7 +18,7 @@ struct CircleIconButton: View
         {
             Image(systemName: self.icon)
             .font(.title3)
-            .foregroundColor(.accentColor)
+            .foregroundColor(Color.accentColor)
             .frame(width: 36, height: 36)
             .background(defaultPanelBackgroundColor)
             .clipShape(Circle())

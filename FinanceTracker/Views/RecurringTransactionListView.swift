@@ -30,7 +30,7 @@ struct RecurringTransactionListView: View
     // MARK: - UI
     var body: some View
     {
-        VStack
+        HStack
         {
             if viewModel.isLoading
             {
@@ -40,75 +40,147 @@ struct RecurringTransactionListView: View
             }
             else
             {
-                Text("Saved Recurring Transactions")
+                VStack(spacing: 0)
+                {
+                    Group
+                    {
+                        if #available(iOS 26.0, *)
+                        {
+                            Text("Saved Recurring Transactions")
+                            .font(.title)
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 60)
+                            .glassEffect(.regular, in: .rect(cornerRadius: 12))
+                        }
+                        else
+                        { Text("Saved Recurring Transactions") }
+                    }
+                    .zIndex(1)
+                    .shadow(color: defaultPanelShadowColor, radius: 6, x: 0, y: 4)
+                    if (!savedRecurringTransactions.isEmpty)
+                    {
+                        // MARK: Saved Recurring Transactions
+                        List()
+                        {
+                            ForEach(savedRecurringTransactions)
+                            { savedRecurringTransaction in
+                                HStack
+                                {
+                                    RecurringTransactionView(recurringTransaction: savedRecurringTransaction)
+                                    .padding(.trailing, 6)
+                                    DestructiveButtonGlass(title: "Delete")
+                                    {
+                                        viewModel.delete(recurringTransaction: savedRecurringTransaction)
+                                        refresh()
+                                    }
+                                    .shadow(color: defaultButtonShadowColor, radius: 3, x: 0, y: 2)
+                                }
+                            }
+                        }
+                        .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 3)
+                        .scrollContentBackground(.hidden)
+                    }
+                    else
+                    {
+                        // MARK: Empty Message
+                        VStack
+                        {
+                            Spacer()
+                            Text("No Recurring Transaction records saved.")
+                            .foregroundStyle(Color(UIColor.systemGray))
+                            .onAppear
+                            { viewModel.refresh() }
+                            Spacer()
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, minHeight: 700, maxHeight: 700)
+                .padding()
+                VStack
+                {
+                    VStack
+                    {
+                        Group
+                        {
+                            if #available(iOS 26.0, *)
+                            {
+                                Text("Found Recurring Transactions")
+                                .font(.title)
+                                .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 60)
+                                .glassEffect(.regular, in: .rect(cornerRadius: 12))
+                            }
+                            else
+                            { Text("Found Recurring Transactions") }
+                        }
+                        .zIndex(1)
+                        .shadow(color: defaultPanelShadowColor, radius: 6, x: 0, y: 4)
+                        if (!notSavedRecurringTransactions.isEmpty)
+                        {
+                            // MARK: Calculated Recurring Transactions
+                            List
+                            {
+                                ForEach(notSavedRecurringTransactions)
+                                { recurringTransaction in
+                                    HStack
+                                    {
+                                        RecurringTransactionView(recurringTransaction: recurringTransaction)
+                                        .padding(.trailing, 6)
+                                        PrimaryButtonGlass(title: "Save")
+                                        {
+                                            viewModel.save(recurringTransaction: recurringTransaction)
+                                            refresh()
+                                        }
+                                        .shadow(color: defaultButtonShadowColor, radius: 3, x: 0, y: 2)
+                                    }
+                                }
+                            }
+                            .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 3)
+                            .scrollContentBackground(.hidden)
+                        }
+                        else
+                        {
+                            // MARK: Empty Message
+                            VStack
+                            {
+                                Spacer()
+                                Text("No Recurring Transaction records found.")
+                                .foregroundStyle(Color(UIColor.systemGray))
+                                .onAppear
+                                { viewModel.refresh() }
+                                Spacer()
+                            }
+                        }
+                    }
+                    .frame(maxHeight: .infinity)
+                    
+                    VStack
+                    {
+                        Group
+                        {
+                            if #available(iOS 26.0, *)
+                            {
+                                Text("Manual Recurring Transactions")
+                                .font(.title)
+                                .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 60)
+                                .glassEffect(.regular, in: .rect(cornerRadius: 12))
+                            }
+                            else
+                            { Text("Manual Recurring Transactions") }
+                        }
+                        .zIndex(2)
+                        .shadow(color: defaultPanelShadowColor, radius: 6, x: 0, y: 4)
+                        .hidden()
+                    }
+                }
+                .frame(maxWidth: .infinity, minHeight: 700, maxHeight: 700)
+                .padding()
                 .onAppear
                 { refresh() }
-                if (!savedRecurringTransactions.isEmpty)
-                {
-                    // MARK: Saved Recurring Transactions
-                    List()
-                    {
-                        ForEach(savedRecurringTransactions)
-                        { savedRecurringTransaction in
-                            HStack
-                            {
-                                RecurringTransactionView(recurringTransaction: savedRecurringTransaction)
-                                Spacer()
-                                DestructiveButtonGlass(title: "Delete")
-                                {
-                                    viewModel.delete(recurringTransaction: savedRecurringTransaction)
-                                    refresh()
-                                }
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // MARK: Empty MEssage
-                    VStack
-                    {
-                        Spacer()
-                        Text("No Recurring Transaction records saved.")
-                            .onAppear
-                        { viewModel.refresh() }
-                        Spacer()
-                    }
-                }
-                
-                Text("Found Recurring Transactions")
-                if (!viewModel.recurringTransactions.isEmpty)
-                {
-                    // MARK: Calculated Recurring Transactions
-                    List()
-                    {
-                        ForEach(notSavedRecurringTransactions)
-                        { recurringTransaction in
-                            HStack
-                            {
-                                RecurringTransactionView(recurringTransaction: recurringTransaction)
-                                Spacer()
-                                PrimaryButtonGlass(title: "Save")
-                                {
-                                    viewModel.save(recurringTransaction: recurringTransaction)
-                                    refresh()
-                                }
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // MARK: Empty Message
-                    VStack
-                    {
-                        Spacer()
-                        Text("No Recurring Transaction records found.")
-                        .onAppear
-                        { viewModel.refresh() }
-                        Spacer()
-                    }
-                }
             }
         }
     }

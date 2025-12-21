@@ -41,10 +41,10 @@ struct CalendarDayCell: View
     {
         Text(self.day)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(toggle ? .accentColor : bgColor)
+        .background(toggle ? Color.accentColor : bgColor)
         .font(.title3)
         .fontWeight(textWeight)
-        .underline(mark, color: .accentColor)
+        .underline(mark, color: Color.accentColor)
         .foregroundColor(toggle ? .white : textColor)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .shadow(color: defaultPanelShadowColor, radius: 2, x: 0, y: 4)
