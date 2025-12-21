@@ -26,7 +26,7 @@ struct CalendarDayCell: View
     
     private var bgColor: Color
     {
-        return Color(UIColor.systemBackground).mix(with: .accentColor, by: 0.02)
+        return defaultPanelBackgroundColor
     }
     
     private var textWeight: Font.Weight
@@ -47,7 +47,7 @@ struct CalendarDayCell: View
         .underline(mark, color: .accentColor)
         .foregroundColor(toggle ? .white : textColor)
         .clipShape(RoundedRectangle(cornerRadius: 12))
-        .shadow(color: Color(hue: 0.58, saturation: 0.5, brightness: 0.5, opacity: 0.1), radius: 2, x: 0, y: 4)
+        .shadow(color: defaultPanelShadowColor, radius: 2, x: 0, y: 4)
         .onTapGesture
         { self.action() }
     }

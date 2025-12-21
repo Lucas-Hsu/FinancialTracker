@@ -80,12 +80,16 @@ struct RecordsListView: View
                             }) ?? []
                         if !filteredTransactions.isEmpty
                         {
-                            Section(header: Text(key).font(.headline))
+                            Section(header:
+                                        Text(DateFormatters.dMMMMyyyy(date: key))
+                                        .font(.headline)
+                                        .fontWeight(.medium)
+                                        .foregroundStyle(Color(UIColor.systemGray)))
                             {
                                 ForEach(viewModel.sortByNewestFirst ? filteredTransactions : filteredTransactions.reversed(), id: \.id)
                                 { transaction in
                                     TransactionView(transaction: transaction)
-                                    .listRowBackground(Color(UIColor.systemBackground).mix(with: .accentColor, by: 0.02))
+                                    .listRowBackground(defaultPanelBackgroundColor)
                                     .onTapGesture
                                     { openTransactionEdit(transaction: transaction) }
                                 }
@@ -98,7 +102,7 @@ struct RecordsListView: View
                         }
                     }
                 }
-                .shadow(color: Color(hue: 0.58, saturation: 0.5, brightness: 0.5, opacity: 0.1), radius: 3, x: 0, y: 3)
+                .shadow(color: defaultPanelShadowColor, radius: 3, x: 0, y: 3)
                 .scrollContentBackground(.hidden)
             }
         }

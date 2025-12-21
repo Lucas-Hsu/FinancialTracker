@@ -20,7 +20,7 @@ struct CircleIconButton: View
             .font(.title3)
             .foregroundColor(.accentColor)
             .frame(width: 36, height: 36)
-            .background(Color(UIColor.systemBackground).mix(with: .accentColor, by: 0.02))
+            .background(defaultPanelBackgroundColor)
             .clipShape(Circle())
         }
     }
@@ -40,7 +40,7 @@ struct CircleIconButtonGlass: View
             {
                 CircleIconButton(icon: self.icon, action: self.action)
                     .glassEffect(.regular.interactive())
-                    .shadow(color: Color(hue: 0.58, saturation: 0.5, brightness: 0.5, opacity: 0.1), radius: 2, x: 0, y: 4)
+                    .shadow(color: defaultPanelShadowColor, radius: 2, x: 0, y: 4)
             }
             else
             {

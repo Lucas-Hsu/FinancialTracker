@@ -17,7 +17,7 @@ struct IconToggleButton: View
     {
         Image(systemName: self.icon)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(UIColor.systemBackground).mix(with: .accentColor, by: 0.02))
+        .background(defaultPanelBackgroundColor)
         .font(.title3)
         .foregroundColor(toggle ? .accentColor : .secondary)
         .clipShape(RoundedRectangle(cornerRadius: 12))

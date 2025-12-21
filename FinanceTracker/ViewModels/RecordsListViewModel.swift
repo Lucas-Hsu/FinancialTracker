@@ -15,7 +15,7 @@ final class RecordsListViewModel
 {
     // MARK: - Read-only Attributes
     private(set) var sortedTransactions: [Transaction] = []
-    private(set) var groupedTransactions: [String: [Transaction]] = [:]
+    private(set) var groupedTransactions: [Date: [Transaction]] = [:]
     private(set) var transactionBST: TransactionBST
     private(set) var isLoading: Bool = true
     private(set) var sortByNewestFirst: Bool = true
@@ -133,7 +133,7 @@ final class RecordsListViewModel
     {
         groupedTransactions = Dictionary(grouping: sortedTransactions)
         { transaction in
-            return DateFormatters.yyyyMMdd(date: transaction.date)
+            return transaction.date.dayStart()
         }
     }
 }

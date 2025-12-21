@@ -233,14 +233,26 @@ struct RecurringTransactionView: View
     {
         HStack
         {
-            Text("\(recurringTransaction.name): \(recurringTransaction.tag)")
-            
-            HStack
+            Image(systemName: tagSymbols[Tag(recurringTransaction.tag)] ?? "questionmark")
+            .frame(width: 20, height: 20)
+            .foregroundStyle(Color(UIColor.secondaryLabel))
+            Text(recurringTransaction.name)
+            .fontWeight(.medium)
+            .font(.title3)
+            Spacer()
+            VStack
             {
-                Text("Began on \(recurringTransaction.startDate.toMediumString())")
-                Text("Recurs every \(recurringTransaction.interval) \(recurringTransaction.pattern)")
+                HStack
+                {
+                    Spacer()
+                    Text("Began on \(recurringTransaction.startDate.toMediumString())")
+                }
+                HStack
+                {
+                    Spacer()
+                    Text("Recurs every \(recurringTransaction.interval) \(recurringTransaction.pattern)")
+                }
             }
         }
-        .padding(.vertical, 8)
     }
 }

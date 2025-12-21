@@ -76,7 +76,7 @@ struct ContentView: View
                         .scaledToFill()
                         .ignoresSafeArea()
                         Rectangle()
-                        .fill(Color(UIColor.systemBackground).mix(with: .accentColor, by: 0.02))
+                        .fill(defaultPanelBackgroundColor)
                         .scaledToFit()
                         .opacity(0.7)
                     }
@@ -99,7 +99,7 @@ struct ContentView: View
                         .scaledToFill()
                         .ignoresSafeArea()
                         Rectangle()
-                        .fill(Color(UIColor.systemBackground).mix(with: .accentColor, by: 0.02))
+                        .fill(defaultPanelBackgroundColor)
                         .scaledToFit()
                         .opacity(0.7)
                     }

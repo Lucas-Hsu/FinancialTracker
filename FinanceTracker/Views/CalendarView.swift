@@ -36,7 +36,7 @@ struct CalendarView: View
             {
                 calendarView
                 .glassEffect(.regular, in: .rect(cornerRadius: 16))
-                .shadow(color: Color(hue: 0.58, saturation: 0.5, brightness: 0.5, opacity: 0.1), radius: 4, x: 0, y: 6)
+                .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 6)
             }
             else
             { calendarView }
@@ -44,7 +44,7 @@ struct CalendarView: View
             {
                 detailsView
                 .glassEffect(.regular, in: .rect(cornerRadius: 16))
-                .shadow(color: Color(hue: 0.58, saturation: 0.5, brightness: 0.5, opacity: 0.1), radius: 4, x: 0, y: 6)
+                .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 6)
             }
             else
             { detailsView }
@@ -145,7 +145,7 @@ struct CalendarView: View
     
     private var detailsView: some View
     {
-        VStack(alignment: .leading, spacing: 15)
+        VStack(alignment: .leading, spacing: 4)
         {
             if let selectedDay = viewModel.selectedDay
             {
@@ -161,32 +161,27 @@ struct CalendarView: View
                     {
                         ForEach(viewModel.eventsForSelectedDay)
                         { recurringTransaction in
-                            Button(action:
+                            HStack
+                            {
+                                RecurringTransactionView(recurringTransaction: recurringTransaction)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                            }
+                            .onTapGesture
                             {
                                 let foundTransaction = viewModel.findTransaction(matches: recurringTransaction,
                                                                                  selectedDate: viewModel.getDateOfDay(selectedDay) ?? Date())
                                 selectedTransaction = foundTransaction.keys.first
                                 isSelectedNewTransaction = foundTransaction.values.first ?? true
                                 isNewTransactionSheetActivated = true
-                            })
-                            {
-                                HStack
-                                {
-                                    VStack(alignment: .leading, spacing: 4)
-                                    {
-                                        RecurringTransactionView(recurringTransaction: recurringTransaction)
-                                        .shadow(color: Color(hue: 0.58, saturation: 0.5, brightness: 0.5, opacity: 0.1), radius: 4, x: 0, y: 6)
-                                    }
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                                }
-                                .padding(.vertical, 8)
                             }
-                            .buttonStyle(PlainButtonStyle())
+                            .padding(.vertical, 4)
                         }
+                        .listRowBackground(defaultPanelBackgroundColor)
                     }
+                    .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 6)
                     .scrollContentBackground(.hidden)
                 }
             }

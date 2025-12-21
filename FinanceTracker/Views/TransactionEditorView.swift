@@ -106,14 +106,6 @@ struct TransactionEditorView: View
                         { dismiss() }
                     }
                     .padding()
-                    // Cancel the operation, nothing is changed
-                    SecondaryButtonGlass(title: "Cancel")
-                    {
-                        viewModel.cancel()
-                        if (!viewModel.hasSaved && !viewModel.hasDeleted)
-                        { dismiss() }
-                    }
-                    .padding()
                     // Only show Delete if it's an existing Transaction
                     if (!viewModel.isNew)
                     {
@@ -125,6 +117,14 @@ struct TransactionEditorView: View
                         }
                         .padding()
                     }
+                    // Cancel the operation, nothing is changed
+                    SecondaryButtonGlass(title: "Cancel")
+                    {
+                        viewModel.cancel()
+                        if (!viewModel.hasSaved && !viewModel.hasDeleted)
+                        { dismiss() }
+                    }
+                    .padding()
                 }
             }
             .frame(width: 0.5 * UIScreen.main.bounds.width)

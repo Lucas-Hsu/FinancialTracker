@@ -26,7 +26,7 @@ class Transaction: Equatable
     // MARK: - Constructors
     init(date: Date = Date(),
          name: String = "",
-         price: Double = 9.9,
+         price: Double = 0.00,
          tag: Tag = Tag.other,
          isPaid: Bool = true,
          notes: [String]? = nil,
@@ -74,7 +74,7 @@ class Transaction: Equatable
         if isNameValid(name: name)
         { self.name = name }
         else
-        { self.name = "Transaction at \(Date().toMediumString())" }
+        { self.name = "Transaction at \(DateFormatters.yyyyMMddhhmm(date: Date()))" }
     }
     public func setPrice(price: Double)
     {
@@ -227,58 +227,54 @@ struct TransactionView: View
     // MARK: - UI
     var body: some View
     {
-        VStack(alignment: .leading, spacing: 4)
+        HStack
         {
+            Spacer()
             HStack
             {
-                Text(transaction.name)
-                .font(.headline)
-                .lineLimit(1)
-                
-                Spacer()
-                
-                Text("¥\(transaction.price, specifier: "%.2f")")
-                .font(.headline)
-                .foregroundColor(transaction.price < 0 ? .red : .primary)
-            }
-            
-            HStack
-            {
-                Text(transaction.date, style: .date)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                
-                Spacer()
-                
-                Text(transaction.tag.rawValue)
-                .font(.caption)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 2)
-                .cornerRadius(4)
-            }
-
-            HStack
-            {
-                if !transaction.isPaid
+                Image(systemName: tagSymbols[transaction.tag] ?? "questionmark")
+                .foregroundStyle(Color(UIColor.secondaryLabel))
+                HStack
                 {
-                    Text("UNPAID")
-                    .font(.caption2)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Color.orange.opacity(0.2))
-                    .foregroundColor(.orange)
-                    .cornerRadius(3)
+                    Text(transaction.name)
+                    .fontWeight(.medium)
+                    Spacer()
                 }
-                
-                if let notes = transaction.notes, !notes.isEmpty
+            }
+            .frame(width: 340, height: 20)
+            Spacer()
+            VStack
+            {
+                HStack
                 {
                     Spacer()
-                    Image(systemName: "note.text")
-                    .font(.caption2)
+                    if (!transaction.isPaid)
+                    {
+                        Text("UNPAID")
+                        .font(.caption)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.orange.opacity(0.2))
+                        .foregroundColor(.orange)
+                        .cornerRadius(3)
+                    }
+                    Text("¥" + PriceFormatter.format(price: transaction.price))
+                    .font(.body)
+                }
+                HStack
+                {
+                    Spacer()
+                    Text(DateFormatters.yyyyMMddhhmm(date: transaction.date))
+                    .font(.caption)
                     .foregroundColor(.secondary)
                 }
             }
+            .frame(width: 150, height: 40)
+            Spacer()
         }
-        .padding(.vertical, 8)
     }
+}
+
+#Preview {
+    TransactionView(transaction: Transaction())
 }
