@@ -128,11 +128,17 @@ struct ReceiptImageView: View
                         .grayscale(viewModel.isProcessing ? 1.0 : 0.0)
                         // OCR Bubbles Overlay
                         if !viewModel.isProcessing
-                        { AllBubbles(imageSize: image.size, viewSize: geometry.size) }
+                        {
+                            ZStack
+                            { AllBubbles(imageSize: image.size, viewSize: geometry.size) }
+                            .drawingGroup()
+                        }
                     }
                     .frame(width: geometry.size.width, height: geometry.size.height)
                     .scaleEffect(viewModel.scale)
                     .offset(viewModel.offset)
+                    .animation(nil, value: viewModel.scale)
+                    .animation(nil, value: viewModel.offset)
                     .gesture(makeGestures())
                 }
             }

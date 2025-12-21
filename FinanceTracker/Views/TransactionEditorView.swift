@@ -127,7 +127,7 @@ struct TransactionEditorView: View
             .frame(width: 0.5 * UIScreen.main.bounds.width)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(defaultPanelBackgroundColor) // Consistent background
+        .background(BackgroundImage())
         // MARK: OCR Listeners (trigger when valid data received)
         .onChange(of: viewModel.detectedName)
         { _, newName in

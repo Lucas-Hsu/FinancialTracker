@@ -159,7 +159,7 @@ final class TransactionEditorViewModel
         let cleanedRemainder = cleanupNoise(workingText)
         if !cleanedRemainder.isEmpty
         {
-            if let hasLetters = cleanedRemainder.rangeOfCharacter(from: .letters)
+            if let _ = cleanedRemainder.rangeOfCharacter(from: .letters)
             {
                 if cleanedRemainder.count < 48
                 { foundName = cleanedRemainder }
