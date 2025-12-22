@@ -22,6 +22,33 @@ struct BaseButton: View
     }
 }
 
+struct TintedLabelButton: View
+{
+    let imageSystemName: String
+    let text: String
+    let tint: Color
+    let color: Color
+    var action: () -> Void
+    
+    var body: some View
+    {
+        Button(action: action)
+        {
+            HStack
+            {
+                Image(systemName: imageSystemName)
+                .foregroundStyle(color)
+                Text("Take Photo")
+                .foregroundStyle(color)
+            }
+        }
+        .controlSize(.large)
+        .buttonStyle(.borderedProminent)
+        .clipShape(Capsule())
+        .tint(tint)
+    }
+}
+
 // MARK: - Templates
 struct PrimaryButton: View
 {
@@ -93,5 +120,24 @@ struct DestructiveButtonGlass: View
         { DestructiveButton(title: title, action: action).glassEffect(.regular.interactive()) }
         else
         { DestructiveButton(title: title, action: action) }
+    }
+}
+struct TintedLabelButtonGlass: View
+{
+    let imageSystemName: String
+    let text: String
+    let tint: Color
+    let color: Color
+    var action: () -> Void
+    
+    var body: some View
+    {
+        if #available(iOS 26.0, *)
+        {
+            TintedLabelButton(imageSystemName: self.imageSystemName, text: self.text, tint: self.tint, color: self.color, action: self.action)
+            .glassEffect(.regular.interactive())
+        }
+        else
+        { TintedLabelButton(imageSystemName: self.imageSystemName, text: self.text, tint: self.tint, color: self.color, action: self.action) }
     }
 }

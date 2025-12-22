@@ -136,6 +136,7 @@ struct RecurringTransactionListView: View
                                         }
                                         .shadow(color: defaultButtonShadowColor, radius: 3, x: 0, y: 2)
                                     }
+                                    .listRowBackground(defaultPanelBackgroundColor)
                                 }
                             }
                             .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 3)

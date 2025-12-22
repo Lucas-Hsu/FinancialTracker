@@ -28,7 +28,19 @@ struct ReceiptImageView: View
             if viewModel.uiImage != nil
             {
                 // MARK: Image & OCR Display
-                imageDisplayArea
+                Group
+                {
+                    if #available(iOS 26.0, *)
+                    {
+                        imageDisplayArea
+                        .glassEffect(.regular, in: .rect(cornerRadius: 12))
+                    }
+                    else
+                    {
+                        imageDisplayArea
+                        .background(defaultPanelBackgroundColor)
+                    }
+                }
             }
             else
             {
@@ -37,7 +49,7 @@ struct ReceiptImageView: View
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(UIColor.secondarySystemBackground))
+        .background(.clear)
         .cornerRadius(12)
         .overlay(RoundedRectangle(cornerRadius: 12)
                  .stroke(Color.secondary.opacity(0.2), lineWidth: 1))
@@ -73,40 +85,57 @@ struct ReceiptImageView: View
     // Image Selection Buttons
     private var initialSelectionButtons: some View
     {
-        VStack(spacing: 20)
+        VStack(spacing: 40)
         {
-            Image(systemName: "doc.text.viewfinder")
-            .font(.system(size: 40))
-            .foregroundColor(.secondary)
-            Text("Add Receipt")
-            .font(.headline)
-            .foregroundColor(.secondary)
+            VStack(spacing: 20)
+            {
+                Image(systemName: "doc.text.viewfinder")
+                .font(.system(size: 120, weight: .thin))
+                .foregroundColor(.secondary)
+                Text("Add Receipt Image")
+                    .font(.system(size: 32, weight: .regular))
+                .foregroundColor(.secondary)
+            }
             HStack(spacing: 20)
             {
                 // Photo Library Button
                 PhotosPicker(selection: $pickerViewModel.selectedItem, matching: .images)
                 {
-                    Label("Photo Library", systemImage: "photo.on.rectangle")
-                    .font(.headline)
-                    .padding()
-                    .frame(height: 50)
-                    .background(Color.accentColor)
-                    .foregroundColor(.white)
-                    .clipShape(Capsule())
+                    Group
+                    {
+                        if #available(iOS 26.0, *)
+                        {
+                            photoLibraryButton
+                            .background(.clear)
+                            .glassEffect(.regular.tint(Color.accentColor).interactive(), in: Capsule())
+                        }
+                        else
+                        {
+                            photoLibraryButton
+                            .background(Color.accentColor)
+                        }
+                    }
+                    .shadow(color: defaultButtonShadowColor, radius: 3, x: 0, y: 3)
                 }
                 // Camera Button
-                Button(action: { isCameraPresented = true })
-                {
-                    Label("Take Photo", systemImage: "camera")
-                    .font(.headline)
-                    .padding()
-                    .frame(height: 50)
-                    .background(Color.secondary.opacity(0.2))
-                    .foregroundColor(.primary)
-                    .clipShape(Capsule())
-                }
+                TintedLabelButtonGlass(imageSystemName: "photo.on.rectangle",
+                                       text: "Photo Library",
+                                       tint: Color.white,
+                                       color: Color(UIColor.systemGray),
+                                       action: { isCameraPresented = true })
+                .shadow(color: defaultButtonShadowColor, radius: 3, x: 0, y: 3)
             }
         }
+    }
+    // Photo Library Button
+    private var photoLibraryButton: some View
+    {
+        Label("Photo Library", systemImage: "photo.on.rectangle")
+        .font(.headline)
+        .padding()
+        .frame(height: 50)
+        .foregroundColor(.white)
+        .clipShape(Capsule())
     }
     // Image Area Background
     private var imageDisplayArea: some View
@@ -114,35 +143,13 @@ struct ReceiptImageView: View
         ZStack
         {
             // Image + bubbles
-            GeometryReader
-            { geometry in
-                if let image = viewModel.uiImage
-                {
-                    // alignment center -> Image and bubbles same anchor point.
-                    ZStack(alignment: .center)
-                    {
-                        Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .opacity(viewModel.isProcessing ? 0.4 : 1.0)
-                        .grayscale(viewModel.isProcessing ? 1.0 : 0.0)
-                        // OCR Bubbles Overlay
-                        if !viewModel.isProcessing
-                        {
-                            ZStack
-                            { AllBubbles(imageSize: image.size, viewSize: geometry.size) }
-                            .drawingGroup()
-                        }
-                    }
-                    .frame(width: geometry.size.width, height: geometry.size.height)
-                    .scaleEffect(viewModel.scale)
-                    .offset(viewModel.offset)
-                    .animation(nil, value: viewModel.scale)
-                    .animation(nil, value: viewModel.offset)
-                    .gesture(makeGestures())
-                }
+            if #available(iOS 26.0, *)
+            {
+                geometryReader
+                .background(.clear)
             }
-            .clipped()
+            else
+            { geometryReader }
             // Loading Indicator
             if viewModel.isProcessing
             {
@@ -197,6 +204,41 @@ struct ReceiptImageView: View
             }
         }
     }
+    // The image and the receipt
+    private var geometryReader: some View
+    {
+        GeometryReader
+        { geometry in
+            if let image = viewModel.uiImage
+            {
+                ZStack(alignment: .center)
+                {
+                    // Receipt
+                    Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .opacity(viewModel.isProcessing ? 0.4 : 1.0)
+                    .grayscale(viewModel.isProcessing ? 1.0 : 0.0)
+                    // Bubbles
+                    if !viewModel.isProcessing
+                    {
+                        ZStack
+                        { AllBubbles(imageSize: image.size, viewSize: geometry.size) }
+                        .drawingGroup()
+                    }
+                }
+                .frame(width: geometry.size.width, height: geometry.size.height)
+                .background(Color.clear)
+                .scaleEffect(viewModel.scale)
+                .offset(viewModel.offset)
+                .animation(nil, value: viewModel.scale)
+                .animation(nil, value: viewModel.offset)
+                .gesture(makeGestures())
+            }
+        }
+        .background(.clear)
+        .clipped()
+    }
     // all the bubbles
     private func AllBubbles(imageSize: CGSize, viewSize: CGSize) -> some View
     {
@@ -216,13 +258,12 @@ struct ReceiptImageView: View
         }
         let offX = (viewSize.width - renderW) / 2
         let offY = (viewSize.height - renderH) / 2
-        // Allow bubbles to remain same size even as image zooms in
-        let bubbleScale = 1.0 / max(1.0, viewModel.scale)
+        let bubbleScale = 1.0 / max(1.0, viewModel.scale) // Allow bubbles to remain same size even as image zooms in
         return ForEach(viewModel.ocrBubbles)
         { bubble in
             // vision rect (x, y, w, h) is normalized.
             let bX = bubble.rect.minX * renderW + offX
-            let bY = (1 - bubble.rect.maxY) * renderH + offY // (0,0) is bottom-left so need conert to (0,0) top-left
+            let bY = (1 - bubble.rect.maxY) * renderH + offY // (0,0) is bottom-left so need convert to (0,0) top-left
             let bW = bubble.rect.width * renderW
             let bH = bubble.rect.height * renderH
             OCRBubbleGlass(text: bubble.text, rect: bubble.rect)
@@ -230,6 +271,8 @@ struct ReceiptImageView: View
             .position(x: bX + bW/2, y: bY + bH/2)
         }
     }
+    
+    // MARK: - Private Helpers
     // Gestures for image transformation
     private func makeGestures() -> some Gesture
     {
@@ -245,7 +288,8 @@ struct ReceiptImageView: View
             { _ in
                 viewModel.lastScale = 1.0
                 // No zooming out too far
-                if viewModel.scale < 1.0 { withAnimation { viewModel.scale = 1.0 } }
+                if viewModel.scale < 1.0
+                { withAnimation { viewModel.scale = 1.0 } }
             },
             DragGesture()
             .onChanged
