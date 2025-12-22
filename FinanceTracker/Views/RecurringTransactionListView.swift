@@ -139,7 +139,6 @@ struct RecurringTransactionListView: View
         .background(defaultPanelBackgroundColor)
         .cornerRadius(20)
         .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 3)
-        .padding(.horizontal)
     }
     
     // MARK: - Private Methods

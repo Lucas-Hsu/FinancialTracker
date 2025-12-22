@@ -245,7 +245,7 @@ struct RecurringTransactionView: View
                 HStack
                 {
                     Spacer()
-                    Text("Began on \(recurringTransaction.startDate.toMediumString())")
+                    Text("Began on \(DateFormatters.MMMddyyyy(date: recurringTransaction.startDate))")
                 }
                 HStack
                 {
