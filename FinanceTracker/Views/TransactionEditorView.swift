@@ -75,7 +75,7 @@ struct TransactionEditorView: View
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .background(BackgroundImage())
+        .background(BackgroundImage("GradientsFlipped"))
         // MARK: OCR Listeners (trigger when valid data received)
         .onChange(of: viewModel.detectedName)
         { _, newName in

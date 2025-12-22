@@ -9,11 +9,16 @@ import SwiftUI
 
 struct BackgroundImage: View
 {
-    let image: String = "iPad26Background"
+    let image: String
+    
+    init(_ image: String = "Gradients")
+    {
+        self.image = image
+    }
     
     var body: some View
     {
-        ZStack
+        ZStack(alignment: .topLeading)
         {
             Image(image)
             .resizable()
@@ -21,7 +26,7 @@ struct BackgroundImage: View
             .ignoresSafeArea()
             Rectangle()
             .fill(defaultPanelBackgroundColor)
-            .scaledToFit()
+            .scaledToFill()
             .opacity(0.7)
         }
     }
