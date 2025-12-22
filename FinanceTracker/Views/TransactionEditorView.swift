@@ -51,7 +51,7 @@ struct TransactionEditorView: View
                 if #available(iOS 26.0, *)
                 {
                     ReceiptImageView(receiptData: $receiptImage)
-                    .glassEffect(.regular, in: .rect(cornerRadius: 12))
+                    .glassEffect(.regular, in: .rect(cornerRadius: 16))
                 }
                 else
                 {
@@ -177,10 +177,11 @@ struct TransactionEditorView: View
                     .scrollContentBackground(.hidden)
                     .background(Color.primary.opacity(0.08))
                     .cornerRadius(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.primary.opacity(0.2), lineWidth: 1)
-                    )
+                    .innerShadow(shape: RoundedRectangle(cornerRadius: 12),
+                                 color: darkerPanelShadowColor,
+                                 radius: 4,
+                                 x: 0,
+                                 y: 2)
                 }
             }
             .padding(.top, 30)

@@ -15,11 +15,11 @@ struct StatisticsView: View
     private enum StatisticType: String, CaseIterable
     {
         case predict = "Monthly Spending"
-        case ratio   = "    Spending Ratio    "
+        case ratio   = "Spending Ratio"
     }
     @State private var selection: StatisticType = StatisticType.predict
-
-    // Fetch transactions here so we can pass them to children
+    
+    // MARK: - Private Attributes
     @Query(sort: \Transaction.date, order: .reverse) private var transactions: [Transaction]
 
     // MARK: - UI
@@ -63,7 +63,7 @@ struct StatisticsView: View
     }
     
     // MARK: - Components
-    // MARK: Toolbar
+    // Toolbar
     private var toolbar: some View
     {
         HStack
@@ -81,24 +81,25 @@ struct StatisticsView: View
         .frame(maxWidth: .infinity)
         .frame(height: 60)
     }
-    // MARK: Dropdown Selection
+    // Dropdown Selection
     private var dropdown: some View
     {
         Menu
         {
-            Button(StatisticType.predict.rawValue) { selection = .predict }
-            Button(StatisticType.ratio.rawValue) { selection = .ratio }
+            Button(StatisticType.predict.rawValue)
+            { selection = .predict }
+            Button(StatisticType.ratio.rawValue)
+            { selection = .ratio }
         }
         label:
         {
             HStack
             {
-                Text(selection.rawValue)
+                Label(selection.rawValue, systemImage: "chevron.down")
                 .fontWeight(.bold)
                 .font(.title2)
                 .foregroundStyle(Color.primary)
-                Image(systemName: "chevron.down")
-                .foregroundStyle(Color.primary)
+                .frame(width: 236)
             }
         }
         .frame(width: 240)

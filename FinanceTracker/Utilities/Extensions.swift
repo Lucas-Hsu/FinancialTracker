@@ -142,38 +142,15 @@ extension UIColor
     }
 }
 
-struct InteractiveScaleModifier: ViewModifier
-{
-    let scaleAmount: CGFloat
-    @State private var isPressed: Bool = false
-    
-    func body(content: Content) -> some View
-    {
-        content
-        .scaleEffect(isPressed ? scaleAmount : 1.0)
-        .brightness(isPressed ? 0.4 : 0.0)
-        .animation(.spring(response: 0.25, dampingFraction: 0.6), value: isPressed)
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-            .onChanged
-            { _ in
-                if !self.isPressed
-                {
-                    self.isPressed = true
-                }
-            }
-            .onEnded
-            { _ in
-                self.isPressed = false
-            }
-        )
-    }
-}
-
 extension View
 {
-    func interactive(scale: CGFloat = 1.1) -> some View
+    // Shows shadows on the inside of views
+    func innerShadow<S: Shape>(shape: S, color: Color = .black, radius: CGFloat = 3, x: CGFloat = 0, y: CGFloat = 0) -> some View
     {
-        self.modifier(InteractiveScaleModifier(scaleAmount: scale))
+        self.overlay(shape
+                    .stroke(color, lineWidth: radius)
+                    .offset(x: x, y: y)
+                    .blur(radius: radius)
+                    .mask(shape))
     }
 }

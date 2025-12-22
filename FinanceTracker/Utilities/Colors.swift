@@ -9,6 +9,7 @@ import SwiftUI
 
 let defaultPanelBackgroundColor: Color = Color(UIColor.systemBackground).mix(with: Color.accentColor, by: 0.02)
 let defaultPanelShadowColor: Color = Color(hue: 0.58, saturation: 0.5, brightness: 0.5, opacity: 0.1)
+let darkerPanelShadowColor: Color = Color(hue: 0.58, saturation: 0.5, brightness: 0.5, opacity: 0.2)
 let defaultButtonShadowColor: Color = Color(hue: 0.58, saturation: 0.5, brightness: 0.1, opacity: 0.4)
 
 enum DynamicColors

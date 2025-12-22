@@ -11,183 +11,150 @@ import SwiftData
 /// View for list of `RecurringTransaction`s
 struct RecurringTransactionListView: View
 {
-    // MARK: - Private State Attributes
-    @State private var viewModel: RecurringTransactionListViewModel
-    @State private var transactionBST: TransactionBST
-    @State private var transaction: Transaction?
-    @State private var notSavedRecurringTransactions: [RecurringTransaction] = []
+    // MARK: - Private Attributes
     @Query(sort: \RecurringTransaction.startDate, order: .reverse) private var savedRecurringTransactions: [RecurringTransaction]
-    
-    // MARK: - Constructor
+    @State private var viewModel: RecurringTransactionListViewModel
+    @State private var notSavedRecurringTransactions: [RecurringTransaction] = []
+
+    // MARK: - Constructors
     init(modelContext: ModelContext, transactionBST: TransactionBST)
     {
-        print("\t///RecurringTransactionView init")
-        _transactionBST = State(initialValue: transactionBST)
         _viewModel = State(initialValue: RecurringTransactionListViewModel(transactionBST: transactionBST, modelContext: modelContext))
-        print("\tRecurringTransactionView init///")
     }
-    
+
     // MARK: - UI
     var body: some View
     {
-        HStack
+        HStack(spacing: 8)
         {
-            if viewModel.isLoading
+            // MARK: Saved Recurring Transactions
+            VStack(alignment: .leading, spacing: 4)
             {
-                // MARK: Loading Message
-                ProgressView("Loading Transaction and Recurring Transaction records...")
-                .padding()
-            }
-            else
-            {
-                VStack(spacing: 0)
+                Label("Saved Patterns", systemImage: "clock.arrow.2.circlepath")
+                .font(.headline)
+                .padding(.horizontal)
+                if savedRecurringTransactions.isEmpty
                 {
-                    Group
+                    GrayBox(text: "No saved patterns.")
+                    .innerShadow(shape: RoundedRectangle(cornerRadius: 12),
+                                 color: darkerPanelShadowColor,
+                                 radius: 4,
+                                 x: 0,
+                                 y: 2)
+                }
+                else
+                {
+                    ZStack
                     {
-                        if #available(iOS 26.0, *)
-                        {
-                            Text("Saved Recurring Transactions")
-                            .font(.title)
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 60)
-                            .glassEffect(.regular, in: .rect(cornerRadius: 12))
-                        }
-                        else
-                        { Text("Saved Recurring Transactions") }
-                    }
-                    .zIndex(1)
-                    .shadow(color: defaultPanelShadowColor, radius: 6, x: 0, y: 4)
-                    if (!savedRecurringTransactions.isEmpty)
-                    {
-                        // MARK: Saved Recurring Transactions
-                        List()
+                        GrayBox()
+                        ScrollView
                         {
                             ForEach(savedRecurringTransactions)
-                            { savedRecurringTransaction in
-                                HStack
-                                {
-                                    RecurringTransactionView(recurringTransaction: savedRecurringTransaction)
-                                    .padding(.trailing, 6)
-                                    DestructiveButtonGlass(title: "Delete")
-                                    {
-                                        viewModel.delete(recurringTransaction: savedRecurringTransaction)
-                                        refresh()
-                                    }
-                                    .shadow(color: defaultButtonShadowColor, radius: 3, x: 0, y: 2)
-                                }
-                                .listRowBackground(defaultPanelBackgroundColor)
+                            { item in
+                                patternRow(item: item, isSaved: true)
+                                .padding()
                             }
                         }
-                        .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 3)
-                        .scrollContentBackground(.hidden)
                     }
-                    else
-                    {
-                        // MARK: Empty Message
-                        VStack
-                        {
-                            Spacer()
-                            Text("No Recurring Transaction records saved.")
-                            .foregroundStyle(Color(UIColor.systemGray))
-                            .onAppear
-                            { viewModel.refresh() }
-                            Spacer()
-                        }
-                    }
+                    .innerShadow(shape: RoundedRectangle(cornerRadius: 12),
+                                 color: darkerPanelShadowColor,
+                                 radius: 4,
+                                 x: 0,
+                                 y: 2)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .frame(maxWidth: .infinity, minHeight: 700, maxHeight: 700)
-                .padding()
-                VStack
+            }
+            // MARK: Suggested Recurring Transactions
+            VStack(alignment: .leading, spacing: 4)
+            {
+                Label("Detected Patterns", systemImage: "clock.badge.questionmark")
+                .font(.headline)
+                .padding(.horizontal)
+                if notSavedRecurringTransactions.isEmpty
                 {
-                    VStack
-                    {
-                        Group
-                        {
-                            if #available(iOS 26.0, *)
-                            {
-                                Text("Found Recurring Transactions")
-                                .font(.title)
-                                .fontWeight(.semibold)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 60)
-                                .glassEffect(.regular, in: .rect(cornerRadius: 12))
-                            }
-                            else
-                            { Text("Found Recurring Transactions") }
-                        }
-                        .zIndex(1)
-                        .shadow(color: defaultPanelShadowColor, radius: 6, x: 0, y: 4)
-                        if (!notSavedRecurringTransactions.isEmpty)
-                        {
-                            // MARK: Calculated Recurring Transactions
-                            List
-                            {
-                                ForEach(notSavedRecurringTransactions)
-                                { recurringTransaction in
-                                    HStack
-                                    {
-                                        RecurringTransactionView(recurringTransaction: recurringTransaction)
-                                        .padding(.trailing, 6)
-                                        PrimaryButtonGlass(title: "Save")
-                                        {
-                                            viewModel.save(recurringTransaction: recurringTransaction)
-                                            refresh()
-                                        }
-                                        .shadow(color: defaultButtonShadowColor, radius: 3, x: 0, y: 2)
-                                    }
-                                    .listRowBackground(defaultPanelBackgroundColor)
-                                }
-                            }
-                            .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 3)
-                            .scrollContentBackground(.hidden)
-                        }
-                        else
-                        {
-                            // MARK: Empty Message
-                            VStack
-                            {
-                                Spacer()
-                                Text("No Recurring Transaction records found.")
-                                .foregroundStyle(Color(UIColor.systemGray))
-                                .onAppear
-                                { viewModel.refresh() }
-                                Spacer()
-                            }
-                        }
-                    }
-                    .frame(maxHeight: .infinity)
-                    
-                    VStack
-                    {
-                        Group
-                        {
-                            if #available(iOS 26.0, *)
-                            {
-                                Text("Manual Recurring Transactions")
-                                .font(.title)
-                                .fontWeight(.semibold)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 60)
-                                .glassEffect(.regular, in: .rect(cornerRadius: 12))
-                            }
-                            else
-                            { Text("Manual Recurring Transactions") }
-                        }
-                        .zIndex(2)
-                        .shadow(color: defaultPanelShadowColor, radius: 6, x: 0, y: 4)
-                        .hidden()
-                    }
+                    GrayBox(text: "No patterns found.")
+                    .innerShadow(shape: RoundedRectangle(cornerRadius: 12),
+                                 color: darkerPanelShadowColor,
+                                 radius: 4,
+                                 x: 0,
+                                 y: 2)
                 }
-                .frame(maxWidth: .infinity, minHeight: 700, maxHeight: 700)
-                .padding()
-                .onAppear
-                { refresh() }
+                else
+                {
+                    ZStack
+                    {
+                        GrayBox()
+                        ScrollView
+                        {
+                            ForEach(notSavedRecurringTransactions)
+                            { item in
+                                patternRow(item: item, isSaved: false)
+                                .padding()
+                            }
+                        }
+                    }
+                    .innerShadow(shape: RoundedRectangle(cornerRadius: 12),
+                                 color: darkerPanelShadowColor,
+                                 radius: 4,
+                                 x: 0,
+                                 y: 2)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
             }
         }
+        .onAppear { refresh() }
     }
     
-    // MARK: - Helper Functions
+    // MARK: - Components
+    // A single row of recurring transaction
+    private func patternRow(item: RecurringTransaction, isSaved: Bool) -> some View
+    {
+        HStack
+        {
+            RecurringTransactionView(recurringTransaction: item)
+            Spacer()
+            Group
+            {
+                if isSaved
+                {
+                    DestructiveButtonGlass(title: "Remove")
+                    {
+                        viewModel.delete(recurringTransaction: item)
+                        refresh()
+                    }
+                }
+                else
+                {
+                    PrimaryButtonGlass(title: "Save")
+                    {
+                        viewModel.save(recurringTransaction: item)
+                        refresh()
+                    }
+                }
+            }
+            .padding(.leading, 6)
+            .shadow(color: defaultButtonShadowColor, radius: 4, x: 0, y: 3)
+        }
+        .padding()
+        .background(defaultPanelBackgroundColor)
+        .cornerRadius(20)
+        .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 3)
+        .padding(.horizontal)
+    }
+    // A gray box
+    private func GrayBox(text: String = "") -> some View
+    {
+        Text(text)
+        .font(.caption)
+        .foregroundStyle(.secondary)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
+        .background(Color.primary.opacity(0.05))
+        .cornerRadius(12)
+    }
+    
+    // MARK: - Private Methods
+    // Update notsaved recurring transactions
     private func refresh()
     {
         notSavedRecurringTransactions = viewModel.filterOut(savedRecurringTransactions)

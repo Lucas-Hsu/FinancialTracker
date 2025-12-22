@@ -259,7 +259,7 @@ struct ComparisonView: View
             Text("Not Enough Data")
             .font(.title3)
             .foregroundStyle(.secondary)
-            Text("Adjust filters or date range to generate statistics.")
+            Text("Adjust filters or date range.")
             .font(.caption)
             .foregroundStyle(.secondary)
         }

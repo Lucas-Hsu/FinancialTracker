@@ -14,9 +14,9 @@ struct ContentView: View
     // MARK: - Tab View Manager
     private enum ViewTabs: Hashable
     {
-      case savedPatterns,
+      case graphicalRepresentation,
            transactionRecords,
-           graphicalRepresentation
+           settings
     }
     @State private var viewTabs: ViewTabs = .transactionRecords
     
@@ -30,25 +30,19 @@ struct ContentView: View
     {
         TabView (selection: $viewTabs)
         {
-            // MARK: Saved Patterns (Recurring Transactions)
+            // MARK: Charts and Summaries
             NavigationStack
             {
                 HStack
                 {
-                    if let bst = transactionBST
-                    {
-                        RecurringTransactionListView(modelContext: modelContext, transactionBST: bst)
-                        .padding()
-                    }
-                    else
-                    {
-                        ProgressView("Building TransactionBST...")
-                    }
+                    StatisticsView()
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: 700)
                 }
                 .background(BackgroundImage())
             }
-            .tabItem { Label("Recurring", systemImage: "calendar") }
-            .tag(ViewTabs.savedPatterns)
+            .tabItem { Label("Stats", systemImage: "chart.line.uptrend.xyaxis") }
+            .tag(ViewTabs.graphicalRepresentation)
             // MARK: Transaction Records: Calendar and List
             NavigationStack
             {
@@ -73,19 +67,26 @@ struct ContentView: View
             }
             .tabItem { Label("Records", systemImage: "line.3.horizontal") }
             .tag(ViewTabs.transactionRecords)
-            // MARK: Charts and Summaries
+            // MARK: Settings & Backup
+            // Updated Settings Tab within ContentView.swift
             NavigationStack
             {
-                HStack
+                ZStack
                 {
-                    StatisticsView()
-                    .padding()
-                    .frame(maxWidth: .infinity, maxHeight: 700)
+                    if #available(iOS 26.0, *)
+                    {
+                        SettingsView(transactionBST: transactionBST)
+                        .glassEffect(.regular, in: .rect(cornerRadius: 16))
+                    }
+                    else
+                    { SettingsView(transactionBST: transactionBST) }
                 }
-                .background(BackgroundImage())
+                .frame(maxWidth: .infinity, minHeight: 700, maxHeight: 700)
+                .padding(.horizontal)
+                .background(BackgroundImage("Gradients"))
             }
-            .tabItem { Label("Stats", systemImage: "chart.line.uptrend.xyaxis") }
-            .tag(ViewTabs.graphicalRepresentation)
+            .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+            .tag(ViewTabs.settings)
         }
         .environment(\.horizontalSizeClass, .compact)
         .onAppear

@@ -28,19 +28,7 @@ struct ReceiptImageView: View
             if viewModel.uiImage != nil
             {
                 // MARK: Image & OCR Display
-                Group
-                {
-                    if #available(iOS 26.0, *)
-                    {
-                        imageDisplayArea
-                        .glassEffect(.regular, in: .rect(cornerRadius: 12))
-                    }
-                    else
-                    {
-                        imageDisplayArea
-                        .background(defaultPanelBackgroundColor)
-                    }
-                }
+                imageDisplayArea
             }
             else
             {
@@ -50,9 +38,7 @@ struct ReceiptImageView: View
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.clear)
-        .cornerRadius(12)
-        .overlay(RoundedRectangle(cornerRadius: 12)
-                 .stroke(Color.secondary.opacity(0.2), lineWidth: 1))
+        .cornerRadius(16)
         .onAppear
         {
             if let data = receiptData, viewModel.uiImage == nil, let img = UIImage(data: data)
@@ -143,13 +129,7 @@ struct ReceiptImageView: View
         ZStack
         {
             // Image + bubbles
-            if #available(iOS 26.0, *)
-            {
-                geometryReader
-                .background(.clear)
-            }
-            else
-            { geometryReader }
+            geometryReader
             // Loading Indicator
             if viewModel.isProcessing
             {
