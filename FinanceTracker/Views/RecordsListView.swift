@@ -39,74 +39,45 @@ struct RecordsListView: View
     {
         VStack(spacing: 0)
         {
-            if viewModel.isLoading
+            // MARK: Toolbar
+            toolbar
+            // MARK: Transactions
+            ZStack
             {
-                // MARK: Loading Message
-                ProgressView("Loading Transaction records...")
-                .padding()
-            }
-            else
-            {
-                // MARK: Toolbar
-                if #available(iOS 26.0, *)
+                GrayBox()
+                if viewModel.isLoading
                 {
-                    toolbar
-                    .glassEffect(.regular, in: .rect(cornerRadius: 16))
+                    // Loading Message
+                    ProgressView("Loading Transaction records...")
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 else
-                { toolbar }
-                
-                // MARK: Empty Message
-                if (viewModel.groupedTransactions.isEmpty)
                 {
-                    VStack
+                    // Empty Message
+                    if (viewModel.groupedTransactions.isEmpty)
                     {
-                        Spacer()
                         Text("No Transaction records found. Please tap 'Add New'.")
-                            .onAppear
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .onAppear
                         { viewModel.refresh() }
-                        Spacer()
+                    }
+                    else
+                    {
+                        // Sorted list of Transactions
+                        transactionList
                     }
                 }
-                // MARK: Sorted list of Transactions
-                List
-                {
-                    ForEach(viewModel.sortByNewestFirst ? viewModel.groupedTransactions.keys.sorted(by: >) : viewModel.groupedTransactions.keys.sorted(by: <), id: \.self)
-                    { key in
-                        let filteredTransactions: [Transaction] = viewModel.groupedTransactions[key]?.filter(
-                            {transaction in
-                                transaction.matchesFilter(isPaid: viewModel.selectedIsPaid,
-                                                          selectedTags: viewModel.selectedTags)
-                            }) ?? []
-                        if !filteredTransactions.isEmpty
-                        {
-                            Section(header:
-                                        Text(DateFormatters.dMMMMyyyy(date: key))
-                                        .font(.headline)
-                                        .fontWeight(.medium)
-                                        .foregroundStyle(Color(UIColor.systemGray)))
-                            {
-                                ForEach(viewModel.sortByNewestFirst ? filteredTransactions : filteredTransactions.reversed(), id: \.id)
-                                { transaction in
-                                    TransactionView(transaction: transaction)
-                                    .listRowBackground(defaultPanelBackgroundColor)
-                                    .onTapGesture
-                                    { openTransactionEdit(transaction: transaction) }
-                                }
-                                .onDelete
-                                { indexSet in
-                                    let transactionsToDelete = indexSet.map { filteredTransactions[$0] }
-                                    viewModel.delete(transactions: transactionsToDelete)
-                                }
-                            }
-                        }
-                    }
-                }
-                .shadow(color: defaultPanelShadowColor, radius: 3, x: 0, y: 3)
-                .scrollContentBackground(.hidden)
             }
+            .innerShadow(shape: RoundedRectangle(cornerRadius: 12),
+                             color: darkerPanelShadowColor,
+                             radius: 4,
+                             x: 0,
+                             y: 2)
+            .padding()
+            .padding(.bottom, 12)
         }
-        .frame(maxWidth: .infinity, minHeight: 700, maxHeight: 700)
+        .frame(height: 700)
         .fullScreenCover(isPresented: Binding(get: { transactionEditorState == .modify },
                                               set: { if !$0 { transactionEditorState = .disabled } }))
         {
@@ -119,6 +90,7 @@ struct RecordsListView: View
     }
     
     // MARK: - Components
+    // Toolbar for transactions adding or filtering
     private var toolbar: some View
     {
         VStack(spacing: 0)
@@ -130,9 +102,11 @@ struct RecordsListView: View
                 {
                     HStack(spacing: 6)
                     {
+                        Spacer()
                         Image(systemName: viewModel.selectedIsPaid == false ? "checkmark.square.fill" : "square")
                         Text("Payment Pending")
                     }
+                    .frame(width: 200)
                     .foregroundColor(viewModel.selectedIsPaid == false ? .blue : .gray)
                 }
                 // Add new Transaction button
@@ -147,11 +121,12 @@ struct RecordsListView: View
                     {
                         Image(systemName: viewModel.sortByNewestFirst ? "checkmark.square.fill" : "square")
                         Text("Newest First")
+                        Spacer()
                     }
+                    .frame(width: 200)
                     .foregroundColor(viewModel.sortByNewestFirst ? .blue : .gray)
                 }
             }
-            
             HStack
             {
                 ForEach(Tag.allCases, id: \.self)
@@ -159,14 +134,50 @@ struct RecordsListView: View
                     IconToggleButtonGlass(icon: tagSymbols[tag] ?? "questionmark", shadow: viewModel.selectedTags.contains(tag), toggle: viewModel.selectedTags.contains(tag))
                     {viewModel.toggleTagSelection(tag: tag)}
                     .frame(width: 60, height: 40)
-                    .padding(.vertical)
                 }
                 .padding(.horizontal, 2)
             }
-            .offset(y: -6)
         }
-        .frame(maxWidth: .infinity, minHeight: 160, maxHeight: 160)
-        .zIndex(1)
+        .frame(maxWidth: .infinity)
+    }
+    // Sorted list of Transactions
+    private var transactionList: some View
+    {
+        List
+        {
+            ForEach(viewModel.sortByNewestFirst ? viewModel.groupedTransactions.keys.sorted(by: >) : viewModel.groupedTransactions.keys.sorted(by: <), id: \.self)
+            { key in
+                let filteredTransactions: [Transaction] = viewModel.groupedTransactions[key]?.filter(
+                    {transaction in
+                        transaction.matchesFilter(isPaid: viewModel.selectedIsPaid,
+                                                  selectedTags: viewModel.selectedTags)
+                    }) ?? []
+                if !filteredTransactions.isEmpty
+                {
+                    Section(header:
+                                Text(DateFormatters.dMMMMyyyy(date: key))
+                                .font(.headline)
+                                .fontWeight(.medium)
+                                .foregroundStyle(Color(UIColor.systemGray)))
+                    {
+                        ForEach(viewModel.sortByNewestFirst ? filteredTransactions : filteredTransactions.reversed(), id: \.id)
+                        { transaction in
+                            TransactionView(transaction: transaction)
+                            .listRowBackground(defaultPanelBackgroundColor)
+                            .onTapGesture
+                            { openTransactionEdit(transaction: transaction) }
+                        }
+                        .onDelete
+                        { indexSet in
+                            let transactionsToDelete = indexSet.map { filteredTransactions[$0] }
+                            viewModel.delete(transactions: transactionsToDelete)
+                        }
+                    }
+                }
+            }
+        }
+        .shadow(color: defaultPanelShadowColor, radius: 3, x: 0, y: 3)
+        .scrollContentBackground(.hidden)
     }
     
     // MARK: - Helper Functions

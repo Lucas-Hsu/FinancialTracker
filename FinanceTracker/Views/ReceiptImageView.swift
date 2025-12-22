@@ -109,7 +109,7 @@ struct ReceiptImageView: View
                                        tint: Color.white,
                                        color: Color(UIColor.systemGray),
                                        action: { isCameraPresented = true })
-                .shadow(color: defaultButtonShadowColor, radius: 3, x: 0, y: 3)
+                .shadow(color: defaultButtonShadowColor.opacity(0.4), radius: 4, x: 0, y: 3)
             }
         }
     }
@@ -147,42 +147,42 @@ struct ReceiptImageView: View
                     // Reset Transform
                     FloatingButtonGlass(icon: "arrow.counterclockwise")
                     { withAnimation { viewModel.resetTransformations() } }
+                    .shadow(color: defaultButtonShadowColor, radius: 4, x: 0, y: 3)
                     Spacer()
                     // Clear Image
                     FloatingButtonGlass(icon: "xmark", color: .red)
                     { viewModel.clear() }
+                    .shadow(color: defaultButtonShadowColor, radius: 4, x: 0, y: 3)
                     // New Camera
                     FloatingButtonGlass(icon: "camera")
                     { isCameraPresented = true }
+                    .shadow(color: defaultButtonShadowColor, radius: 4, x: 0, y: 3)
                     // New Library
                     PhotosPicker(selection: $pickerViewModel.selectedItem, matching: .images)
                     {
                         if #available(iOS 26.0, *)
                         {
-                            Image(systemName: "photo.on.rectangle")
-                            .font(.title3)
-                            .foregroundColor(.white)
-                            .frame(width: 44, height: 44)
-                            .background(Color.accentColor)
-                            .clipShape(Circle())
-                            .shadow(radius: 4)
+                            floatingPhotoPicker
                             .glassEffect(.regular.tint(Color.accentColor).interactive())
                         }
                         else
-                        {
-                            Image(systemName: "photo.on.rectangle")
-                            .font(.title3)
-                            .foregroundColor(.white)
-                            .frame(width: 44, height: 44)
-                            .background(Color.accentColor)
-                            .clipShape(Circle())
-                            .shadow(radius: 4)
-                        }
+                        { floatingPhotoPicker }
                     }
+                    .shadow(color: defaultButtonShadowColor, radius: 4, x: 0, y: 3)
                 }
                 .padding()
             }
         }
+    }
+    // The Floating Photo Picker
+    private var floatingPhotoPicker: some View
+    {
+        Image(systemName: "photo.on.rectangle")
+        .font(.title3)
+        .foregroundColor(.white)
+        .frame(width: 44, height: 44)
+        .background(Color.accentColor)
+        .clipShape(Circle())
     }
     // The image and the receipt
     private var geometryReader: some View

@@ -34,8 +34,8 @@ struct SpendingPredictionRow: View
                 HStack(spacing: 6)
                 {
                     Image(systemName: tagSymbols[tag] ?? "tag.fill")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.headline)
+                    .foregroundStyle(Color(UIColor.secondaryLabel))
                     Text(tag.rawValue.capitalized)
                     .font(.headline)
                     .foregroundStyle(.primary)
@@ -45,14 +45,13 @@ struct SpendingPredictionRow: View
                 if current > prediction
                 {
                     Text("¥\(PriceFormatter.format(price: current - prediction)) over")
-                    .font(.caption)
+                    .font(.system(size: 14, weight: .regular))
                     .foregroundStyle(DynamicColors.red)
-                    .fontWeight(.bold)
                 }
                 else
                 {
                     Text("¥\(PriceFormatter.format(price: prediction - current)) left")
-                    .font(.caption)
+                    .font(.system(size: 14, weight: .regular))
                     .foregroundStyle(.secondary)
                 }
             }
@@ -79,7 +78,7 @@ struct SpendingPredictionRow: View
                     ZStack(alignment: .trailing)
                     {
                         Capsule()
-                            .fill(Color(isOverBudget ? DynamicColors.red : Color.accentColor).mix(with: .white, by: isOverBudget ? 0.85 : 0.5).opacity(isOverBudget ? 0.35 : 0.5))
+                            .fill(Color(isOverBudget ? DynamicColors.red : Color.accentColor).mix(with: .white, by: isOverBudget ? 0.85 : 0.5).opacity(0.5))
                         .frame(width: max(0, predictionWidth), height: 12)
                         .overlay
                         {
@@ -109,7 +108,7 @@ struct SpendingPredictionRow: View
             }
         }
         .background(.clear)
-        .padding(10)
+        .padding(12)
     }
 }
 

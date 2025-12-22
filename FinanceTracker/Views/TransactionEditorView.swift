@@ -43,7 +43,7 @@ struct TransactionEditorView: View
     // MARK: - UI
     var body: some View
     {
-        HStack(spacing: 20)
+        HStack(spacing: 16)
         {
             // MARK: Receipt Image Editor
             Group
@@ -59,7 +59,7 @@ struct TransactionEditorView: View
                     .background(Color(UIColor.secondarySystemBackground))
                 }
             }
-            .padding()
+            .padding(.leading)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             // MARK: Transaction Form
             Group
@@ -72,7 +72,7 @@ struct TransactionEditorView: View
                 else
                 { transactionForm }
             }
-            .padding()
+            .padding(.trailing)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(BackgroundImage("GradientsFlipped"))
@@ -215,7 +215,7 @@ struct TransactionEditorView: View
                     if (!viewModel.hasSaved && !viewModel.hasDeleted)
                     { dismiss() }
                 }
-                .shadow(color: defaultButtonShadowColor, radius: 4, x: 0, y: 3)
+                .shadow(color: defaultButtonShadowColor.opacity(0.4), radius: 4, x: 0, y: 3)
             }
             .padding(20)
         }

@@ -51,7 +51,7 @@ struct SummaryView: View
                         SpendingPredictionRowGlass(tag: tag,
                                                    current: viewModel.aggregates[tag] ?? 0.0,
                                                    prediction: viewModel.predictions[tag] ?? 0.0)
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, 12)
                     }
                     .frame(maxHeight: .infinity)
                 }

@@ -46,17 +46,34 @@ struct ContentView: View
             // MARK: Transaction Records: Calendar and List
             NavigationStack
             {
-                HStack
+                HStack(spacing: 16)
                 {
-                    CalendarView(modelContext: modelContext)
-                    .padding()
-                    .frame(maxWidth: .infinity, maxHeight: 700)
-                    
+                    Group
+                    {
+                        if #available(iOS 26.0, *)
+                        {
+                            CalendarView(modelContext: modelContext)
+                            .glassEffect(.regular, in: .rect(cornerRadius: 16))
+                        }
+                        else
+                        { CalendarView(modelContext: modelContext) }
+                    }
+                    .padding(.leading)
+                    .frame(maxWidth: .infinity, minHeight: 700, maxHeight: 700)
                     if let bst = transactionBST
                     {
-                        RecordsListView(modelContext: modelContext, transactionBST: bst)
-                        .padding()
-                        .frame(maxWidth: .infinity, maxHeight: 700)
+                        Group
+                        {
+                            if #available(iOS 26.0, *)
+                            {
+                                RecordsListView(modelContext: modelContext, transactionBST: bst)
+                                .glassEffect(.regular, in: .rect(cornerRadius: 16))
+                            }
+                            else
+                            { RecordsListView(modelContext: modelContext, transactionBST: bst) }
+                        }
+                        .padding(.trailing)
+                        .frame(maxWidth: .infinity, minHeight: 700, maxHeight: 700)
                     }
                     else
                     {

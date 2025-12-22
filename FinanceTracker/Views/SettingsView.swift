@@ -83,9 +83,8 @@ struct SettingsView: View
             .padding(10)
             .background(defaultPanelBackgroundColor)
             .cornerRadius(16)
-            .shadow(color: defaultButtonShadowColor.opacity(0.4), radius: 4, x: 0, y: 3)
+            .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 3)
         }
-        .padding(.horizontal)
         .padding(.bottom)
         .fileExporter(isPresented: $isExporting, document: document, contentType: .json, defaultFilename: "FinanceBackup_\(DateFormatters.yyyyMMdd(date: Date()))")
         { _ in }

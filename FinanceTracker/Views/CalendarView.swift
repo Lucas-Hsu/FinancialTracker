@@ -29,30 +29,15 @@ struct CalendarView: View
     // MARK: - UI
     var body: some View
     {
-        VStack(spacing: 10)
+        VStack(spacing: 0)
         {
-            if #available(iOS 26.0, *)
-            {
-                calendarView
-                .glassEffect(.regular, in: .rect(cornerRadius: 16))
-                .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 6)
-            }
-            else
-            { calendarView }
-            if #available(iOS 26.0, *)
-            {
-                detailsView
-                .glassEffect(.regular, in: .rect(cornerRadius: 16))
-                .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 6)
-            }
-            else
-            { detailsView }
+            calendarView
+            Divider()
+            detailsView
         }
-        .frame(maxWidth: .infinity, minHeight: 700, maxHeight: 700)
+        .frame(height: 700)
         .onAppear
-        {
-            refresh()
-        }
+        { refresh() }
         .fullScreenCover(item: $selectedTransaction)
         { transaction in
             TransactionEditorView(modelContext: modelContext,
@@ -146,52 +131,78 @@ struct CalendarView: View
     // MARK: Details
     private var detailsView: some View
     {
-        VStack(alignment: .leading, spacing: 4)
+        ZStack
         {
-            if let selectedDay = viewModel.selectedDay
+            VStack(alignment: .leading, spacing: 6)
             {
-                if viewModel.eventsForSelectedDay.isEmpty
+                // Selected date
+                Group
                 {
-                    ContentUnavailableView("No Events",
-                                           systemImage: "calendar",
-                                           description: Text("No recurring transactions occur on this day"))
-                }
-                else
-                {
-                    List
+                    if let selectedDay = viewModel.selectedDay,
+                       let selectedDayDate = viewModel.getDateOfDay(selectedDay)
                     {
-                        ForEach(viewModel.eventsForSelectedDay)
-                        { recurringTransaction in
-                            HStack
-                            {
-                                RecurringTransactionView(recurringTransaction: recurringTransaction)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                            }
-                            .onTapGesture
-                            {
-                                let foundTransaction = viewModel.findTransaction(matches: recurringTransaction,
-                                                                                 selectedDate: viewModel.getDateOfDay(selectedDay) ?? Date())
-                                selectedTransaction = foundTransaction.keys.first
-                                isSelectedNewTransaction = foundTransaction.values.first ?? true
-                                isNewTransactionSheetActivated = true
-                            }
-                            .padding(.vertical, 4)
-                        }
-                        .listRowBackground(defaultPanelBackgroundColor)
+                        Text("\(DateFormatters.dMMMMyyyy( date: selectedDayDate))")
                     }
-                    .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 6)
-                    .scrollContentBackground(.hidden)
+                    else
+                    { Text("") }
                 }
+                .frame(height: 20)
+                ZStack
+                {
+                    GrayBox()
+                    if let selectedDay = viewModel.selectedDay
+                    {
+                        if viewModel.eventsForSelectedDay.isEmpty
+                        {
+                            ContentUnavailableView("No Events",
+                                                   systemImage: "calendar",
+                                                   description: Text("No recurring transactions occur on this day"))
+                        }
+                        else
+                        {
+                            List
+                            {
+                                ForEach(viewModel.eventsForSelectedDay)
+                                { recurringTransaction in
+                                    HStack
+                                    {
+                                        RecurringTransactionView(recurringTransaction: recurringTransaction)
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
+                                    }
+                                    .onTapGesture
+                                    {
+                                        let foundTransaction = viewModel.findTransaction(matches: recurringTransaction,
+                                                                                         selectedDate: viewModel.getDateOfDay(selectedDay) ?? Date())
+                                        selectedTransaction = foundTransaction.keys.first
+                                        isSelectedNewTransaction = foundTransaction.values.first ?? true
+                                        isNewTransactionSheetActivated = true
+                                    }
+                                    .padding(.vertical, 4)
+                                }
+                                .listRowBackground(defaultPanelBackgroundColor)
+                            }
+                            .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 6)
+                            .scrollContentBackground(.hidden)
+                        }
+                    }
+                    else
+                    {
+                        ContentUnavailableView("Select a Day",
+                                               systemImage: "calendar.day.timeline.left",
+                                               description: Text("Tap on a day to view recurring transactions"))
+                    }
+                }
+                .innerShadow(shape: RoundedRectangle(cornerRadius: 12),
+                                 color: darkerPanelShadowColor,
+                                 radius: 4,
+                                 x: 0,
+                                 y: 2)
             }
-            else
-            {
-                ContentUnavailableView("Select a Day",
-                                       systemImage: "calendar.day.timeline.left",
-                                       description: Text("Tap on a day to view recurring transactions"))
-            }
+            .padding(.top, 12)
+            .padding(.bottom, 24)
         }
         .background(.clear)
         .cornerRadius(12)

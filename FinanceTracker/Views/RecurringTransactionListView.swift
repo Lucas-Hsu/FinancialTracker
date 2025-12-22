@@ -25,7 +25,7 @@ struct RecurringTransactionListView: View
     // MARK: - UI
     var body: some View
     {
-        HStack(spacing: 8)
+        HStack(spacing: 16)
         {
             // MARK: Saved Recurring Transactions
             VStack(alignment: .leading, spacing: 4)
@@ -140,17 +140,6 @@ struct RecurringTransactionListView: View
         .cornerRadius(20)
         .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 3)
         .padding(.horizontal)
-    }
-    // A gray box
-    private func GrayBox(text: String = "") -> some View
-    {
-        Text(text)
-        .font(.caption)
-        .foregroundStyle(.secondary)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
-        .background(Color.primary.opacity(0.05))
-        .cornerRadius(12)
     }
     
     // MARK: - Private Methods

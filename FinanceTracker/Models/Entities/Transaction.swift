@@ -227,9 +227,8 @@ struct TransactionView: View
     // MARK: - UI
     var body: some View
     {
-        HStack
+        HStack(spacing: 0)
         {
-            Spacer()
             HStack
             {
                 Image(systemName: tagSymbols[transaction.tag] ?? "questionmark")
@@ -241,25 +240,15 @@ struct TransactionView: View
                     Spacer()
                 }
             }
-            .frame(width: 340, height: 20)
-            Spacer()
+            .frame(width: 350, height: 20)
             VStack
             {
                 HStack
                 {
                     Spacer()
-                    if (!transaction.isPaid)
-                    {
-                        Text("UNPAID")
-                        .font(.caption)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Color.orange.opacity(0.2))
-                        .foregroundColor(.orange)
-                        .cornerRadius(3)
-                    }
                     Text("¥" + PriceFormatter.format(price: transaction.price))
-                    .font(.body)
+                    .font(.system(size: 18, weight: .regular))
+                    .foregroundStyle(transaction.isPaid ? .primary : DynamicColors.red)
                 }
                 HStack
                 {
@@ -269,8 +258,7 @@ struct TransactionView: View
                     .foregroundColor(.secondary)
                 }
             }
-            .frame(width: 150, height: 40)
-            Spacer()
+            .frame(width: 124, height: 50)
         }
     }
 }
