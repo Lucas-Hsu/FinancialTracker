@@ -31,7 +31,7 @@ struct SettingsView: View
                 if let bst = transactionBST
                 {
                     RecurringTransactionListView(modelContext: modelContext, transactionBST: bst)
-                    .padding(.bottom)
+                    .padding(.bottom, 12)
                 }
                 else
                 { ProgressView("Loading Transactions...").padding() }
