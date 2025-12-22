@@ -1,22 +1,23 @@
 //
-//  ComparisonView.swift
+//  HistoryView.swift
 //  FinanceTracker
 //
-//  Created by Lucas Hsu on 12/21/25.
+//  Created by Lucas Hsu on 12/22/25.
 //
 
 import SwiftUI
 import Charts
 import SwiftData
 
-/// View for Pie Chart
-struct ComparisonView: View
+/// View for Bar Chart History
+struct HistoryView: View
 {
     // MARK: - Private Attributes
     private var transactions: [Transaction]
-    @State private var viewModel = ComparisonViewModel()
+    @State private var viewModel = HistoryViewModel()
     @State private var inputStart: Date = Date()
     @State private var inputEnd: Date = Date()
+    @State private var selectedTimestep: Timestep = .months
     @State private var hide: Bool = false
     
     // MARK: - Constructor
@@ -91,6 +92,7 @@ struct ComparisonView: View
         {
             inputStart = viewModel.startMonth
             inputEnd = viewModel.endMonth
+            selectedTimestep = viewModel.timestep
             viewModel.refreshTransactions(transactions: transactions)
         }
         .onChange(of: transactions)
@@ -106,16 +108,16 @@ struct ComparisonView: View
         VStack(spacing: 15)
         {
             Text("Configuration")
-                .font(.headline)
-                .padding(.top, 20)
+            .font(.headline)
+            .padding(.top, 20)
             Divider()
             // Date Wheels
             VStack(alignment: .leading, spacing: 5)
             {
                 Text("From")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal)
                 HStack
                 {
                     Spacer()
@@ -139,69 +141,66 @@ struct ComparisonView: View
             }
             .frame(maxHeight: 280)
             Divider()
-            // Tag Selectors
+            // Timestep Picker
             VStack(alignment: .leading, spacing: 10)
             {
-                Text("Categories")
+                Text("Timestep")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal)
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 10)
+                Picker("Timestep", selection: $selectedTimestep)
                 {
-                    ForEach(Tag.allCases, id: \.self)
-                    { tag in
-                        IconToggleButtonGlass(icon: tagSymbols[tag] ?? "questionmark",
-                                              shadow: viewModel.selectedTags.contains(tag),
-                                              toggle: viewModel.selectedTags.contains(tag))
-                        { viewModel.toggleTag(tag) }
-                        .frame(width: 60, height: 40)
+                    ForEach(Timestep.allCases)
+                    { step in
+                        Text(step.rawValue).tag(step)
                     }
                 }
+                .pickerStyle(.segmented)
                 .padding(.horizontal)
             }
+            .padding(.vertical, 10)
             Divider()
-            // Generate Button
+            // Generate Bar Chart
             PrimaryButtonGlass(title: "Generate")
             { generate() }
             .shadow(color: defaultButtonShadowColor, radius: 4, x: 0, y: 4)
+            .padding(.vertical, 16)
             .padding(.bottom, 20)
         }
         .frame(maxHeight: .infinity)
     }
-    // MARK: Pie Chart
+    
+    // MARK: - Components
+    // MARK: Bar Chart
     private var chartLayout: some View
     {
         ZStack(alignment: .topTrailing)
         {
             // Chart
-            HStack
-            {
-                Chart(viewModel.chartData)
-                { item in
-                    SectorMark(angle: .value("Amount", item.value),
-                               innerRadius: .ratio(0.5),
-                               angularInset: 1.5)
-                    .cornerRadius(5)
-                    .foregroundStyle(tagColors(item.tag))
-                    .annotation(position: .overlay)
-                    {
-                        if item.percentage > 0.05
-                        {
-                            Text("\(Int(item.percentage * 100))%")
-                            .frame(height: 10)
-                            .font(.caption)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.white)
-                            .shadow(color: .black.opacity(0.3), radius: 1)
-                        }
-                    }
+            Chart(viewModel.chartData)
+            { item in
+                BarMark(x: .value("Date", item.date, unit: viewModel.timestep == .years ? .year : .month),
+                        y: .value("Amount", item.value))
+                .foregroundStyle(Color.accentColor)
+                .cornerRadius(12)
+                .annotation(position: .top)
+                {
+                    Text("¥" + PriceFormatter.format(price: item.value))
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
                 }
-                .frame(width: 500)
-                .padding(20)
-                .padding(.leading, 20)
-                Spacer()
             }
-            .frame(maxWidth: .infinity)
+            .chartXAxis
+            {
+                AxisMarks(values: .stride(by: viewModel.timestep == .years ? .year : .month))
+                { value in
+                    AxisGridLine()
+                    AxisTick()
+                    AxisValueLabel(format: viewModel.timestep == .years ? .dateTime.year() : .dateTime.month().year())
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(20)
             // Legend
             legendView
             .padding(12)
@@ -216,40 +215,29 @@ struct ComparisonView: View
     // MARK: Legend
     private var legendView: some View
     {
-        VStack(alignment: .leading, spacing: 10)
+        HStack
         {
-            Text("Total Expenditure Comparison by Tags")
-            .font(.caption)
-            .foregroundStyle(.primary)
-            Text("\(DateFormatters.MMMyyyy(date: inputStart)) ~ \(DateFormatters.MMMyyyy(date: inputEnd))")
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .padding(.bottom, 2)
-            ForEach(viewModel.chartData)
-            { item in
-                HStack(spacing: 0)
+            VStack(alignment: .leading, spacing: 10)
+            {
+                Text("Expenditure History By \(viewModel.timestep.rawValue)")
+                .font(.caption)
+                .foregroundStyle(.primary)
+                Text("\(DateFormatters.MMMyyyy(date: inputStart)) ~ \(DateFormatters.MMMyyyy(date: inputEnd))")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.bottom, 2)
+                HStack(spacing: 8)
                 {
-                    HStack
-                    {
-                        Circle()
-                        .fill(tagColors(item.tag))
-                        .frame(width: 10, height: 10)
-                        Image(systemName: tagSymbols[item.tag] ?? "questionmark")
-                        .foregroundStyle(tagColors(item.tag))
-                        .font(.system(size: 14, weight: .medium))
-                        .frame(width: 40, alignment: .leading)
-                        .lineLimit(1)
-                    }
-                    Spacer()
-                    Text("\(PriceFormatter.format1D(price: item.percentage * 100))%")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-                    Spacer()
-                    Text("¥" + PriceFormatter.format(price: item.value))
-                    .font(.system(size: 12))
+                    Rectangle()
+                    .fill(Color.accentColor)
+                    .frame(width: 12, height: 12)
+                    .cornerRadius(2)
+                    Text("Expenditure Sum")
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.secondary)
                 }
             }
+            Spacer()
         }
         .frame(maxWidth: 220)
     }
@@ -258,13 +246,13 @@ struct ComparisonView: View
     {
         VStack(spacing: 15)
         {
-            Image(systemName: "chart.pie")
+            Image(systemName: "chart.bar")
             .font(.system(size: 60))
             .foregroundStyle(.secondary)
             Text("Not Enough Data")
             .font(.title3)
             .foregroundStyle(.secondary)
-            Text("Adjust date range or filters and tap generate.")
+            Text("Adjust date range or timestep and tap generate.")
             .font(.caption)
             .foregroundStyle(.secondary)
         }
@@ -273,11 +261,11 @@ struct ComparisonView: View
     }
     
     // MARK: - Logic
-    // Generate Pie Chart
     private func generate()
     {
         viewModel.setStartMonth(inputStart)
         viewModel.setEndMonth(inputEnd)
+        viewModel.setTimestep(selectedTimestep)
         viewModel.generate()
     }
 }

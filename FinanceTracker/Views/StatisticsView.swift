@@ -12,10 +12,12 @@ import SwiftData
 struct StatisticsView: View
 {
     // MARK: - State Management
-    private enum StatisticType: String, CaseIterable
+    private enum StatisticType: String, CaseIterable, Identifiable
     {
-        case predict = "Monthly Spending"
+        var id: String { self.rawValue }
+        case predict = "Spending Summary"
         case ratio   = "Spending Ratio"
+        case history = "Spending History"
     }
     @State private var selection: StatisticType = StatisticType.predict
     
@@ -42,19 +44,14 @@ struct StatisticsView: View
             // MARK: Statistics Window
             Group
             {
-                if selection == .predict
+                switch selection
                 {
-                    // Existing view
+                case .predict:
                     SummaryView()
-                }
-                else if selection == .ratio
-                {
-                    // New view
+                case .ratio:
                     ComparisonView(transactions: transactions)
-                }
-                else
-                {
-                    Spacer()
+                case .history:
+                    HistoryView(transactions: transactions)
                 }
             }
         }
@@ -86,10 +83,11 @@ struct StatisticsView: View
     {
         Menu
         {
-            Button(StatisticType.predict.rawValue)
-            { selection = .predict }
-            Button(StatisticType.ratio.rawValue)
-            { selection = .ratio }
+            ForEach(StatisticType.allCases)
+            { type in
+                Button(type.rawValue)
+                { selection = type }
+            }
         }
         label:
         {
