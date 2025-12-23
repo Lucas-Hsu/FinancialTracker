@@ -25,87 +25,105 @@ struct RecurringTransactionListView: View
     // MARK: - UI
     var body: some View
     {
-        HStack(spacing: 16)
+        ZStack(alignment: .center)
         {
-            // MARK: Saved Recurring Transactions
-            VStack(alignment: .leading, spacing: 4)
+            HStack(spacing: 16)
             {
-                Label("Saved Patterns", systemImage: "clock.arrow.2.circlepath")
-                .font(.headline)
-                .padding(.horizontal)
-                if savedRecurringTransactions.isEmpty
+                // MARK: Saved Recurring Transactions
+                VStack(alignment: .leading, spacing: 4)
                 {
-                    GrayBox(text: "No saved patterns.")
-                    .innerShadow(shape: RoundedRectangle(cornerRadius: 12),
-                                 color: darkerPanelShadowColor,
-                                 radius: 4,
-                                 x: 0,
-                                 y: 2)
-                }
-                else
-                {
-                    ZStack
+                    Label("Saved Patterns", systemImage: "clock.arrow.2.circlepath")
+                    .font(.headline)
+                    .padding(.horizontal)
+                    if savedRecurringTransactions.isEmpty
                     {
-                        GrayBox()
-                        ScrollView
+                        GrayBox(text: "No saved patterns.")
+                        .innerShadow(shape: RoundedRectangle(cornerRadius: 12),
+                                     color: darkerPanelShadowColor,
+                                     radius: 4,
+                                     x: 0,
+                                     y: 2)
+                    }
+                    else
+                    {
+                        ZStack
                         {
-                            ForEach(savedRecurringTransactions)
-                            { item in
-                                patternRow(item: item, isSaved: true)
-                                .padding()
+                            GrayBox()
+                            ScrollView
+                            {
+                                ForEach(savedRecurringTransactions)
+                                { item in
+                                    patternRow(item: item, isSaved: true)
+                                    .padding()
+                                }
                             }
                         }
+                        .innerShadow(shape: RoundedRectangle(cornerRadius: 12),
+                                     color: darkerPanelShadowColor,
+                                     radius: 4,
+                                     x: 0,
+                                     y: 2)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
-                    .innerShadow(shape: RoundedRectangle(cornerRadius: 12),
-                                 color: darkerPanelShadowColor,
-                                 radius: 4,
-                                 x: 0,
-                                 y: 2)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                // MARK: Suggested Recurring Transactions
+                VStack(alignment: .leading, spacing: 4)
+                {
+                    Label("Detected Patterns", systemImage: "clock.badge.questionmark")
+                    .font(.headline)
+                    .padding(.horizontal)
+                    if notSavedRecurringTransactions.isEmpty
+                    {
+                        GrayBox(text: "No patterns found.")
+                        .innerShadow(shape: RoundedRectangle(cornerRadius: 12),
+                                     color: darkerPanelShadowColor,
+                                     radius: 4,
+                                     x: 0,
+                                     y: 2)
+                    }
+                    else
+                    {
+                        ZStack
+                        {
+                            GrayBox()
+                            ScrollView
+                            {
+                                ForEach(notSavedRecurringTransactions)
+                                { item in
+                                    patternRow(item: item, isSaved: false)
+                                    .padding()
+                                }
+                            }
+                        }
+                        .innerShadow(shape: RoundedRectangle(cornerRadius: 12),
+                                     color: darkerPanelShadowColor,
+                                     radius: 4,
+                                     x: 0,
+                                     y: 2)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
                 }
             }
-            // MARK: Suggested Recurring Transactions
-            VStack(alignment: .leading, spacing: 4)
+            loadingIndicator
+        }
+    }
+    // MARK: - Components
+    // Loading Indicator
+    private var loadingIndicator: some View
+    {
+        Group
+        {
+            if viewModel.isUpdated
             {
-                Label("Detected Patterns", systemImage: "clock.badge.questionmark")
-                .font(.headline)
-                .padding(.horizontal)
-                if notSavedRecurringTransactions.isEmpty
+                ProgressView("Recalculating Transaction patterns...")
+                .onAppear
                 {
-                    GrayBox(text: "No patterns found.")
-                    .innerShadow(shape: RoundedRectangle(cornerRadius: 12),
-                                 color: darkerPanelShadowColor,
-                                 radius: 4,
-                                 x: 0,
-                                 y: 2)
-                }
-                else
-                {
-                    ZStack
-                    {
-                        GrayBox()
-                        ScrollView
-                        {
-                            ForEach(notSavedRecurringTransactions)
-                            { item in
-                                patternRow(item: item, isSaved: false)
-                                .padding()
-                            }
-                        }
-                    }
-                    .innerShadow(shape: RoundedRectangle(cornerRadius: 12),
-                                 color: darkerPanelShadowColor,
-                                 radius: 4,
-                                 x: 0,
-                                 y: 2)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    refresh()
+                    viewModel.setIsUpdatedFalse()
                 }
             }
         }
-        .onAppear { refresh() }
     }
-    
-    // MARK: - Components
     // A single row of recurring transaction
     private func patternRow(item: RecurringTransaction, isSaved: Bool) -> some View
     {

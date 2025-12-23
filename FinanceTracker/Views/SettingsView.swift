@@ -15,9 +15,17 @@ struct SettingsView: View
     // MARK: - Private Attributes
     @Environment(\.modelContext) private var modelContext
     @Query private var allTransactions: [Transaction]
-    @State private var document: BackupDocument?
+    @State private var viewModel: SettingsViewModel = SettingsViewModel()
+    // File handling state
     @State private var isExporting = false
     @State private var isImporting = false
+    // Alert state
+    @State private var showDeleteConfirmation = false
+    @State private var showExportResult = false
+    @State private var exportCount = 0
+    @State private var showImportResult = false
+    @State private var importAddedCount = 0
+    
     var transactionBST: TransactionBST?
 
     // MARK: - UI
@@ -37,7 +45,28 @@ struct SettingsView: View
                 { ProgressView("Loading Transactions...").padding() }
             }
         }
+        .onAppear
+        { viewModel.refresh(transactions: allTransactions) }
         .padding()
+        // Delete all
+        .alert("Delete All Transactions?", isPresented: $showDeleteConfirmation)
+        {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive)
+            { viewModel.deleteAllTransactions(from: modelContext) }
+        }
+        message:
+        { Text("This action cannot be undone.") }
+        // Export alert
+        .alert("Export Complete", isPresented: $showExportResult)
+        { Button("OK", role: .cancel) { } }
+        message:
+        { Text("Exported \(exportCount) transactions.") }
+        // Import alert
+        .alert("Import Complete", isPresented: $showImportResult)
+        { Button("OK", role: .cancel) { } }
+        message:
+        { Text("Added \(importAddedCount) new transactions.") }
     }
     
     // MARK: - Components
@@ -72,6 +101,9 @@ struct SettingsView: View
                 }
                 HStack(spacing: 15)
                 {
+                    DestructiveButtonGlass(title: "Delete All")
+                    { showDeleteConfirmation = true }
+                    .shadow(color: defaultButtonShadowColor, radius: 4, x: 0, y: 3)
                     PrimaryButtonGlass(title: "Export")
                     { prepareExport() }
                     .shadow(color: defaultButtonShadowColor, radius: 4, x: 0, y: 3)
@@ -86,8 +118,14 @@ struct SettingsView: View
             .shadow(color: defaultPanelShadowColor, radius: 4, x: 0, y: 3)
         }
         .padding(.bottom)
-        .fileExporter(isPresented: $isExporting, document: document, contentType: .json, defaultFilename: "FinanceBackup_\(DateFormatters.yyyyMMdd(date: Date()))")
-        { _ in }
+        .fileExporter(isPresented: $isExporting,
+                      document: viewModel.document,
+                      contentType: .json,
+                      defaultFilename: "FinanceBackup_\(DateFormatters.yyyyMMdd(date: Date()))")
+        { result in
+            if case .success = result
+            { showExportResult = true }
+        }
         .fileImporter(isPresented: $isImporting, allowedContentTypes: [.json], allowsMultipleSelection: false)
         { result in
             handleImport(result: result)
@@ -98,31 +136,15 @@ struct SettingsView: View
     // Export
     private func prepareExport()
     {
-        let txCodables = allTransactions.map
-        { TransactionCodable(from: $0) }
-        self.document = BackupDocument(backup: BackupData(transactions: txCodables))
+        self.exportCount = viewModel.prepareExport()
         self.isExporting = true
     }
     // Import
     private func handleImport(result: Result<[URL], Error>)
     {
-        do
-        {
-            guard let selectedFile = try result.get().first else
-            { return }
-            if selectedFile.startAccessingSecurityScopedResource()
-            {
-                let data = try Data(contentsOf: selectedFile)
-                let decoded = try JSONDecoder().decode(BackupData.self, from: data)
-                for tx in decoded.transactions
-                { modelContext.insert(tx.toModel()) }
-                try? modelContext.save()
-                NotificationCenter.default.post(name: .transactionsUpdated, object: nil)
-                selectedFile.stopAccessingSecurityScopedResource()
-            }
-        }
-        catch
-        { print("Import error: \(error)") }
+        viewModel.refresh(transactions: allTransactions)
+        let count = viewModel.handleImport(result: result, modelContext: modelContext)
+        self.importAddedCount = count
+        self.showImportResult = true
     }
 }
-

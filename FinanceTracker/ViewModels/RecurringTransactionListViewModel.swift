@@ -17,6 +17,7 @@ final class RecurringTransactionListViewModel
     private(set) var transactionBST: TransactionBST
     private(set) var isLoading: Bool = true
     private(set) var recurringTransactions: [RecurringTransaction] = []
+    private(set) var isUpdated: Bool = false
     
     // MARK: - Fully Private
     @ObservationIgnored private var transactionObserver: Any?
@@ -56,7 +57,10 @@ final class RecurringTransactionListViewModel
     func refresh()
     {
         findRecurringTransactions()
+        self.isUpdated = true
     }
+    func setIsUpdatedFalse()
+    { self.isUpdated = false }
     // Filters out already saved RecurringTransactions
     func filterOut(_ saved: [RecurringTransaction]) -> [RecurringTransaction]
     {
@@ -103,7 +107,7 @@ final class RecurringTransactionListViewModel
                 print("RecordsListViewModel Initializing...")
                 self.isLoading = false
             }
-            self.refresh()
+            refresh()
         }
     }
     // Find RecurrignTransactions from TransactionBST
