@@ -6,7 +6,7 @@
 	<array>
 		<dict>
 			<key>CFBundleTypeName</key>
-			<string>Transactions Backup</string>
+			<string>Finance Tracker Data</string>
 			<key>LSHandlerRank</key>
 			<string>Default</string>
 			<key>LSItemContentTypes</key>
@@ -21,10 +21,11 @@
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.json</string>
+				<string>public.content</string>
 				<string>public.data</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>FinanceTracker Backup</string>
+			<string>Finance Tracker Data</string>
 			<key>UTTypeIconFiles</key>
 			<array/>
 			<key>UTTypeIdentifier</key>
@@ -33,7 +34,7 @@
 			<dict>
 				<key>public.filename-extension</key>
 				<array>
-					<string>transactions</string>
+					<string>json</string>
 				</array>
 			</dict>
 		</dict>
