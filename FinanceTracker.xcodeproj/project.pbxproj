@@ -29,10 +29,53 @@
 		6EF2F10D2D35670C003429AC /* FinanceTrackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FinanceTrackerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		6EC9BB0F2D4FB7BC00BA12F4 /* Exceptions for "FinanceTracker" folder in "FinanceTracker" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				AddNew.swift,
+				BarChartView.swift,
+				BarYearMonthSelector.swift,
+				Calendar.swift,
+				CustomModifiers.swift,
+				CustomsCenter.swift,
+				History.swift,
+				ImagePicker.swift,
+				ImageRecognize.swift,
+				Info.plist,
+				ModifyOld.swift,
+				PieChartView.swift,
+				RecurringTransaction.swift,
+				RecurringTransactionsTestView.swift,
+				SelectedRecurringTransactionIDs.swift,
+				Statistics.swift,
+				Suggestions.swift,
+				TransactionCodable.swift,
+				TransactionDetailsView.swift,
+				TransactionPattern.swift,
+				ZoomableImageWithOCR.swift,
+			);
+			target = 6EF2F0F02D35670A003429AC /* FinanceTracker */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		6EF2F0F32D35670A003429AC /* FinanceTracker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				6EC9BB0F2D4FB7BC00BA12F4 /* Exceptions for "FinanceTracker" folder in "FinanceTracker" target */,
+			);
 			path = FinanceTracker;
+			sourceTree = "<group>";
+		};
+		6EF2F1062D35670C003429AC /* FinanceTrackerTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = FinanceTrackerTests;
+			sourceTree = "<group>";
+		};
+		6EF2F1102D35670C003429AC /* FinanceTrackerUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = FinanceTrackerUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -66,6 +109,8 @@
 			isa = PBXGroup;
 			children = (
 				6EF2F0F32D35670A003429AC /* FinanceTracker */,
+				6EF2F1062D35670C003429AC /* FinanceTrackerTests */,
+				6EF2F1102D35670C003429AC /* FinanceTrackerUITests */,
 				6EF2F0F22D35670A003429AC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -118,6 +163,9 @@
 			dependencies = (
 				6EF2F1052D35670C003429AC /* PBXTargetDependency */,
 			);
+			fileSystemSynchronizedGroups = (
+				6EF2F1062D35670C003429AC /* FinanceTrackerTests */,
+			);
 			name = FinanceTrackerTests;
 			packageProductDependencies = (
 			);
@@ -137,6 +185,9 @@
 			);
 			dependencies = (
 				6EF2F10F2D35670C003429AC /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				6EF2F1102D35670C003429AC /* FinanceTrackerUITests */,
 			);
 			name = FinanceTrackerUITests;
 			packageProductDependencies = (
