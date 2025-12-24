@@ -93,7 +93,7 @@ struct SettingsView: View
                     {
                         Text("Data Management")
                         .font(.headline)
-                        Text("Transactions are stored in .transactions files (JSON)")
+                        Text("Transactions are stored in .JSON files.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     }

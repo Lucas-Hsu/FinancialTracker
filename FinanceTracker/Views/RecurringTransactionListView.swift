@@ -74,7 +74,15 @@ struct RecurringTransactionListView: View
                     .padding(.horizontal)
                     if notSavedRecurringTransactions.isEmpty
                     {
-                        GrayBox(text: "No patterns found.")
+                        GrayBox(text: """
+                            No patterns found.
+                            
+                            [Requirements] 
+                            At least 3 transactions with:
+                            - Same name 
+                            - Same tag
+                            - Regular intervals in between.
+                            """)
                         .innerShadow(shape: RoundedRectangle(cornerRadius: 12),
                                      color: darkerPanelShadowColor,
                                      radius: 4,
