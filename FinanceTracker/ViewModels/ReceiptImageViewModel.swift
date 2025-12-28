@@ -147,7 +147,7 @@ final class ReceiptImageViewModel
             }
         }
         request.recognitionLevel = .accurate
-        request.recognitionLanguages = ["en-US", "zh-CN"]
+        request.recognitionLanguages = ["zh-CN", "en-US"]
         Task.detached(priority: .userInitiated)
         {
             do
